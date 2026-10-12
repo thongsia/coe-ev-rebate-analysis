@@ -1,27 +1,27 @@
 #!/usr/bin/env python3
 """
-Step 6 — scope guard (programmatic assertion layer).
+Step 6 — scope guard (programmatic assertion layer; VERIFIED-POLICY RE-RUN).
 
-Every rebate-intensity exhibit in this batch is estimated on the FULL joint
-window 2016-01..2025-05. A 2022+-only estimation sample is FORBIDDEN because
-the rebate dose is flat 2022-01..2025-05 (a dose that never varies within the
-sample cannot be identified -> rank-deficient). 2022+ is the INTERPRETATION
-scope only.
+SCOPE RULE (dual-scope — replaces the old flat-tail rule)
+---------------------------------------------------------
+The verified real dose is NOT flat over the 2022+ window: it steps
+45000 -> 40000 at 2024-01 (EEAI cap cut), so the 2022-01..2025-05 window has
+TWO distinct dose values (41 obs) and is NOW ALSO A VALID ESTIMATION scope.
 
-This module is:
-  (1) importable by every estimation module (07-12) — they call
-      ``B.register_exhibit()`` (via _bootstrap) at import time so the guard
-      can verify each exhibit's declared estimation scope, its key regressors,
-      and (for mediation) that the mediated share is computed on the
-      full-window sample;
-  (2) runnable standalone (`python3 src/05_scope_guard.py`) — it re-imports all
-      estimation modules, reads the exhibit registry, statically scans the
-      src/ modules for the corrupted-panel / ev_reg-in-a-rebate-model
-      antipatterns, audits the data-flow layering contract (no forward reads),
-      and writes tables/scope_audit.csv with every assertion + PASS/FAIL.
+  (a) full-window (2016-01..2025-05) estimation remains PRIMARY for the
+      CEVS->VES transition and overall level effects;
+  (b) the 2022-01..2025-05 window is ALSO ESTIMATED for the headline
+      exhibits (price equation, bidding channel, mediation): a '2022+ (EV
+      era)' spec with the dose step (45000->40000 at 2024-01) + trend +
+      ARF-floor/stacking dummies as appropriate;
+  (c) a rebate-intensity exhibit may NEVER be estimated on a 2022+-only
+      sample: every coefficient exhibit must contain the full window in its
+      estimation scope (headline exhibits are dual-scope: full + 2022+).
 
 Assertions enforced:
-  (a) no rebate-intensity exhibit estimated on a 2022+-only sample;
+  (a) no rebate-intensity exhibit estimated on a 2022+-only sample; headline
+      exhibits (price_equation, demand_bidding, mediation) must ALSO carry the
+      2022+ estimation scope (dual scope) since it is now estimable;
   (b) the price-equation demand regressor is catA_bids_received (corrected),
       never ev_reg;
   (c) the mediated (indirect/total) share is computed on the full-window
@@ -29,7 +29,11 @@ Assertions enforced:
   (d) ev_reg / ev_share enter NO rebate-coefficient model;
   (e) event-study samples span pre- AND post-treatment months;
   (f) data-flow / layering contract: no forward reads (a module may not read a
-      file written by a LATER module).
+      file written by a LATER module);
+  (g) dose state: 4 distinct in-window doses {20000,25000,45000,40000} and 2
+      distinct doses in 2022-01..2025-05 {45000,40000} (the OLD flat-tail
+      assertion — 'dose constant 2022-01..2025-05' — is REMOVED; it would now
+      hard-fail against the verified dose).
 
 A SEPARATE data-integrity assertion is also logged: the panel's
 catA_bids_received is corrupted (0) for the last 19 months, and this batch
@@ -56,6 +60,9 @@ AUDIT = TABLES / "scope_audit.csv"
 WINDOW_LO = D.WINDOW_LO
 WINDOW_HI = D.WINDOW_HI
 NATURAL_MONTHS = D.NATURAL_MONTHS
+
+FULL_SCOPE = f"{WINDOW_LO}..{WINDOW_HI}"
+PLUS22_SCOPE = f"{WINDOW_LO}..{WINDOW_HI};2022-01..{WINDOW_HI}"
 
 # The ONLY demand-regressor column names a rebate-intensity exhibit may key on.
 ALLOWED_DEMAND = {
@@ -209,7 +216,7 @@ def _collect_file_reads() -> dict[str, set[str]]:
             continue
         text = _strip_docstrings((SRC / mod).read_text())
         found: set[str] = set()
-        for m in re.finditer(r'read_csv\(\s*(?:[A-Za-z_]+\s*/\s*)?["\']([^"\']+)["\']', text):
+        for m in re.finditer(r'read_csv\(\s*(?:[A-Za-z_]+\s*/\s*)?["\']([^"\']+)[\'"]', text):
             name = m.group(1)
             # a bare table name read via OUT_DIR/"name.csv" -> canonical tables/name
             if name.endswith(".csv") and "/" not in name and f"tables/{name}" in ALL_KNOWN_FILES:
@@ -220,13 +227,13 @@ def _collect_file_reads() -> dict[str, set[str]]:
             if re.search(rf"\bD\.{cname}\b", text):
                 found.add(fpath)
         for m in re.finditer(
-            r'["\'](tables/[^"\']+\.csv|data/raw/[^"\']+\.csv|data/processed/[^"\']+\.csv)["\']',
+            r'["\'](tables/[^"\']+\.csv|data/raw/[^"\']+\.csv|data/processed/[^"\']+\.csv)[\'"]',
             text,
         ):
             found.add(m.group(1))
         # bare table file names (read relative to OUT_DIR), e.g.
         #   pd.read_csv(OUT_DIR / "price_equation.csv")
-        for m in re.finditer(r'["\']([a-z0-9_]+\.csv)["\']', text):
+        for m in re.finditer(r'["\']([a-z0-9_]+\.csv)[\'"]', text):
             name = m.group(1)
             if f"tables/{name}" in ALL_KNOWN_FILES:
                 found.add(f"tables/{name}")
@@ -280,6 +287,10 @@ def run_audit() -> pd.DataFrame:
     # variation and feed no coefficient.
     REBATE_KINDS = {"price_equation", "demand_bidding", "mediation",
                     "event_study", "demand_registration"}
+    # Headline exhibits that, under the verified-policy dual-scope rule, must
+    # ALSO be estimated on the 2022+ EV-era window (now estimable: the dose
+    # varies inside it, 45000 -> 40000 at 2024-01).
+    DUAL_SCOPE_KINDS = {"price_equation", "demand_bidding", "mediation"}
 
     # ---- data-integrity: panel corruption detected + correction in use ----
     frame = D.load_estimation_frame()
@@ -293,19 +304,28 @@ def run_audit() -> pd.DataFrame:
         f"All Batch-B models use catA_bids_received_clean.",
     )
 
-    # ---- (a) no 2022+-only estimation scope (coefficient exhibits only) ----
+    # ---- (a) no 2022+-only estimation scope; headline exhibits dual-scope ----
     coeff_exhibits = [e for e in exhibits if e["kind"] in REBATE_KINDS]
-    all_full = bool(coeff_exhibits) and all(
-        e["est_scope"].replace(" ", "") == f"{WINDOW_LO}..{WINDOW_HI}"
+    full_ok = bool(coeff_exhibits) and all(
+        e["est_scope"].replace(" ", "").startswith(FULL_SCOPE)
         for e in coeff_exhibits
     )
+    dual_exhibits = [e for e in exhibits if e["kind"] in DUAL_SCOPE_KINDS]
+    dual_ok = bool(dual_exhibits) and all(
+        f"2022-01..{WINDOW_HI}" in e["est_scope"].replace(" ", "")
+        for e in dual_exhibits
+    )
     add(
-        "(a) no rebate-intensity exhibit estimated on a 2022+-only sample",
-        "PASS" if all_full else "FAIL",
+        "(a) no rebate-intensity exhibit estimated on a 2022+-only sample; "
+        "headline exhibits carry the dual scope (full window + 2022+ EV era)",
+        "PASS" if (full_ok and dual_ok) else "FAIL",
         f"{len(coeff_exhibits)} coefficient exhibits registered "
         f"(descriptive exhibits exempt); est_scope="
-        f"{sorted(set(e['est_scope'] for e in coeff_exhibits))} "
-        f"(full window {WINDOW_LO}..{WINDOW_HI}). 2022+ = interpretation only.",
+        f"{sorted(set(e['est_scope'] for e in coeff_exhibits))}. "
+        f"Verified dose varies in 2022-01..{WINDOW_HI} (45000->40000 at "
+        f"2024-01) so 2022+ is ALSO an estimation scope; full window remains "
+        f"primary. Dual-scope kinds: "
+        f"{[e['name'] for e in dual_exhibits]}.",
     )
 
     # ---- (b) price-equation demand regressor ----
@@ -374,11 +394,35 @@ def run_audit() -> pd.DataFrame:
         f"disallowed_inputs={disallowed if disallowed else 'none'}",
     )
 
+    # ---- (g) dose state under the verified policy (replaces the old
+    # flat-tail assertion, which is REMOVED: it would now hard-fail) ----
+    panel = pd.read_csv(D.PANEL)
+    full_doses = sorted(panel["dose_nominal_sgd"].unique().astype(int).tolist())
+    tail = panel[panel["month"] >= "2022-01"]["dose_nominal_sgd"]
+    tail_doses = sorted(tail.unique().astype(int).tolist())
+    ok_g = (full_doses == [20000, 25000, 40000, 45000]
+            and tail_doses == [40000, 45000]
+            and len(tail) == 41)
     add(
-        "SCOPE-FACT: effective treatment changes = 4 (2016-11, 2018-01, 2018-09, 2022-01)",
+        "(g) dose state (verified policy): 4 distinct in-window doses "
+        "{20000,25000,40000,45000}; 2022+ window has 2 distinct doses "
+        "{40000,45000} over 41 obs -> 2022+ IS a valid estimation scope "
+        "(old flat-tail rule REMOVED)",
+        "PASS" if ok_g else "FAIL",
+        f"full-window distinct={full_doses}; 2022-01..2025-05 distinct="
+        f"{tail_doses} (n={len(tail)}). Old flat-tail assertion "
+        f"('dose constant 2022-01..2025-05') removed per the verified-policy "
+        f"re-run.",
+    )
+
+    add(
+        "SCOPE-FACT: effective verified-policy dose steps = 3 "
+        "(2018-01, 2021-01, 2024-01) + 2022-01 ARF-floor-zero (tax) "
+        "+ 2022-01 97->110kW threshold (confounder)",
         "PASS",
-        "4 regime step dummies; low-power caveat: 4 events, 110 monthly obs "
-        "(113 months, 3 pandemic NA). Grades bounded accordingly (step 13).",
+        "4 in-window policy events; low-power caveat: full window 110 monthly "
+        "obs (113 months, 3 pandemic NA); 2022+ scope 41 obs. Grades bounded "
+        "accordingly (step 12).",
     )
 
     df = pd.DataFrame(rows)

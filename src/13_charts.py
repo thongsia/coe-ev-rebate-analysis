@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Step 14 (Batch C) — Charts + per-chart data tables.
+Step 14 (Batch C) — Charts + per-chart data tables. VERIFIED-POLICY RE-RUN.
 
 Produces 6 PNGs under charts/ and the matching underlying data table under
 tables/ for each. Every chart plots ONLY data that already exists upstream
@@ -9,17 +9,30 @@ causal exhibits. The corrected bids series (catA_bids_received_clean,
 reconstructed from data/raw/coe_results_raw.csv by src/00_data.py) is used
 everywhere the corrupted panel column would otherwise appear.
 
-Honest-findings rule: the charts VISUALLY show the negative-control failure
-(chart 1: market-wide 2022-01 shock, Cat C/D/E vs A) and the bounded /
-associational nature of the headline estimates (charts 5, 6). Nothing here is
-presented as a clean causal effect.
+Honest-findings rule: the charts VISUALLY show the negative-control verdicts
+(chart 1: 2022-01 market-wide shock, Cat C/D/E vs A, per scope) and the
+bounded / associational nature of the headline estimates (charts 5, 6).
+Nothing here is presented as a clean causal effect.
+
+Layout (same 6-chart structure, updated for the verified policy):
+  01  Cat A price (nominal + real) with the REAL policy markers (2018-01,
+      2021-01, 2022-01, 2024-01) + the 97->110kW confounder marker, and the
+      negative-control panel (per-scope: 2022-01 full window + 2024-01 EV era).
+  02  EV registrations + EV share (descriptive; lower-bound note).
+  03  dual-axis Cat A price vs CORRECTED Cat A bids received.
+  04  price-vs-demand scatter with fitted line + 95% CI band.
+  05  event-study coefficients with CIs for the 4 verified-policy events
+      (2018-01, 2021-01, 2022-01, 2024-01); pre-trend contamination annotated.
+  06  mediation path diagram with effect sizes for BOTH scopes (full window
+      + 2022+ EV era).
 
 Layering contract (read-only upstream):
   READS  data/processed/{panel_joint,cpi_deflated,ev_registrations}.csv,
          data/raw/coe_results_raw.csv (via the 00_data correction),
          tables/{negative_controls,event_study_coefficients,
                  event_study_prechecks,mediation_effects,
-                 demand_bidding_channel,price_equation,dose_summary,
+                 demand_bidding_channel,price_equation,
+                 price_equation_2022plus_robustness,dose_summary,
                  rebate_timeline}.csv
   WRITES charts/01..06 PNGs + tables/chart01..chart06 CSVs
   (writes NOTHING to data/ or to any earlier batch's file).
@@ -64,11 +77,11 @@ plt.rcParams.update(
 )
 
 MONTH = lambda s: pd.Period(s, freq="M").to_timestamp()  # noqa: E731
-REGIME_MARKS = [
-    ("2016-11", "CEVS uplift\n(plan; not corroborated as a step)"),
-    ("2018-01", "CEVS lapse\n(corroborated: ran thru 2017)"),
-    ("2018-09", "VES 'revival'\n(plan; VES actually from 2018-01)"),
-    ("2022-01", "EEAI/45% ARF rebate\n($7,500 anchor; real policy differs)"),
+# VERIFIED-POLICY markers (real Singapore policy — replaces the old plan marks)
+POLICY_MARKS = [
+    ("2018-01", "CEVS lapse / VES onset\n(dose 20000 est. -> 25000)"),
+    ("2021-01", "Enhanced VES + EEAI 45% ARF\ncap $20k (dose -> 45000)"),
+    ("2024-01", "EEAI cap 20k -> 15k\n(dose 45000 -> 40000)"),
 ]
 
 
@@ -77,8 +90,9 @@ def _p(s: str) -> pd.Timestamp:
 
 
 # ===========================================================================
-# Chart 1 — Cat A clearing price (nominal + real) with regime + confounder
-#            markers, and the negative-control (C/D/E vs A) comparison.
+# Chart 1 — Cat A clearing price (nominal + real) with REAL policy markers,
+#            the Jan-2022 confounder (ARF floor + 97->110kW threshold), and
+#            the negative-control comparison (per scope: 2022-01 + 2024-01).
 # ===========================================================================
 def chart01() -> None:
     panel = pd.read_csv(ROOT / "data/processed/panel_joint.csv")
@@ -93,17 +107,17 @@ def chart01() -> None:
     df = df[df["nominal"].notna()]  # drop 3 pandemic months
     df.to_csv(TABLES / "chart01_price_regime.csv", index=False)
 
-    fig, (ax1, ax2, ax3) = plt.subplots(
-        3, 1, figsize=(11, 9), sharex=False,
-        gridspec_kw={"height_ratios": [1, 1, 0.8]},
+    fig, (ax1, ax2, ax3, ax4) = plt.subplots(
+        4, 1, figsize=(11, 12), sharex=False,
+        gridspec_kw={"height_ratios": [1, 1, 0.8, 0.8]},
     )
     ax1.plot(df["ts"], df["nominal"], color="#1f4e79", lw=1.6,
              label="Cat A clearing price — nominal S$ (left)")
     ax1.set_ylabel("Nominal S$")
     ax1.set_title(
-        "Chart 1 — Category A COE clearing price, 2016-01..2025-05\n"
-        "Regime step markers + Jan-2022 confounder; 2022-01 shock is MARKET-WIDE "
-        "(negative-control FAIL)",
+        "Chart 1 — Category A COE clearing price, 2016-01..2025-05 (VERIFIED-POLICY re-run)\n"
+        "Real policy markers (CEVS->VES 2018, EEAI stack 2021, EEAI cap cut 2024); "
+        "2022-01 = $0 ARF floor (tax) + 97->110kW threshold (market-wide confounder)",
     )
     ax2.plot(df["ts"], df["real"], color="#b23b3b", lw=1.6,
              label="Cat A clearing price — real S$ (2024 base; CPI All Items)")
@@ -111,14 +125,18 @@ def chart01() -> None:
     ax2.set_xlabel("Month")
 
     for ax in (ax1, ax2):
-        for m, lab in REGIME_MARKS:
+        for m, lab in POLICY_MARKS:
             x = _p(m)
             ax.axvline(x, color="gray", ls=":", lw=1, alpha=0.8)
-        # confounder marker, emphasised
+            ax.annotate(lab, xy=(x, ax.get_ylim()[1] * 0.985),
+                        xytext=(0, 0), textcoords="offset points",
+                        fontsize=7.2, color="#444444", ha="left")
+        # confounder marker (2022-01), emphasised
         x = _p("2022-01")
         ax.axvline(x, color="#b23b3b", ls="--", lw=1.4, alpha=0.9)
         ax.annotate(
-            "CONFUNDER: 97→110kW Cat A threshold change,\nco-timed 2022-01 (market-wide)",
+            "2022-01: $0 ARF floor for EVs (tax)\n+ 97->110kW Cat A threshold "
+            "(market-wide confounder)",
             xy=(x, ax.get_ylim()[1] * 0.97), xytext=(x, ax.get_ylim()[1] * 0.88),
             fontsize=8, color="#b23b3b",
             arrowprops=dict(arrowstyle="->", color="#b23b3b", lw=1),
@@ -127,34 +145,53 @@ def chart01() -> None:
     ax1.legend(loc="upper left")
     ax2.legend(loc="upper left")
 
-    # --- negative-control comparison: % 2022-01 jump per category (dedicated panel) ---
+    # --- negative-control comparison: % jump per category, PER SCOPE ---
     nc = pd.read_csv(TABLES / "negative_controls.csv")
-    rows = [r for r in nc.itertuples() if str(r.term) == "reg_eeai_202201"]
-    cats = [r.category for r in rows]
-    pcts = [r.coef_pct_of_mean for r in rows]
     colours = ["#1f4e79", "#8a8a8a", "#b23b3b", "#b23b3b", "#b23b3b"]
     labels = [
         "A (EV-eligible, MAIN)", "B (contaminated upper bound)",
         "C — CLEAN control (no EV rebate)", "D — CLEAN control (no EV rebate)",
         "E — CLEAN control (no EV rebate)",
     ]
-    ax3.bar(cats, pcts, width=0.6, color=colours, alpha=0.85, zorder=3)
-    ax3.set_xticks(range(len(cats)), labels)
-    ax3.set_ylabel("% 2022-01 jump")
-    ax3.set_title("Negative-control check — 2022-01 price jump by category (from negative_controls.csv)")
-    for i, v in enumerate(pcts):
-        ax3.annotate(
-            f"{v:+.1f}%", xy=(i, v),
-            xytext=(0, 6 if v >= 0 else -14), textcoords="offset points",
-            ha="center", fontsize=8.5,
-        )
-    ax3.annotate(
-        "NEGATIVE-CONTROL FAIL:\nclean controls C/D/E show the SAME or LARGER\n"
-        "2022-01 jump (13.7 / 41.8 / 36.4%) vs A (10.1%)\n→ market-wide common shock, "
-        "NOT an EV-rebate-specific effect",
-        xy=(0.01, 0.03), xycoords="axes fraction", ha="left", va="bottom",
-        fontsize=8.5, color="#b23b3b",
-        bbox=dict(boxstyle="round", fc="white", ec="#b23b3b", alpha=0.95),
+
+    def nc_panel(ax, term, title):
+        rows = [r for r in nc.itertuples()
+                if str(r.term) == term and str(r.scope) == "full_window"
+                and str(r.spec) == "dummy"]
+        if not rows and term == "reg_eeai_cap15k_202401":
+            rows = [r for r in nc.itertuples()
+                    if str(r.term) == term and str(r.scope) == "ev_era_2022plus"
+                    and str(r.spec) == "dummy"]
+        cats = [r.category for r in rows]
+        pcts = [r.coef_pct_of_mean for r in rows]
+        ax.bar(cats, pcts, width=0.6, color=colours, alpha=0.85, zorder=3)
+        ax.set_xticks(range(len(cats)), labels)
+        ax.set_ylabel("% jump")
+        ax.set_title(title)
+        for i, v in enumerate(pcts):
+            ax.annotate(
+                f"{v:+.1f}%", xy=(i, v),
+                xytext=(0, 6 if v >= 0 else -14), textcoords="offset points",
+                ha="center", fontsize=8.5,
+            )
+
+    nc_panel(ax3, "reg_arffloor_zero_202201",
+             "Negative-control check — 2022-01 price jump by category "
+             "(full window; $0 ARF floor + 97->110kW threshold, market-wide)")
+    nc_panel(ax4, "reg_eeai_cap15k_202401",
+             "Negative-control check — 2024-01 EEAI cap-cut step by category "
+             "(2022+ EV era, dose 45000->40000; EV-rebate variation only)")
+
+    verdicts = []
+    for line in (TABLES / "negative_controls.csv").read_text().splitlines():
+        if line.startswith("# VERDICT"):
+            verdicts.append(line)
+    verdict_txt = "  ".join(v[len("# VERDICT "):] for v in verdicts)
+    ax4.annotate(
+        verdict_txt[:380],
+        xy=(0.01, 0.02), xycoords="axes fraction", ha="left", va="bottom",
+        fontsize=7.0, color="#222222",
+        bbox=dict(boxstyle="round", fc="white", ec="#888888", alpha=0.95),
     )
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
     ax1.xaxis.set_major_locator(mdates.YearLocator())
@@ -183,13 +220,18 @@ def chart02() -> None:
     ax1.set_ylabel("EV registrations (per month)")
     ax1.set_title(
         "Chart 2 — EV registrations & EV share of registrations, 2022-07..2025-05\n"
-        "DESCRIPTIVE ONLY — no within-window rebate variation (EEAI constant); "
-        "ev_reg is a lower bound",
+        "DESCRIPTIVE ONLY — observed window: combined dose flat 45000 (2022-01..2023-12) "
+        "then 40000 (2024-01+); series too short/censored for a coefficient; ev_reg is a lower bound",
     )
     ax2 = ax1.twinx()
     ax2.plot(ev["ts"], ev["ev_share"] * 100, color="#1f4e79", lw=1.8,
              marker="o", ms=3, label="EV share of registrations (%)")
     ax2.set_ylabel("EV share of registrations (%)")
+    # mark the 2024-01 dose step
+    ax1.axvline(_p("2024-01"), color="#b26a00", ls="--", lw=1.2, alpha=0.8)
+    ax1.annotate("2024-01: EEAI cap 20k->15k (dose 45000->40000)",
+                 xy=(_p("2024-02"), ax1.get_ylim()[1] * 0.97), fontsize=7.5,
+                 color="#b26a00")
     ax1.legend(loc="upper left")
     ax2.legend(loc="center left")
     # coverage lower-bound note
@@ -242,11 +284,13 @@ def chart03() -> None:
     ax2.plot(df["ts"], df["catA_bids_received_clean"], color="#b23b3b", lw=1.4,
              label="Cat A bids received (corrected, right)")
     ax2.set_ylabel("Cat A bids received")
-    # shade the 2022+ interpretation window
+    # shade the 2022+ EV era (now also an ESTIMATION scope)
     ax1.axvspan(_p("2022-01"), df["ts"].max(), color="orange", alpha=0.07, zorder=0)
+    ax1.axvline(_p("2024-01"), color="#b26a00", ls="--", lw=1.0, alpha=0.7)
     ax1.annotate(
-        "2022-01 EV-relevant\ninterpretation window",
-        xy=(_p("2022-06"), ax1.get_ylim()[1] * 0.97), fontsize=8, color="#b26a00",
+        "2022-01+ EV era = ALSO an estimation scope\n"
+        "(verified dose varies 45000->40000 at 2024-01)",
+        xy=(_p("2022-05"), ax1.get_ylim()[1] * 0.97), fontsize=8, color="#b26a00",
     )
     ax1.legend(loc="upper left")
     ax2.legend(loc="lower right")
@@ -333,8 +377,8 @@ def chart04() -> None:
     ax.set_ylabel("Cat A clearing price (nominal S$)")
     ax.set_title(
         "Chart 4 — Cat A price vs demand: scatter + fitted line + 95% CI\n"
-        "BIVARIATE association only (no controls); price equation's own demand "
-        "regressor is lagged & not significant (demand_l1 p=0.225)",
+        "BIVARIATE association only (no controls); see the price equation for the "
+        "demand term's own (lags, controls) significance",
     )
     ax.legend(loc="upper left", fontsize=8)
     fig.tight_layout()
@@ -344,7 +388,7 @@ def chart04() -> None:
 
 
 # ===========================================================================
-# Chart 5 — event-study coefficients with CIs (episode structure per Batch B)
+# Chart 5 — event-study coefficients with CIs (4 verified-policy events)
 # ===========================================================================
 def chart05() -> None:
     es = pd.read_csv(TABLES / "event_study_coefficients.csv")
@@ -357,25 +401,32 @@ def chart05() -> None:
             return -int(term.split("_")[-1])
         if term == "onset_0":
             return 0
-        # lag groups
         m = {
-            "lag_1_9": 1, "lag_10_22": 4, "lag_23_plus": 8,
-            "lag_1_6": 1, "lag_7_17": 4, "lag_18_plus": 9,
+            "lag_1_6": 1, "lag_7_12": 4, "lag_13_plus": 8,
+            "lag_1_12": 4, "lag_13_plus": 8,
+            "lag_7_plus": 6,
         }
-        return m[term]
+        return m.get(term, 1)
 
     episodes = [
-        ("2016-2018_episode_total_low_emission",
-         "Episode 1 — TOTAL/low-emission demand (2016-11 onset)\n[NOT EV-specific]"),
-        ("2022-01_eeai_rebate_PLUS_threshold_bounded",
-         "Episode 2 — EEAI rebate + 97→110kW threshold (2022-01 onset)\n[COMBINED / BOUNDED — co-timed confounder]"),
+        ("2018-01_cevs_lapse_VES_onset",
+         "Event 1 — CEVS lapse / VES onset (2018-01): dose 20000 (CEVS est.) "
+         "-> 25000 (VES A1, verified)"),
+        ("2021-01_enhanced_VES_EEAI_stack",
+         "Event 2 — Enhanced VES + EEAI (2021-01): dose 25000 -> 45000 "
+         "(verified stack); EV-relevant from here on"),
+        ("2022-01_ARF_floor_zero_PLUS_threshold_bounded",
+         "Event 3 — $0 ARF floor (TAX; dose unchanged) + 97->110kW threshold "
+         "(confounder) (2022-01) [COMBINED / BOUNDED]"),
+        ("2024-01_eeai_cap15k_step",
+         "Event 4 — EEAI cap cut 20k -> 15k (2024-01): dose 45000 -> 40000 "
+         "(verified; the EV-era step)"),
     ]
-    fig, axes = plt.subplots(2, 1, figsize=(11, 8), sharex=True)
+    fig, axes = plt.subplots(4, 1, figsize=(11, 13), sharex=True)
     for ax, (ep, title) in zip(axes, episodes):
         sub = es[es["episode"] == ep].copy()
         sub["x"] = sub["term"].map(xpos)
         sub = sub.sort_values("x")
-        cols = []
         for r in sub.itertuples():
             if r.role == "lead":
                 c = "#b23b3b"   # contaminated pre-trend
@@ -383,7 +434,6 @@ def chart05() -> None:
                 c = "#2e7d32"
             else:
                 c = "#1f4e79"
-            cols.append(c)
             ax.errorbar(
                 r.x, r.coef / 1000,
                 yerr=[[r.coef / 1000 - r.ci_lo / 1000], [r.ci_hi / 1000 - r.coef / 1000]],
@@ -392,34 +442,35 @@ def chart05() -> None:
             ax.annotate(
                 f"{r.term}\np={r.p:.1e}", xy=(r.x, r.coef / 1000),
                 xytext=(0, 12 if r.coef >= 0 else -18), textcoords="offset points",
-                ha="center", fontsize=6.6, color=c,
+                ha="center", fontsize=6.4, color=c,
             )
         ax.axhline(0, color="black", lw=0.8)
         ax.axvline(0, color="gray", ls="--", lw=1)
         ax.set_title(title, fontsize=9.5)
         ax.set_ylabel("coef (S$ thousands)")
 
-    # pre-trend contamination verdict (from prechecks + onset coef, verbatim)
-    onset22 = es[(es["episode"] == "2022-01_eeai_rebate_PLUS_threshold_bounded")
-                 & (es["term"] == "onset_0")].iloc[0]
-    p22 = pre[pre["episode"] == "2022-01_eeai_rebate_PLUS_threshold_bounded"].iloc[0]
-    axes[-1].annotate(
-        f"PRE-TREND CONTAMINATED (pre_trend_clean={p22['pre_trend_clean']}; leads ≠ 0; "
-        "a secular COE trend is present) ⇒ the 2022-01 "
-        f"onset +{onset22['coef']/1000:.1f}k S$ [CI95 {onset22['ci_lo']/1000:.1f}k, "
-        f"{onset22['ci_hi']/1000:.1f}k] is co-timed with the 97→110kW threshold change: "
-        "a BOUND, not a clean causal jump. Reported honestly.",
-        xy=(0.99, 0.03), xycoords="axes fraction", ha="right", va="bottom", fontsize=8,
-        color="#b23b3b",
-        bbox=dict(boxstyle="round", fc="white", ec="#b23b3b", alpha=0.95),
-    )
-    axes[0].annotate(
-        "CONTAMINATED pre-trend (leads significant & non-zero) ⇒ onset effect is a "
-        "BOUND relative to a moving pre-trend. Reported honestly.",
-        xy=(0.99, 0.04), xycoords="axes fraction", ha="right", va="bottom", fontsize=8,
-        color="#b23b3b",
-        bbox=dict(boxstyle="round", fc="white", ec="#b23b3b", alpha=0.95),
-    )
+    # pre-trend verdicts (from prechecks, verbatim) — annotate each panel
+    for ax, (ep, _title) in zip(axes, episodes):
+        p = pre[pre["episode"] == ep]
+        if not len(p):
+            continue
+        p = p.iloc[0]
+        onset = es[(es["episode"] == ep) & (es["term"] == "onset_0")]
+        onset_txt = ""
+        if len(onset):
+            o = onset.iloc[0]
+            onset_txt = (f" onset {o['coef']/1000:+.1f}k S$ "
+                         f"[{o['ci_lo']/1000:+.1f}k, {o['ci_hi']/1000:+.1f}k]")
+        ax.annotate(
+            f"pre_trend_clean={p['pre_trend_clean']}{onset_txt}; "
+            + p["pre_trend_interpretation"][:120],
+            xy=(0.99, 0.03), xycoords="axes fraction", ha="right", va="bottom",
+            fontsize=7.4,
+            color="#b23b3b" if not p["pre_trend_clean"] else "#2e7d32",
+            bbox=dict(boxstyle="round", fc="white",
+                      ec="#b23b3b" if not p["pre_trend_clean"] else "#2e7d32",
+                      alpha=0.95),
+        )
     axes[-1].set_xlabel("Relative month to onset (leads < 0 = before, 0 = onset, lags > 0 = after)")
     fig.tight_layout()
     fig.savefig(CHARTS / "05_event_study.png")
@@ -428,55 +479,55 @@ def chart05() -> None:
 
 
 # ===========================================================================
-# Chart 6 — mediation path diagram with effect sizes (numbers from tables)
+# Chart 6 — mediation path diagram with effect sizes (BOTH scopes)
 # ===========================================================================
 def chart06() -> None:
     med = pd.read_csv(TABLES / "mediation_effects.csv")
     # drop embedded comment/metadata rows (columns parsed as str because of them)
-    med = med[med["effect"].astype(str).str.strip().str.match(r"^(total|indirect|direct|mediated_share)$")].copy()
+    med = med[med["effect"].astype(str).str.strip()
+              .str.match(r"^(total|indirect|direct|mediated_share)$")].copy()
     for c in ("estimate", "ci_lo", "ci_hi"):
         med[c] = pd.to_numeric(med[c], errors="coerce")
     bid = pd.read_csv(TABLES / "demand_bidding_channel.csv")
     pe = pd.read_csv(TABLES / "price_equation.csv")
+    pe22 = pd.read_csv(TABLES / "price_equation_2022plus_robustness.csv")
     med.to_csv(TABLES / "chart06_mediation_effects.csv", index=False)
 
-    def get(df, term, spec=None, price_def=None):
+    def get(df, term, spec=None, price_def=None, scope=None):
         sub = df[df["term"] == term]
         if spec:
             sub = sub[sub["spec"] == spec]
         if price_def:
             sub = sub[sub["price_def"] == price_def]
+        if scope:
+            sub = sub[sub["scope"] == scope]
         return sub.iloc[0]
 
-    a = get(bid, "reg_eeai_202201", spec="dummy")            # rebate -> demand (HC1)
-    a_hac = get(bid, "reg_eeai_202201", spec="dummy_HAC")    # same, HAC SEs
-    dose_a = get(bid, "dose_1000", spec="dose")
+    # full window: a = dose -> demand (bidding channel, dose spec),
+    # b = demand_l1 -> price (M1 primary, nominal)
+    a = get(bid, "dose_1000", spec="dose")
+    a_hac = get(bid, "dose_1000", spec="dose_HAC")
     b = get(pe, "demand_l1", spec="M1_primary_lagged_dum", price_def="nominal")
-    total = med[med["effect"] == "total"].iloc[0]
-    indirect = med[med["effect"] == "indirect"].iloc[0]
-    direct = med[med["effect"] == "direct"].iloc[0]
-    share = med[med["effect"] == "mediated_share"].iloc[0]
+    # EV era: E1 dose specs (price side in the 2022+ table)
+    e1_bid = get(bid, "dose_1000", spec="E1_ev_era_dose")
+    e1_price = get(pe22, "dose_1000", spec="E1_ev_era_lagged_dose", price_def="nominal")
+    m_full = med[med["scope"] == "full_window"].set_index("effect")
+    m_ev = med[med["scope"] == "ev_era_2022plus"].set_index("effect")
 
-    fig, ax = plt.subplots(figsize=(11, 6.5))
+    fig, ax = plt.subplots(figsize=(12, 9))
     ax.set_xlim(0, 10)
-    ax.set_ylim(0, 7)
+    ax.set_ylim(0, 10)
     ax.axis("off")
     ax.set_title(
-        "Chart 6 — Mediation path: rebate → Cat A bidding demand → Cat A price\n"
-        "Full-window estimable scope 2016-01..2025-05; headline read = 2022+ interpretation "
-        "(NEVER a 2022+-only estimate). Effect sizes copied from tables/.",
+        "Chart 6 — Mediation path: rebate → Cat A bidding demand → Cat A price (BOTH scopes)\n"
+        "Full window (primary; 2016-01..2025-05) AND 2022+ EV era (2022-01..2025-05; 41 obs; "
+        "dose 45000->40000 at 2024-01 → estimable). Effect sizes copied from tables/.",
         fontsize=10,
     )
 
-    # nodes
-    nodes = {
-        "rebate": (1.2, 3.5, "EV rebate\n(dose, S$)\n4 regime steps;\ndose flat 7500\n2022-01..2025-05"),
-        "demand": (5.0, 3.5, "Cat A bidding\ndemand\n(catA_bids_received_clean)\nTOTAL (non-EV-dominated)"),
-        "price": (8.8, 3.5, "Cat A COE\nclearing\nprice\n(nominal S$)"),
-    }
-    for k, (x, y, lab) in nodes.items():
-        ax.add_patch(plt.Rectangle((x - 1.15, y - 1.0), 2.3, 2.0,
-                                   fc="#e8f0fe", ec="#1f4e79", lw=1.5))
+    def node(x, y, w, h, lab, color="#e8f0fe"):
+        ax.add_patch(plt.Rectangle((x - w / 2, y - h / 2), w, h,
+                                   fc=color, ec="#1f4e79", lw=1.5))
         ax.text(x, y, lab, ha="center", va="center", fontsize=8)
 
     def arrow(x1, y1, x2, y2, color):
@@ -484,44 +535,99 @@ def chart06() -> None:
                                      arrowstyle="-|>", mutation_scale=18,
                                      lw=2, color=color))
 
-    # a: rebate -> demand (mediator path)
-    arrow(2.35, 4.2, 3.85, 4.2, "#b23b3b")
-    ax.text(3.1, 4.55,
-            f"a = {a['coef']:+.0f} bids\n(dose/1000: {dose_a['coef']:+.1f} bids)\n"
-            f"HAC p={a_hac['p']:.3f} → NOT robust (HC1 p={a['p']:.3f})",
-            ha="center", fontsize=8, color="#b23b3b",
+    # --- FULL-WINDOW block (top) ---
+    ax.text(5.0, 9.5, "FULL WINDOW (primary) — 2016-01..2025-05, ~109 obs, "
+            "dose 20000/25000/45000/40000", ha="center", fontsize=9,
+            fontweight="bold", color="#1f4e79")
+    node(1.3, 7.6, 2.2, 1.8,
+         "EV rebate\n(dose, S$)\n4 levels: 20k (CEVS est.),\n25k (VES), 45k (stack),\n40k (cap 15k)")
+    node(5.0, 7.6, 2.3, 1.8,
+         "Cat A bidding\ndemand\n(catA_bids_received_clean)\nTOTAL (non-EV-dominated)")
+    node(8.7, 7.6, 2.0, 1.8, "Cat A COE\nclearing\nprice\n(nominal S$)")
+    # a
+    arrow(2.4, 8.0, 3.9, 8.0, "#b23b3b")
+    ax.text(3.15, 8.45,
+            f"a = {a['coef']:+.1f} bids/1000S$\n(HAC p={a_hac['p']:.3f}; "
+            f"HC1 p={a['p']:.3f})",
+            ha="center", fontsize=7.4, color="#b23b3b",
             bbox=dict(boxstyle="round", fc="white", ec="#b23b3b", alpha=0.9))
-    # b: demand -> price
-    arrow(6.15, 4.2, 7.65, 4.2, "#1f4e79")
-    ax.text(6.9, 4.55,
-            f"b = {b['coef']:+.2f} S$/bid (lag-1)\nCI95 [{b['ci_lo']:.2f}, {b['ci_hi']:.2f}]\n"
-            f"p={b['p']:.3f} → not significant",
-            ha="center", fontsize=8, color="#1f4e79",
+    # b
+    arrow(6.15, 8.0, 7.7, 8.0, "#1f4e79")
+    ax.text(6.95, 8.45,
+            f"b = {b['coef']:+.2f} S$/bid (lag-1)\n[{b['ci_lo']:+.2f}, "
+            f"{b['ci_hi']:+.2f}] p={b['p']:.3f}",
+            ha="center", fontsize=7.4, color="#1f4e79",
             bbox=dict(boxstyle="round", fc="white", ec="#1f4e79", alpha=0.9))
-    # total: rebate -> price (direct, top)
-    arrow(2.35, 4.7, 7.65, 4.7, "#2e7d32")
-    ax.text(5.0, 5.15,
-            f"TOTAL (rebate → price) = {total['estimate']:+.0f} S$/1000S$ dose\n"
-            f"CI95 [{total['ci_lo']:+.0f}, {total['ci_hi']:+.0f}]  "
-            f"(indirect CI [{indirect['ci_lo']:+.0f}, {indirect['ci_hi']:+.0f}])",
-            ha="center", fontsize=9, color="#2e7d32",
+    # total (top arrow)
+    arrow(2.4, 8.5, 7.7, 8.5, "#2e7d32")
+    ax.text(5.0, 8.95,
+            f"TOTAL (full) = {m_full.loc['total','estimate']:+.0f} S$/1000S$ "
+            f"[{m_full.loc['total','ci_lo']:+.0f}, {m_full.loc['total','ci_hi']:+.0f}]",
+            ha="center", fontsize=8, color="#2e7d32",
             bbox=dict(boxstyle="round", fc="white", ec="#2e7d32", alpha=0.95))
-    # direct (holding demand fixed), bottom
-    arrow(2.35, 2.6, 7.65, 2.6, "gray")
-    ax.text(5.0, 2.15,
-            f"direct (holding demand fixed) = {direct['estimate']:+.0f} S$/1000S$ "
-            f"(point estimate)",
-            ha="center", fontsize=8, color="gray",
+    # direct (bottom arrow)
+    arrow(2.4, 7.2, 7.7, 7.2, "gray")
+    ax.text(5.0, 6.85,
+            f"direct (full) = {m_full.loc['direct','estimate']:+.0f} S$/1000S$ "
+            f"(point est.)",
+            ha="center", fontsize=7.4, color="gray",
             bbox=dict(boxstyle="round", fc="white", ec="gray", alpha=0.9))
-    # mediated share verdict
+    # verdict full
     ax.text(
-        5.0, 0.75,
-        f"MEDIATED SHARE (indirect/total) = {share['estimate']:+.3f}  "
-        f"(CI95 [{share['ci_lo']:+.3f}, {share['ci_hi']:+.3f}]) → CI spans 0.\n"
-        "VERDICT: the price effect is NOT routed through Cat A bidding demand "
-        "(bidding-channel mediation is NULL). Grade: not detectable.",
-        ha="center", fontsize=9, color="#b23b3b",
+        5.0, 6.35,
+        f"MEDIATED SHARE (full) = {m_full.loc['mediated_share','estimate']:+.3f} "
+        f"(CI95 [{m_full.loc['mediated_share','ci_lo']:+.3f}, "
+        f"{m_full.loc['mediated_share','ci_hi']:+.3f}]); "
+        f"indirect = {m_full.loc['indirect','estimate']:+.1f} "
+        f"[{m_full.loc['indirect','ci_lo']:+.1f}, {m_full.loc['indirect','ci_hi']:+.1f}]. "
+        "VERDICT: see report (CI spans 0 ⇒ NOT routed through bidding).",
+        ha="center", fontsize=7.6, color="#b23b3b",
         bbox=dict(boxstyle="round", fc="#fff5f5", ec="#b23b3b", lw=1.5, alpha=0.97),
+    )
+
+    # --- EV-ERA block (bottom) ---
+    ax.text(5.0, 5.6, "2022+ EV ERA — 2022-01..2025-05, 41 obs, dose 45000 -> 40000 "
+            "at 2024-01 (NOW ESTIMABLE; old flat-tail rule removed)",
+            ha="center", fontsize=9, fontweight="bold", color="#b26a00")
+    node(1.3, 3.7, 2.2, 1.8,
+         "EV rebate\n(dose, S$)\n2 levels:\n45000 (2022-23),\n40000 (2024+)")
+    node(5.0, 3.7, 2.3, 1.8,
+         "Cat A bidding\ndemand\n(catA_bids_received_clean)\nTOTAL (non-EV-dominated)")
+    node(8.7, 3.7, 2.0, 1.8, "Cat A COE\nclearing\nprice\n(nominal S$)")
+    arrow(2.4, 4.1, 3.9, 4.1, "#b23b3b")
+    ax.text(3.15, 4.55,
+            f"a = {e1_bid['coef']:+.1f} bids/1000S$\n(p={e1_bid['p']:.3f})",
+            ha="center", fontsize=7.4, color="#b23b3b",
+            bbox=dict(boxstyle="round", fc="white", ec="#b23b3b", alpha=0.9))
+    arrow(6.15, 4.1, 7.7, 4.1, "#1f4e79")
+    ax.text(6.95, 4.55,
+            f"dose->price (E1) = {e1_price['coef']:+.1f} S$/1000S$\n"
+            f"[{e1_price['ci_lo']:+.1f}, {e1_price['ci_hi']:+.1f}] "
+            f"p={e1_price['p']:.3f}",
+            ha="center", fontsize=7.4, color="#1f4e79",
+            bbox=dict(boxstyle="round", fc="white", ec="#1f4e79", alpha=0.9))
+    arrow(2.4, 4.6, 7.7, 4.6, "#2e7d32")
+    ax.text(5.0, 5.05,
+            f"TOTAL (EV era) = {m_ev.loc['total','estimate']:+.0f} S$/1000S$ "
+            f"[{m_ev.loc['total','ci_lo']:+.0f}, {m_ev.loc['total','ci_hi']:+.0f}]",
+            ha="center", fontsize=8, color="#2e7d32",
+            bbox=dict(boxstyle="round", fc="white", ec="#2e7d32", alpha=0.95))
+    arrow(2.4, 3.3, 7.7, 3.3, "gray")
+    ax.text(5.0, 2.95,
+            f"direct (EV era) = {m_ev.loc['direct','estimate']:+.0f} S$/1000S$ "
+            f"(point est.)",
+            ha="center", fontsize=7.4, color="gray",
+            bbox=dict(boxstyle="round", fc="white", ec="gray", alpha=0.9))
+    ax.text(
+        5.0, 2.45,
+        f"MEDIATED SHARE (EV era) = {m_ev.loc['mediated_share','estimate']:+.3f} "
+        f"(CI95 [{m_ev.loc['mediated_share','ci_lo']:+.3f}, "
+        f"{m_ev.loc['mediated_share','ci_hi']:+.3f}]); "
+        f"indirect = {m_ev.loc['indirect','estimate']:+.1f} "
+        f"[{m_ev.loc['indirect','ci_lo']:+.1f}, {m_ev.loc['indirect','ci_hi']:+.1f}]. "
+        "41 obs, 2 dose levels → LOW POWER: wide CIs; associational, not causal.",
+        ha="center", fontsize=7.6, color="#b26a00",
+        bbox=dict(boxstyle="round", fc="#fffaf0", ec="#b26a00", lw=1.5, alpha=0.97),
     )
     fig.tight_layout()
     fig.savefig(CHARTS / "06_mediation_diagram.png")

@@ -1,18 +1,23 @@
 #!/usr/bin/env python3
 """
-Step 11 — event study (per the episode discipline).
+Step 11 — event study (per the verified-policy re-run; 4 in-window events).
 
-Episodes (per the saturated Dory spec):
-  * 2016-2018 episode : the three closely-spaced changes (Nov-2016 up,
-    Jan-2018 down, Sep-2018 up, spaced <15 months) are treated as ONE
-    episode, anchored at its first change (2016-11). Interpreted as
-    TOTAL / LOW-EMISSION demand -- NEVER EV-specific (there is no EV signal
-    pre-2022).
-  * Jan-2022 event    : co-occurs with the 97->110kW Cat A threshold change.
-    The threshold dummy is numerically identical to a 2022-01+ step, so it
-    would be perfectly collinear with the post-onset event dummies; we
-    therefore BOUND interpretation -- the Jan-2022 event-study coefficients
-    reflect the COMBINED rebate + threshold effect, not the rebate alone.
+VERIFIED-POLICY EVENTS (all four are real, cited policy changes — the old
+stylized '2016-2018 episode' construct is replaced by the two real early
+events):
+  * 2018-01 : CEVS lapse + VES onset (dose 20000 (CEVS est.) -> 25000 (VES A1,
+    verified)). TOTAL / low-emission + early-clean demand era — NOT yet EV-
+    specific at scale.
+  * 2021-01 : Enhanced VES + EEAI introduction (dose 25000 -> 45000; verified
+    stack). EV-relevant from here on.
+  * 2022-01 : $0 ARF floor for EVs (TAX provision, dose UNCHANGED) + the
+    97->110kW Category A threshold change (confounder). The threshold confounder
+    control is kept for this event: under the verified schedule the dose does
+    NOT step at 2022-01, so a 2022-01 price move is read as the ARF-floor /
+    threshold / market dynamics, NOT a rebate step — the event study tests
+    exactly that.
+  * 2024-01 : EEAI cap cut 20k -> 15k (dose 45000 -> 40000; verified). The
+    EV-era step that makes the 2022+ window estimable.
 
 Each event-study regression is estimated on a window that SPANS pre- AND
 post-treatment months (so LEADS are defined):
@@ -20,21 +25,24 @@ post-treatment months (so LEADS are defined):
     * leads      : L monthly dummies immediately before onset (pre-trend test)
     * onset      : the treatment month
     * lags       : bucketed post-onset dummies
-plus controls (linear time trend, Cat A quota, CPI). The dependent variable is
-the Cat A clearing price (nominal), consistent with the price equation.
+plus controls (Cat A quota, CPI — no linear trend: the pre-base reference
+group carries the pre-onset level and a separate trend is near-collinear with
+the event-time dummies once the pandemic gap breaks lead contiguity). The
+dependent variable is the Cat A clearing price (nominal), consistent with the
+price equation.
 
 Pre-trend verification: the lead coefficients are reported individually (with
 CIs) and JOINTLY (Wald test H0: all lead betas = 0). We report HONESTLY when a
 pre-existing trend contaminates the episode (a non-zero lead or a failed joint
 test is flagged, not papered over).
 
-The Jan-2026 cap cut lives in the COE-only extension (2025-06..2026-10) and is
-DESCRIPTIVE ONLY, bounded by the 2026 PARF cut + supply trough; it does NOT
-enter the joint-window event study.
+The Jan-2026 cap cut ($7,500 EEAI + $22,500 VES A1) and the 2027 EEAI cessation
+live in / beyond the COE-only extension (2025-06..2026-10) and are
+DESCRIPTIVE ONLY; they do NOT enter the joint-window event study.
 
 Outputs:
-    tables/event_study_coefficients.csv   (per-episode event-time dummies, CIs)
-    tables/event_study_prechecks.csv      (pre-trend test results per episode)
+    tables/event_study_coefficients.csv   (per-event event-time dummies, CIs)
+    tables/event_study_prechecks.csv      (pre-trend test results per event)
 """
 
 from __future__ import annotations
@@ -63,6 +71,32 @@ CONTROLS = ["catA_quota", "cpi_all_items"]
 # pre-trend Wald constraint rank-deficient. The bucketed lag dummies absorb
 # the post-onset time structure.
 
+# The 4 in-window verified-policy events (onset, lead months, lag buckets,
+# label, interpretation)
+EVENTS = [
+    ("2018-01", 6,
+     [("lag_1_6", 1, 6), ("lag_7_12", 7, 12), ("lag_13_plus", 13, -1)],
+     "2018-01_cevs_lapse_VES_onset",
+     "VES onset (CEVS lapse): dose 20000 (CEVS est.) -> 25000 (VES A1, "
+     "verified); total/low-emission era — not yet EV-specific at scale"),
+    ("2021-01", 6,
+     [("lag_1_6", 1, 6), ("lag_7_12", 7, 12), ("lag_13_plus", 13, -1)],
+     "2021-01_enhanced_VES_EEAI_stack",
+     "Enhanced VES + EEAI (45% ARF, cap $20k): dose 25000 -> 45000 (verified "
+     "stack); EV-relevant from here on"),
+    ("2022-01", 6,
+     [("lag_1_6", 1, 6), ("lag_7_12", 7, 12), ("lag_13_plus", 13, -1)],
+     "2022-01_ARF_floor_zero_PLUS_threshold_bounded",
+     "$0 ARF floor for EVs (TAX, dose UNCHANGED) + 97->110kW Cat A threshold "
+     "(confounder, co-timed): any 2022-01 price move is the ARF-floor / "
+     "threshold / market dynamics, NOT a rebate step (bounded)"),
+    ("2024-01", 6,
+     [("lag_1_6", 1, 6), ("lag_7_plus", 7, -1)],
+     "2024-01_eeai_cap15k_step",
+     "EEAI cap cut 20k -> 15k: dose 45000 -> 40000 (verified); the EV-era "
+     "step that makes the 2022+ window estimable"),
+]
+
 
 def _month_index(df):
     """0-based month index from the 'YYYY-MM' column (true calendar months,
@@ -83,7 +117,7 @@ def build():
     return base, df
 
 
-def event_study(df, onset_month, lead_months, lag_buckets, label):
+def event_study(df, onset_month, lead_months, lag_buckets, label, interp):
     """Estimate an event-study with onset_month as the treatment start.
 
     lag_buckets: list of (name, first_offset, last_offset) in months relative
@@ -91,8 +125,6 @@ def event_study(df, onset_month, lead_months, lag_buckets, label):
     Returns (coef_df, precheck_dict).
     """
     onset_mi = df.loc[df["month"] == onset_month, "mi"].iloc[0]
-    lead_start = onset_mi - lead_months
-
     # event-time buckets
     t = df["mi"] - onset_mi
     # pre-base: t < -lead_months (reference)
@@ -191,12 +223,7 @@ def event_study(df, onset_month, lead_months, lag_buckets, label):
         "any_lead_p_lt_010": lead_sig,
         "pre_trend_clean": pre_trend_clean,
         "pre_trend_interpretation": interp_clean,
-        "interpretation": (
-            "TOTAL/low-emission demand episode; never EV-specific"
-            if label.startswith("2016") else
-            "rebate + co-timed 97->110kW threshold COMBINED (bounded); "
-            "EV-relevant from 2022-01"
-        ),
+        "interpretation": interp,
     }
     return pd.DataFrame(rows), precheck
 
@@ -207,68 +234,76 @@ def main():
 
     coef_rows = []
     pre_rows = []
-
-    # 2016-2018 episode (one episode, anchored at 2016-11)
-    c, p = event_study(
-        df, onset_month="2016-11", lead_months=6,
-        lag_buckets=[("lag_1_9", 1, 9), ("lag_10_22", 10, 22),
-                     ("lag_23_plus", 23, -1)],
-        label="2016-2018_episode_total_low_emission",
-    )
-    coef_rows.append(c)
-    pre_rows.append(p)
-
-    # Jan-2022 event (bounded: rebate + threshold combined)
-    c, p = event_study(
-        df, onset_month="2022-01", lead_months=6,
-        lag_buckets=[("lag_1_6", 1, 6), ("lag_7_17", 7, 17),
-                     ("lag_18_plus", 18, -1)],
-        label="2022-01_eeai_rebate_PLUS_threshold_bounded",
-    )
-    coef_rows.append(c)
-    pre_rows.append(p)
+    for onset, lead, buckets, label, interp in EVENTS:
+        c, p = event_study(df, onset_month=onset, lead_months=lead,
+                           lag_buckets=buckets, label=label, interp=interp)
+        coef_rows.append(c)
+        pre_rows.append(p)
 
     coef = pd.concat(coef_rows, ignore_index=True)
-    # de-dup lead rows (we appended them twice in event_study)
     coef = coef.drop_duplicates(subset=["episode", "term"], keep="last")
     coef = coef.sort_values(["episode", "role", "term"]).reset_index(drop=True)
     coef.to_csv(OUT_COEF, index=False)
 
     pre = pd.DataFrame(pre_rows)
-    # Jan-2026 descriptive note (COE-only extension; does not enter the model)
-    pre_note = pd.DataFrame([{
-        "episode": "2026-01_capcut_DESCRIPTIVE_ONLY",
-        "onset_month": "2026-01",
-        "lead_months": None,
-        "pre_base_months": None,
-        "n_obs": None,
-        "joint_leads_wald_F": None,
-        "joint_leads_wald_p": None,
-        "constraint_rank": None,
-        "constraint_rank_ok": None,
-        "any_lead_p_lt_010": None,
-        "pre_trend_clean": "NOT ESTIMATED (outside joint window)",
-        "pre_trend_interpretation": "n/a",
-        "interpretation": "Jan-2026 EEAI cap cut ($15k->$7.5k) lives in the "
-                          "COE-only extension 2025-06..2026-10; descriptive "
-                          "only, bounded by the 2026 PARF cut + supply trough. "
-                          "Does NOT enter the joint-window event study.",
-    }])
+    # Jan-2026 / 2027 descriptive notes (COE-only extension; do not enter the model)
+    pre_note = pd.DataFrame([
+        {
+            "episode": "2026-01_capcut_DESCRIPTIVE_ONLY",
+            "onset_month": "2026-01",
+            "lead_months": None,
+            "pre_base_months": None,
+            "n_obs": None,
+            "joint_leads_wald_F": None,
+            "joint_leads_wald_p": None,
+            "constraint_rank": None,
+            "constraint_rank_ok": None,
+            "any_lead_p_lt_010": None,
+            "pre_trend_clean": "NOT ESTIMATED (outside joint window)",
+            "pre_trend_interpretation": "n/a",
+            "interpretation": "Jan-2026 EEAI cap cut ($15k->$7.5k) + VES A1 "
+                              "$22,500 (combined dose 27500) live in the "
+                              "COE-only extension 2025-06..2026-10; descriptive "
+                              "only, bounded by the 2026 PARF cut + supply "
+                              "trough. Does NOT enter the joint-window event "
+                              "study.",
+        },
+        {
+            "episode": "2027-01_EEAI_cessation_DESCRIPTIVE_ONLY",
+            "onset_month": "2027-01",
+            "lead_months": None,
+            "pre_base_months": None,
+            "n_obs": None,
+            "joint_leads_wald_F": None,
+            "joint_leads_wald_p": None,
+            "constraint_rank": None,
+            "constraint_rank_ok": None,
+            "any_lead_p_lt_010": None,
+            "pre_trend_clean": "NOT ESTIMATED (beyond extension end 2026-10)",
+            "pre_trend_interpretation": "n/a",
+            "interpretation": "EEAI ceases 1 Jan 2027 (dose reverts to VES A1 "
+                              "$20,000, 2027 extension window). Beyond the data; "
+                              "documented for completeness only.",
+        },
+    ])
     pre = pd.concat([pre, pre_note], ignore_index=True)
     pre.to_csv(OUT_PRE, index=False)
 
     B.register_exhibit(
         name="event_study", kind="event_study",
         est_scope="2016-01..2025-05",
-        key_regressor="catA_clearing_price (event-time dummies on dose regime)",
-        interpretation_scope="2022-01..2025-05 (Jan-2022 event is the "
-                             "EV-relevant one; bounded by threshold)",
+        key_regressor="catA_clearing_price (event-time dummies on the 4 "
+                      "verified-policy events)",
+        interpretation_scope="2021-01..2025-05 (EV-relevant events); 2022-01 "
+                             "bounded by the $0 ARF floor + 97->110kW "
+                             "threshold confounder",
         n_obs=int(df["catA_clearing_price"].notna().sum()),
         event_spans_pre_post=True,
-        notes="2016-2018 = ONE episode (total/low-emission, never EV); Jan-2022 "
-              "co-timed with 97->110kW threshold -> bounded interpretation; "
-              "windows span pre+post so leads defined; pre-trends tested "
-              "jointly + individually; 2026 cap cut descriptive only.",
+        notes="4 verified-policy in-window events (2018-01, 2021-01, 2022-01, "
+              "2024-01); 2022-01 = $0 ARF floor (tax) + threshold confounder, "
+              "bounded; windows span pre+post so leads defined; pre-trends "
+              "tested jointly + individually; 2026 cap cut + 2027 EEAI "
+              "cessation descriptive only.",
     )
 
     print(f"[event_study] wrote {OUT_COEF}  rows={len(coef)}")

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Step 15 (Batch C) — Independent verification pass.
+Step 15 (Batch C) — Independent verification pass. VERIFIED-POLICY RE-RUN.
 
 Re-confirms, from the files on disk (never from memory), that the pipeline's
 claims hold, and builds the report-figures checklist that Step 16's report
@@ -12,14 +12,26 @@ Checks:
   (b) every analysis month maps to real exercises (per-category audit-column
       sums == raw rows in window; the 3 pandemic NA months documented) and real
       registration rows (per-month rows_total == raw rows; EV totals reconcile)
-  (c) every rebate step date has a cited policy source in rebate_timeline.csv
+  (c) every VERIFIED rebate-step date has a cited policy source in
+      rebate_timeline.csv (2018-01, 2021-01, 2022-01, 2024-01; out-of-window
+      rows 2013-01 / 2026-01 / 2027-01 present and cited; deprecated plan rows
+      marked)
   (d) every report figure traces to a saved table (checklist below; written to
       tables/report_figures_checklist.csv)
-  (e) dose state: count of effective changes + distinct dose values (+ flat tail)
-  (f) no rebate-intensity exhibit estimated on a 2022+-only sample
+  (e) dose state: 3 effective verified-policy changes + distinct dose values
+      {20000, 25000, 40000, 45000}; NEW: 2022-01..2025-05 has >=2 (exactly 2)
+      distinct dose values -> 2022+ IS a valid estimation scope (old flat-tail
+      assertion REMOVED)
+  (f) rebate exhibits are estimated on the full window AND the headline
+      exhibits (price + bidding demand + mediation) are ALSO estimated on the
+      2022+ EV-era window (dual-scope, both scopes present in the tables; no
+      rank-deficient NA rows — the 2022+ window is estimable under the
+      verified dose)
   (g) price-equation demand regressor = corrected catA_bids_received (not ev_reg)
-  (h) mediated share computed on the full-window sample, 2022+ interpretation
-  (i) data-flow / layering contract held for the Batch-C modules
+  (h) mediated share computed on the full-window sample (primary) with the
+      2022+ EV-era scope reported alongside
+  (i) data-flow / layering contract held for the Batch-C modules (15_report
+      writes docs/REPORT.md + docs/STATS_SUMMARY.md)
 
 Writes tables/verification_report.csv (with an OVERALL PASS/FAIL row) and
 tables/report_figures_checklist.csv. Writes nothing to data/ and modifies no
@@ -147,32 +159,41 @@ def check_b() -> None:
 
 
 # ---------------------------------------------------------------------------
-# (c) every rebate step date matches a cited policy source
+# (c) every VERIFIED rebate step date has a cited policy source
 # ---------------------------------------------------------------------------
+REAL_STEP_MONTHS = ["2018-01", "2021-01", "2022-01", "2024-01"]
+OUT_OF_WINDOW_MONTHS = ["2013-01", "2026-01", "2027-01"]
+
+
 def check_c() -> None:
-    panel = pd.read_csv(PROC / "panel_joint.csv")
-    rt = pd.read_csv(TABLES / "rebate_timeline.csv")
-    step_cols = [
-        "reg_cevs_uplift_201611", "reg_cevs_lapse_201801",
-        "reg_ves_revival_201809", "reg_eeai_202201",
-    ]
+    rt_all = pd.read_csv(TABLES / "rebate_timeline.csv")
+    dep = rt_all[rt_all["programme"].astype(str).str.startswith("DEPRECATED")]
+    rt = rt_all[~rt_all["programme"].astype(str).str.startswith("DEPRECATED")]
     ok_all, details = True, []
-    for c in step_cols:
-        # effective month = first month where the dummy switches 0 -> 1
-        switch = panel.loc[(panel[c] == 1), "month"].iloc[0]
-        row = rt[rt["effective_month"] == switch]
+    for m in REAL_STEP_MONTHS:
+        row = rt[rt["effective_month"] == m]
         has_cite = (
-            len(row) == 1
-            and pd.notna(row["source_url"].iloc[0])
-            and str(row["source_url"].iloc[0]).startswith("http")
-            and pd.notna(row["verification"].iloc[0])
-            and len(str(row["verification"].iloc[0])) > 10
+            len(row) >= 1
+            and all(str(u).startswith("http") for u in row["source_url"])
+            and all(len(str(v)) > 10 for v in row["verification"])
+            and all(str(v).startswith(("VERIFIED", "CORROBORATED")) for v in row["verification"])
         )
-        ok_all &= has_cite
-        inw = str(row["in_joint_window"].iloc[0]) if len(row) else "ABSENT"
-        details.append(f"{c}@{switch}: cited={has_cite} in_joint_window={inw}")
-    add("c", "every rebate step date has a cited policy source (rebate_timeline.csv)",
-        ok_all, "; ".join(details))
+        inw = all(str(x).lower().startswith("yes") for x in row["in_joint_window"]) if len(row) else False
+        ok_all &= has_cite and inw
+        details.append(f"{m}: rows={len(row)} cited={has_cite} in_joint_window={inw}")
+    # out-of-window rows must be present and cited
+    oow_ok, oow_detail = True, []
+    for m in OUT_OF_WINDOW_MONTHS:
+        row = rt[rt["effective_month"] == m]
+        ok = len(row) >= 1 and all(str(u).startswith("http") for u in row["source_url"])
+        oow_ok &= ok
+        oow_detail.append(f"{m}: rows={len(row)} cited={ok}")
+    # deprecated plan rows must be marked deprecated (captured from rt_all above)
+    dep_ok = len(dep) >= 2
+    ok_all &= oow_ok and dep_ok
+    add("c", "every verified rebate-step date has a cited policy source (rebate_timeline.csv)",
+        ok_all, "; ".join(details) + " | out-of-window: " + "; ".join(oow_detail)
+        + f" | deprecated plan rows marked={dep_ok} (n={len(dep)})")
 
 
 # ---------------------------------------------------------------------------
@@ -181,171 +202,276 @@ def check_c() -> None:
 # Each entry: (fig_id, label, table, filter {col: value}, value_col, expected)
 # Filter comparison is exact on str(stripped) unless the value is numeric.
 CHECKLIST: list[tuple] = [
-    # --- headline price equation (price_equation.csv) ---
-    ("pe_headline_coef", "headline reg_eeai_202201 coef (nominal, M1 primary, HC1)",
-     "price_equation.csv",
-     {"term": "reg_eeai_202201", "spec": "M1_primary_lagged_dum", "price_def": "nominal", "cov_type": "HC1"},
-     "coef", 5880.369135737933),
-    ("pe_headline_ci_lo", "headline CI lo", "price_equation.csv",
-     {"term": "reg_eeai_202201", "spec": "M1_primary_lagged_dum", "price_def": "nominal", "cov_type": "HC1"},
-     "ci_lo", 443.59300908121895),
-    ("pe_headline_ci_hi", "headline CI hi", "price_equation.csv",
-     {"term": "reg_eeai_202201", "spec": "M1_primary_lagged_dum", "price_def": "nominal", "cov_type": "HC1"},
-     "ci_hi", 11317.145262394646),
-    ("pe_headline_p", "headline p (HC1)", "price_equation.csv",
-     {"term": "reg_eeai_202201", "spec": "M1_primary_lagged_dum", "price_def": "nominal", "cov_type": "HC1"},
-     "p", 0.034016185897268764),
-    ("pe_headline_hac_p", "headline p (HAC)", "price_equation.csv",
-     {"term": "reg_eeai_202201", "spec": "M1_primary_lagged_dum_HAC", "price_def": "nominal", "cov_type": "HAC"},
-     "p", 0.1039786),
+    # --- headline price equation, FULL WINDOW (price_equation.csv) ---
+    # dummy spec (M1 primary), nominal
+    ("pe_ves_coef", "VES-onset dummy coef (nominal, M1, HC1)", "price_equation.csv",
+     {"term": "reg_real_ves_201801", "spec": "M1_primary_lagged_dum", "price_def": "nominal", "cov_type": "HC1"},
+     "coef", -16580.9344981381),
+    ("pe_ves_p", "VES-onset dummy p", "price_equation.csv",
+     {"term": "reg_real_ves_201801", "spec": "M1_primary_lagged_dum", "price_def": "nominal", "cov_type": "HC1"},
+     "p", 2.7713660077025012e-09),
+    ("pe_evstack_coef", "EV-stack dummy coef (2021-01; dose 25000->45000)", "price_equation.csv",
+     {"term": "reg_real_evstack_202101", "spec": "M1_primary_lagged_dum", "price_def": "nominal", "cov_type": "HC1"},
+     "coef", 7666.11416137701),
+    ("pe_arffloor_coef", "2022-01 ARF-floor dummy coef (nominal, M1, HC1)", "price_equation.csv",
+     {"term": "reg_arffloor_zero_202201", "spec": "M1_primary_lagged_dum", "price_def": "nominal", "cov_type": "HC1"},
+     "coef", 3825.641620640139),
+    ("pe_arffloor_ci_lo", "ARF-floor CI lo", "price_equation.csv",
+     {"term": "reg_arffloor_zero_202201", "spec": "M1_primary_lagged_dum", "price_def": "nominal", "cov_type": "HC1"},
+     "ci_lo", -227.7881545829769),
+    ("pe_arffloor_ci_hi", "ARF-floor CI hi", "price_equation.csv",
+     {"term": "reg_arffloor_zero_202201", "spec": "M1_primary_lagged_dum", "price_def": "nominal", "cov_type": "HC1"},
+     "ci_hi", 7879.071395863255),
+    ("pe_arffloor_p", "ARF-floor p (HC1)", "price_equation.csv",
+     {"term": "reg_arffloor_zero_202201", "spec": "M1_primary_lagged_dum", "price_def": "nominal", "cov_type": "HC1"},
+     "p", 0.0643393433430473),
+    ("pe_cap15k_coef", "2024-01 EEAI cap-cut dummy coef (nominal, M1, HC1)", "price_equation.csv",
+     {"term": "reg_eeai_cap15k_202401", "spec": "M1_primary_lagged_dum", "price_def": "nominal", "cov_type": "HC1"},
+     "coef", -11972.24558703884),
+    ("pe_cap15k_ci_lo", "cap-15k CI lo", "price_equation.csv",
+     {"term": "reg_eeai_cap15k_202401", "spec": "M1_primary_lagged_dum", "price_def": "nominal", "cov_type": "HC1"},
+     "ci_lo", -21799.53670790389),
+    ("pe_cap15k_ci_hi", "cap-15k CI hi", "price_equation.csv",
+     {"term": "reg_eeai_cap15k_202401", "spec": "M1_primary_lagged_dum", "price_def": "nominal", "cov_type": "HC1"},
+     "ci_hi", -2144.954466173791),
+    ("pe_cap15k_p", "cap-15k p (HC1)", "price_equation.csv",
+     {"term": "reg_eeai_cap15k_202401", "spec": "M1_primary_lagged_dum", "price_def": "nominal", "cov_type": "HC1"},
+     "p", 0.016951606989936),
+    ("pe_cap15k_hac_p", "cap-15k p (HAC)", "price_equation.csv",
+     {"term": "reg_eeai_cap15k_202401", "spec": "M1_primary_lagged_dum_HAC", "price_def": "nominal", "cov_type": "HAC"},
+     "p", 0.0086006381527052),
+    ("pe_arffloor_real", "ARF-floor dummy coef (real, M1, HC1)", "price_equation.csv",
+     {"term": "reg_arffloor_zero_202201", "spec": "M1_primary_lagged_dum", "price_def": "real", "cov_type": "HC1"},
+     "coef", 5327.575749996559),
+    ("pe_arffloor_real_p", "ARF-floor p (real, HC1)", "price_equation.csv",
+     {"term": "reg_arffloor_zero_202201", "spec": "M1_primary_lagged_dum", "price_def": "real", "cov_type": "HC1"},
+     "p", 0.0172442191432382),
+    # dose spec (M3), nominal + real
     ("pe_dose_coef", "dose/1000 coef (nominal, M3, HC1)", "price_equation.csv",
      {"term": "dose_1000", "spec": "M3_lagged_dose", "price_def": "nominal", "cov_type": "HC1"},
-     "coef", 2348.817485021629),
-    ("pe_dose_p", "dose/1000 p (nominal, M3, HC1)", "price_equation.csv",
+     "coef", 598.9007731443369),
+    ("pe_dose_ci_lo", "dose CI lo", "price_equation.csv",
      {"term": "dose_1000", "spec": "M3_lagged_dose", "price_def": "nominal", "cov_type": "HC1"},
-     "p", 2.451135e-09),
+     "ci_lo", 361.1328798455544),
+    ("pe_dose_ci_hi", "dose CI hi", "price_equation.csv",
+     {"term": "dose_1000", "spec": "M3_lagged_dose", "price_def": "nominal", "cov_type": "HC1"},
+     "ci_hi", 836.6686664431193),
+    ("pe_dose_p", "dose p (nominal, M3, HC1)", "price_equation.csv",
+     {"term": "dose_1000", "spec": "M3_lagged_dose", "price_def": "nominal", "cov_type": "HC1"},
+     "p", 7.939530691797492e-07),
     ("pe_dose_real", "dose/1000 coef (real, M3, HC1)", "price_equation.csv",
      {"term": "dose_1000", "spec": "M3_lagged_dose", "price_def": "real", "cov_type": "HC1"},
-     "coef", 2824.408603),
-    ("pe_real_headline", "reg_eeai coef (real, M1 primary, HC1)", "price_equation.csv",
-     {"term": "reg_eeai_202201", "spec": "M1_primary_lagged_dum", "price_def": "real", "cov_type": "HC1"},
-     "coef", 7532.475897),
-    ("pe_real_headline_p", "reg_eeai p (real, M1 primary, HC1)", "price_equation.csv",
-     {"term": "reg_eeai_202201", "spec": "M1_primary_lagged_dum", "price_def": "real", "cov_type": "HC1"},
-     "p", 0.01216553),
-    ("pe_demand_l1", "demand_l1 coef (nominal, M1 primary, HC1)", "price_equation.csv",
+     "coef", 730.3653635860281),
+    ("pe_dose_real_p", "dose p (real, M3, HC1)", "price_equation.csv",
+     {"term": "dose_1000", "spec": "M3_lagged_dose", "price_def": "real", "cov_type": "HC1"},
+     "p", 1.2364720924608172e-07),
+    # demand terms
+    ("pe_demand_l1", "demand_l1 coef (nominal, M1, HC1)", "price_equation.csv",
      {"term": "demand_l1", "spec": "M1_primary_lagged_dum", "price_def": "nominal", "cov_type": "HC1"},
-     "coef", -1.0393435388757877),
+     "coef", -0.0267153705197591),
     ("pe_demand_l1_p", "demand_l1 p", "price_equation.csv",
      {"term": "demand_l1", "spec": "M1_primary_lagged_dum", "price_def": "nominal", "cov_type": "HC1"},
-     "p", 0.22512912876566982),
-    # --- bidding channel (demand_bidding_channel.csv) ---
-    ("bd_dummy_hc1", "rebate->demand reg_eeai coef (dummy, HC1)", "demand_bidding_channel.csv",
-     {"term": "reg_eeai_202201", "spec": "dummy", "cov_type": "HC1"}, "coef", -277.714269),
-    ("bd_dummy_hc1_p", "rebate->demand p (dummy, HC1)", "demand_bidding_channel.csv",
-     {"term": "reg_eeai_202201", "spec": "dummy", "cov_type": "HC1"}, "p", 0.0400384050611151),
-    ("bd_dummy_hc1_ci", "rebate->demand CI (dummy, HC1)", "demand_bidding_channel.csv",
-     {"term": "reg_eeai_202201", "spec": "dummy", "cov_type": "HC1"}, "ci_lo", -542.797821),
-    ("bd_dummy_hac_p", "rebate->demand p (dummy, HAC)", "demand_bidding_channel.csv",
-     {"term": "reg_eeai_202201", "spec": "dummy_HAC", "cov_type": "HAC"}, "p", 0.1201031),
-    ("bd_dose", "rebate->demand dose/1000 coef (dose spec)", "demand_bidding_channel.csv",
-     {"term": "dose_1000", "spec": "dose", "cov_type": "HC1"}, "coef", -25.071184),
-    ("bd_dose_p", "rebate->demand dose/1000 p", "demand_bidding_channel.csv",
-     {"term": "dose_1000", "spec": "dose", "cov_type": "HC1"}, "p", 0.4220217),
+     "p", 0.9764302141164208),
+    ("pe_demand_l2", "demand_l2 coef (nominal, M1, HC1)", "price_equation.csv",
+     {"term": "demand_l2", "spec": "M1_primary_lagged_dum", "price_def": "nominal", "cov_type": "HC1"},
+     "coef", 1.7183636673102),
+    # --- 2022+ EV-era price specs (price_equation_2022plus_robustness.csv) ---
+    ("pe22_dose_coef", "2022+ EV-era dose/1000 coef (E1, nominal, HC1)", "price_equation_2022plus_robustness.csv",
+     {"term": "dose_1000", "spec": "E1_ev_era_lagged_dose", "price_def": "nominal", "cov_type": "HC1"},
+     "coef", 4112.724774819341),
+    ("pe22_dose_ci_lo", "2022+ dose CI lo", "price_equation_2022plus_robustness.csv",
+     {"term": "dose_1000", "spec": "E1_ev_era_lagged_dose", "price_def": "nominal", "cov_type": "HC1"},
+     "ci_lo", 2136.680206),
+    ("pe22_dose_ci_hi", "2022+ dose CI hi", "price_equation_2022plus_robustness.csv",
+     {"term": "dose_1000", "spec": "E1_ev_era_lagged_dose", "price_def": "nominal", "cov_type": "HC1"},
+     "ci_hi", 6088.769344),
+    ("pe22_dose_p", "2022+ dose p", "price_equation_2022plus_robustness.csv",
+     {"term": "dose_1000", "spec": "E1_ev_era_lagged_dose", "price_def": "nominal", "cov_type": "HC1"},
+     "p", 4.517998676710449e-05),
+    ("pe22_step_coef", "2022+ step dummy (45000->40000) coef (E2, nominal, HC1)", "price_equation_2022plus_robustness.csv",
+     {"term": "reg_eeai_cap15k_202401", "spec": "E2_ev_era_lagged_dum", "price_def": "nominal", "cov_type": "HC1"},
+     "coef", -20563.623874097702),
+    ("pe22_step_ci_lo", "2022+ step CI lo", "price_equation_2022plus_robustness.csv",
+     {"term": "reg_eeai_cap15k_202401", "spec": "E2_ev_era_lagged_dum", "price_def": "nominal", "cov_type": "HC1"},
+     "ci_lo", -30443.846721),
+    ("pe22_step_ci_hi", "2022+ step CI hi", "price_equation_2022plus_robustness.csv",
+     {"term": "reg_eeai_cap15k_202401", "spec": "E2_ev_era_lagged_dum", "price_def": "nominal", "cov_type": "HC1"},
+     "ci_hi", -10683.401028),
+    ("pe22_step_p", "2022+ step p", "price_equation_2022plus_robustness.csv",
+     {"term": "reg_eeai_cap15k_202401", "spec": "E2_ev_era_lagged_dum", "price_def": "nominal", "cov_type": "HC1"},
+     "p", 4.517998676718005e-05),
+    ("pe22_d1", "2022+ demand_l1 coef (E3, nominal, HC1)", "price_equation_2022plus_robustness.csv",
+     {"term": "demand_l1", "spec": "E3_ev_era_demand_only", "price_def": "nominal", "cov_type": "HC1"},
+     "coef", -2.7097565522551883),
+    ("pe22_d1_p", "2022+ demand_l1 p", "price_equation_2022plus_robustness.csv",
+     {"term": "demand_l1", "spec": "E3_ev_era_demand_only", "price_def": "nominal", "cov_type": "HC1"},
+     "p", 0.5077517510098639),
+    # --- bidding channel (demand_bidding_channel.csv), BOTH scopes ---
+    ("bd_dummy_hc1", "full-window rebate->demand step-dummy coef", "demand_bidding_channel.csv",
+     {"term": "reg_eeai_cap15k_202401", "spec": "dummy", "cov_type": "HC1"}, "coef", 679.7145230653476),
+    ("bd_dummy_hc1_p", "full-window rebate->demand step-dummy p", "demand_bidding_channel.csv",
+     {"term": "reg_eeai_cap15k_202401", "spec": "dummy", "cov_type": "HC1"}, "p", 0.0042858228001889),
+    ("bd_dummy_hc1_ci", "full-window rebate->demand CI lo", "demand_bidding_channel.csv",
+     {"term": "reg_eeai_cap15k_202401", "spec": "dummy", "cov_type": "HC1"}, "ci_lo", 213.304682),
+    ("bd_dummy_hac_p", "full-window rebate->demand p (HAC)", "demand_bidding_channel.csv",
+     {"term": "reg_eeai_cap15k_202401", "spec": "dummy_HAC", "cov_type": "HAC"}, "p", 0.0215274420582814),
+    ("bd_dose", "full-window rebate->demand dose/1000 coef", "demand_bidding_channel.csv",
+     {"term": "dose_1000", "spec": "dose", "cov_type": "HC1"}, "coef", -11.689939449901448),
+    ("bd_dose_p", "full-window rebate->demand dose/1000 p", "demand_bidding_channel.csv",
+     {"term": "dose_1000", "spec": "dose", "cov_type": "HC1"}, "p", 0.2853636939003477),
+    ("bd_dose_hac_p", "full-window rebate->demand dose p (HAC)", "demand_bidding_channel.csv",
+     {"term": "dose_1000", "spec": "dose_HAC", "cov_type": "HAC"}, "p", 0.3865637516577126),
+    ("bd22_dose_coef", "2022+ EV-era rebate->demand dose/1000 coef (E1)", "demand_bidding_channel.csv",
+     {"term": "dose_1000", "spec": "E1_ev_era_dose", "cov_type": "HC1"}, "coef", -111.450569),
+    ("bd22_dose_p", "2022+ EV-era rebate->demand dose/1000 p", "demand_bidding_channel.csv",
+     {"term": "dose_1000", "spec": "E1_ev_era_dose", "cov_type": "HC1"}, "p", 0.005408543324145),
+    ("bd22_dum_coef", "2022+ EV-era rebate->demand step-dummy coef (E2)", "demand_bidding_channel.csv",
+     {"term": "reg_eeai_cap15k_202401", "spec": "E2_ev_era_dum", "cov_type": "HC1"}, "coef", 557.252844),
+    ("bd22_dum_p", "2022+ EV-era rebate->demand step-dummy p", "demand_bidding_channel.csv",
+     {"term": "reg_eeai_cap15k_202401", "spec": "E2_ev_era_dum", "cov_type": "HC1"}, "p", 0.005408543324145),
     # --- cross-lag (crosslag_check.csv) ---
     ("xl_minus1_p", "cross-lag dose(-1) p", "crosslag_check.csv",
-     {"term": "dose_-1_month", "cov_type": "HC1"}, "p", 0.22625199299422727),
+     {"term": "dose_-1_month", "cov_type": "HC1"}, "p", 0.4792305715369578),
     ("xl_plus0_p", "cross-lag dose(0) p", "crosslag_check.csv",
-     {"term": "dose_+0_month", "cov_type": "HC1"}, "p", 0.4220217),
+     {"term": "dose_+0_month", "cov_type": "HC1"}, "p", 0.2853636939003477),
     ("xl_plus1_p", "cross-lag dose(+1) p", "crosslag_check.csv",
-     {"term": "dose_+1_month", "cov_type": "HC1"}, "p", 0.22625199299422727),
-    # --- mediation (mediation_effects.csv) ---
-    ("med_total", "mediation total effect", "mediation_effects.csv",
-     {"effect": "total"}, "estimate", 2897.443875855129),
-    ("med_total_ci", "mediation total CI lo", "mediation_effects.csv",
-     {"effect": "total"}, "ci_lo", 1890.1208899496748),
-    ("med_indirect", "mediation indirect effect", "mediation_effects.csv",
-     {"effect": "indirect"}, "estimate", -43.38119107461191),
-    ("med_indirect_ci_lo", "mediation indirect CI lo", "mediation_effects.csv",
-     {"effect": "indirect"}, "ci_lo", -399.35084222623016),
-    ("med_indirect_ci_hi", "mediation indirect CI hi", "mediation_effects.csv",
-     {"effect": "indirect"}, "ci_hi", 253.0904792259348),
-    ("med_direct", "mediation direct effect", "mediation_effects.csv",
-     {"effect": "direct"}, "estimate", 2940.825066929741),
-    ("med_share", "mediated share", "mediation_effects.csv",
-     {"effect": "mediated_share"}, "estimate", -0.014972228258194897),
-    ("med_share_ci_lo", "mediated share CI lo", "mediation_effects.csv",
-     {"effect": "mediated_share"}, "ci_lo", -0.157899),
-    ("med_nobs", "mediation n_obs", "mediation_effects.csv",
-     {"effect": "mediated_share"}, "n_obs", 109),
-    # --- event study (event_study_coefficients.csv) ---
-    ("es_onset22", "2022-01 episode onset coef (bounded)", "event_study_coefficients.csv",
-     {"episode": "2022-01_eeai_rebate_PLUS_threshold_bounded", "term": "onset_0"},
-     "coef", 22682.693696),
-    ("es_onset22_ci_lo", "2022-01 onset CI lo", "event_study_coefficients.csv",
-     {"episode": "2022-01_eeai_rebate_PLUS_threshold_bounded", "term": "onset_0"},
-     "ci_lo", 13995.266283),
-    ("es_onset22_p", "2022-01 onset p", "event_study_coefficients.csv",
-     {"episode": "2022-01_eeai_rebate_PLUS_threshold_bounded", "term": "onset_0"},
-     "p", 3.097343e-07),
-    ("es_onset16", "2016-11 episode onset coef (total/low-emission, NOT EV-specific)",
-     "event_study_coefficients.csv",
-     {"episode": "2016-2018_episode_total_low_emission", "term": "onset_0"},
-     "coef", 3484.904917),
-    # --- negative controls (negative_controls.csv) ---
-    ("nc_A_pct", "2022-01 jump Cat A (EV-eligible) %", "negative_controls.csv",
-     {"term": "reg_eeai_202201", "category": "A"}, "coef_pct_of_mean", 10.110609579766617),
-    ("nc_C_pct", "2022-01 jump Cat C (clean control) %", "negative_controls.csv",
-     {"term": "reg_eeai_202201", "category": "C"}, "coef_pct_of_mean", 13.736183),
-    ("nc_D_pct", "2022-01 jump Cat D (clean control) %", "negative_controls.csv",
-     {"term": "reg_eeai_202201", "category": "D"}, "coef_pct_of_mean", 41.762959),
-    ("nc_E_pct", "2022-01 jump Cat E (clean control) %", "negative_controls.csv",
-     {"term": "reg_eeai_202201", "category": "E"}, "coef_pct_of_mean", 36.415949),
+     {"term": "dose_+1_month", "cov_type": "HC1"}, "p", 0.4792305715369578),
+    # --- mediation, BOTH scopes (mediation_effects.csv) ---
+    ("med_full_total", "mediation total (full window)", "mediation_effects.csv",
+     {"effect": "total", "scope": "full_window"}, "estimate", 569.1309324065705),
+    ("med_full_total_ci", "mediation total CI lo (full window)", "mediation_effects.csv",
+     {"effect": "total", "scope": "full_window"}, "ci_lo", 339.742883),
+    ("med_full_indirect", "mediation indirect (full window)", "mediation_effects.csv",
+     {"effect": "indirect", "scope": "full_window"}, "estimate", -9.037756311691187),
+    ("med_full_indirect_ci_lo", "mediation indirect CI lo (full)", "mediation_effects.csv",
+     {"effect": "indirect", "scope": "full_window"}, "ci_lo", -52.768221),
+    ("med_full_indirect_ci_hi", "mediation indirect CI hi (full)", "mediation_effects.csv",
+     {"effect": "indirect", "scope": "full_window"}, "ci_hi", 28.562778),
+    ("med_full_share", "mediated share (full window)", "mediation_effects.csv",
+     {"effect": "mediated_share", "scope": "full_window"}, "estimate", -0.01587992463083148),
+    ("med_full_share_ci_lo", "mediated share CI lo (full)", "mediation_effects.csv",
+     {"effect": "mediated_share", "scope": "full_window"}, "ci_lo", -0.09895),
+    ("med_full_share_ci_hi", "mediated share CI hi (full)", "mediation_effects.csv",
+     {"effect": "mediated_share", "scope": "full_window"}, "ci_hi", 0.05914),
+    ("med_full_nobs", "mediation n_obs (full window)", "mediation_effects.csv",
+     {"effect": "mediated_share", "scope": "full_window"}, "n_obs", 109),
+    ("med_ev_total", "mediation total (2022+ EV era)", "mediation_effects.csv",
+     {"effect": "total", "scope": "ev_era_2022plus"}, "estimate", 2881.970547296436),
+    ("med_ev_total_ci", "mediation total CI lo (EV era)", "mediation_effects.csv",
+     {"effect": "total", "scope": "ev_era_2022plus"}, "ci_lo", 1048.459944),
+    ("med_ev_indirect", "mediation indirect (2022+ EV era)", "mediation_effects.csv",
+     {"effect": "indirect", "scope": "ev_era_2022plus"}, "estimate", -331.774532761807),
+    ("med_ev_share", "mediated share (2022+ EV era)", "mediation_effects.csv",
+     {"effect": "mediated_share", "scope": "ev_era_2022plus"}, "estimate", -0.11512072289324513),
+    ("med_ev_nobs", "mediation n_obs (2022+ EV era)", "mediation_effects.csv",
+     {"effect": "mediated_share", "scope": "ev_era_2022plus"}, "n_obs", 41),
+    # --- event study (event_study_coefficients.csv): 4 verified-policy events ---
+    ("es_onset2018", "2018-01 CEVS-lapse/VES-onset onset coef (bounded)", "event_study_coefficients.csv",
+     {"episode": "2018-01_cevs_lapse_VES_onset", "term": "onset_0"}, "coef", -17067.519848),
+    ("es_onset2021", "2021-01 enhanced-VES+EEAI-stack onset coef (bounded)", "event_study_coefficients.csv",
+     {"episode": "2021-01_enhanced_VES_EEAI_stack", "term": "onset_0"}, "coef", 11144.888604),
+    ("es_onset2022", "2022-01 ARF-floor+threshold onset coef (bounded)", "event_study_coefficients.csv",
+     {"episode": "2022-01_ARF_floor_zero_PLUS_threshold_bounded", "term": "onset_0"}, "coef", 26921.664905),
+    ("es_onset2022_ci_lo", "2022-01 onset CI lo", "event_study_coefficients.csv",
+     {"episode": "2022-01_ARF_floor_zero_PLUS_threshold_bounded", "term": "onset_0"}, "ci_lo", 18997.057351),
+    ("es_onset2022_ci_hi", "2022-01 onset CI hi", "event_study_coefficients.csv",
+     {"episode": "2022-01_ARF_floor_zero_PLUS_threshold_bounded", "term": "onset_0"}, "ci_hi", 34846.272458),
+    ("es_onset2024", "2024-01 EEAI cap-cut onset coef (bounded)", "event_study_coefficients.csv",
+     {"episode": "2024-01_eeai_cap15k_step", "term": "onset_0"}, "coef", -39016.970906),
+    ("es_onset2024_ci_lo", "2024-01 onset CI lo", "event_study_coefficients.csv",
+     {"episode": "2024-01_eeai_cap15k_step", "term": "onset_0"}, "ci_lo", -43177.765211),
+    ("es_onset2024_ci_hi", "2024-01 onset CI hi", "event_study_coefficients.csv",
+     {"episode": "2024-01_eeai_cap15k_step", "term": "onset_0"}, "ci_hi", -34856.1766),
+    # --- negative controls (negative_controls.csv), per scope ---
+    ("nc_A_22", "2022-01 jump Cat A (EV-eligible) % (full window)", "negative_controls.csv",
+     {"term": "reg_arffloor_zero_202201", "category": "A", "scope": "full_window", "spec": "dummy"}, "coef_pct_of_mean", 6.577745023407299),
+    ("nc_C_22", "2022-01 jump Cat C (clean) % (full window)", "negative_controls.csv",
+     {"term": "reg_arffloor_zero_202201", "category": "C", "scope": "full_window", "spec": "dummy"}, "coef_pct_of_mean", -10.156085029502531),
+    ("nc_D_22", "2022-01 jump Cat D (clean) % (full window)", "negative_controls.csv",
+     {"term": "reg_arffloor_zero_202201", "category": "D", "scope": "full_window", "spec": "dummy"}, "coef_pct_of_mean", 16.299740518763812),
+    ("nc_E_22", "2022-01 jump Cat E (clean) % (full window)", "negative_controls.csv",
+     {"term": "reg_arffloor_zero_202201", "category": "E", "scope": "full_window", "spec": "dummy"}, "coef_pct_of_mean", 10.260839861583907),
+    ("nc_A_24", "2024-01 step Cat A (EV-eligible) % (2022+ EV era)", "negative_controls.csv",
+     {"term": "reg_eeai_cap15k_202401", "category": "A", "scope": "ev_era_2022plus", "spec": "dummy"}, "coef_pct_of_mean", -22.9613772533957),
+    ("nc_C_24", "2024-01 step Cat C (clean) % (2022+ EV era)", "negative_controls.csv",
+     {"term": "reg_eeai_cap15k_202401", "category": "C", "scope": "ev_era_2022plus", "spec": "dummy"}, "coef_pct_of_mean", -7.927621288328092),
+    ("nc_D_24", "2024-01 step Cat D (clean) % (2022+ EV era)", "negative_controls.csv",
+     {"term": "reg_eeai_cap15k_202401", "category": "D", "scope": "ev_era_2022plus", "spec": "dummy"}, "coef_pct_of_mean", -7.419567375389774),
+    ("nc_E_24", "2024-01 step Cat E (clean) % (2022+ EV era)", "negative_controls.csv",
+     {"term": "reg_eeai_cap15k_202401", "category": "E", "scope": "ev_era_2022plus", "spec": "dummy"}, "coef_pct_of_mean", -36.06956635773724),
     # --- diagnostics (diagnostics_stationarity_autocorr.csv) ---
     ("diag_adf_price_level", "ADF price level p (I(1) evidence)", "diagnostics_stationarity_autocorr.csv",
-     {"variable": "catA_clearing_price (nominal)", "form": "level"}, "adf_p", 0.9664896298423258),
+     {"variable": "catA_clearing_price (nominal)", "form": "level"}, "adf_p", 9.664896e-01),
     ("diag_adf_price_diff", "ADF price 1st-diff p", "diagnostics_stationarity_autocorr.csv",
      {"variable": "catA_clearing_price (nominal)", "form": "1st diff"}, "adf_p", 4.864086e-17),
-    ("diag_dw", "Durbin-Watson of primary residuals (0.7910 row)", "diagnostics_stationarity_autocorr.csv",
+    ("diag_dw", "Durbin-Watson of primary residuals", "diagnostics_stationarity_autocorr.csv",
      {"variable": "primary price eq. residuals", "form": "residual",
-      "note": "Durbin-Watson = 0.7910"}, "variable", "primary price eq. residuals"),
+      "note": "Durbin-Watson = 0.7886"}, "variable", "primary price eq. residuals"),
     # --- sensitivity (sensitivity_analysis.csv) ---
-    ("sens_noquota", "reg_eeai without catA_quota", "sensitivity_analysis.csv",
-     {"spec": "drop_control_catA_quota", "term": "reg_eeai_202201"}, "coef", 8977.563358452839),
-    ("sens_notrend", "reg_eeai without trend", "sensitivity_analysis.csv",
-     {"spec": "drop_control_trend", "term": "reg_eeai_202201"}, "coef", 6950.021369),
-    ("sens_nocpi", "reg_eeai without cpi", "sensitivity_analysis.csv",
-     {"spec": "drop_control_cpi_all_items", "term": "reg_eeai_202201"}, "coef", 24866.859723),
-    ("sens_bidssucc", "reg_eeai demand=bids_success", "sensitivity_analysis.csv",
-     {"spec": "demand_bids_success", "term": "reg_eeai_202201"}, "p", 0.1459261),
-    ("sens_lag1", "reg_eeai lag1_only", "sensitivity_analysis.csv",
-     {"spec": "lag_lag1_only", "term": "reg_eeai_202201"}, "coef", 6036.897255),
-    ("sens_contemp", "reg_eeai contemporaneous", "sensitivity_analysis.csv",
-     {"spec": "lag_contemporaneous", "term": "reg_eeai_202201"}, "coef", 7188.714026),
-    ("sens_real", "reg_eeai real price def", "sensitivity_analysis.csv",
-     {"spec": "price_real", "term": "reg_eeai_202201"}, "coef", 7532.475897),
-    # --- 2022+ robustness (price_equation_2022plus_robustness.csv) ---
-    ("rob22_d1_p", "2022+ demand_l1 p (nominal)", "price_equation_2022plus_robustness.csv",
-     {"term": "demand_l1", "price_def": "nominal"}, "p", 0.507752),
-    ("rob22_quota", "2022+ catA_quota coef (nominal)", "price_equation_2022plus_robustness.csv",
-     {"term": "catA_quota", "price_def": "nominal"}, "coef", -22.6175),
-    ("rob22_rankdef", "2022+ rebate-intensity row is the RANK-DEFICIENT NA row (nobs=41)",
+    ("sens_noquota", "cap-15k dummy without catA_quota", "sensitivity_analysis.csv",
+     {"spec": "drop_control_catA_quota", "term": "reg_eeai_cap15k_202401"}, "coef", -14030.377783669786),
+    ("sens_notrend", "cap-15k dummy without trend", "sensitivity_analysis.csv",
+     {"spec": "drop_control_trend", "term": "reg_eeai_cap15k_202401"}, "coef", -14549.356670812736),
+    ("sens_nocpi", "cap-15k dummy without cpi", "sensitivity_analysis.csv",
+     {"spec": "drop_control_cpi_all_items", "term": "reg_eeai_cap15k_202401"}, "coef", -10806.20715940096),
+    ("sens_bidssucc", "cap-15k dummy demand=bids_success", "sensitivity_analysis.csv",
+     {"spec": "demand_bids_success", "term": "reg_eeai_cap15k_202401"}, "coef", -9363.578852614495),
+    ("sens_lag1", "cap-15k dummy lag1_only", "sensitivity_analysis.csv",
+     {"spec": "lag_lag1_only", "term": "reg_eeai_cap15k_202401"}, "coef", -10732.656038205449),
+    ("sens_contemp", "cap-15k dummy contemporaneous", "sensitivity_analysis.csv",
+     {"spec": "lag_contemporaneous", "term": "reg_eeai_cap15k_202401"}, "coef", -10684.334121278349),
+    ("sens_real", "cap-15k dummy real price def", "sensitivity_analysis.csv",
+     {"spec": "price_real", "term": "reg_eeai_cap15k_202401"}, "coef", -12056.228497768652),
+    # --- 2022+ EV-era price robustness sanity ---
+    ("rob22_nobs", "2022+ EV-era price spec nobs (estimable, not rank-deficient)",
      "price_equation_2022plus_robustness.csv",
-     {"term": "rebate (dummies OR dose)"}, "nobs", 41),
-    # --- evidence grading (evidence_grading.csv) ---
-    ("grade_headline", "headline grade", "evidence_grading.csv",
-     {"link": "rebate->price (HEADLINE core question)"}, "grade", "not detectable"),
-    ("grade_bidding", "bidding-channel grade", "evidence_grading.csv",
-     {"link": "rebate->demand (bidding channel)"}, "grade", "not detectable"),
-    ("grade_reg", "registration-channel grade", "evidence_grading.csv",
-     {"link": "rebate->demand (registration channel)"}, "grade", "not detectable"),
-    ("grade_demand_price", "demand->price grade", "evidence_grading.csv",
-     {"link": "demand->price"}, "grade", "not detectable"),
-    ("grade_med", "mediation grade", "evidence_grading.csv",
-     {"link": "total indirect effect (rebate->demand->price)"}, "grade", "not detectable"),
+     {"term": "dose_1000", "spec": "E1_ev_era_lagged_dose"}, "nobs", 41),
+    # --- evidence grading (evidence_grading.csv), per scope ---
+    ("grade_headline_full", "headline grade (full window)", "evidence_grading.csv",
+     {"link": "rebate->price (HEADLINE core question)", "scope": "full_window"}, "grade", "not detectable"),
+    ("grade_headline_ev", "headline grade (2022+ EV era)", "evidence_grading.csv",
+     {"link": "rebate->price (HEADLINE core question)", "scope": "ev_era_2022plus"}, "grade", "supported"),
+    ("grade_bidding_full", "bidding-channel grade (full window)", "evidence_grading.csv",
+     {"link": "rebate->demand (bidding channel)", "scope": "full_window"}, "grade", "directionally consistent"),
+    ("grade_bidding_ev", "bidding-channel grade (2022+ EV era)", "evidence_grading.csv",
+     {"link": "rebate->demand (bidding channel)", "scope": "ev_era_2022plus"}, "grade", "not detectable"),
+    ("grade_reg", "registration-channel grade (descriptive)", "evidence_grading.csv",
+     {"link": "rebate->demand (registration channel)", "scope": "descriptive"}, "grade", "not detectable"),
+    ("grade_demand_price_full", "demand->price grade (full window)", "evidence_grading.csv",
+     {"link": "demand->price", "scope": "full_window"}, "grade", "not detectable"),
+    ("grade_med_full", "mediation grade (full window)", "evidence_grading.csv",
+     {"link": "total indirect effect (rebate->demand->price)", "scope": "full_window"}, "grade", "not detectable"),
+    ("grade_med_ev", "mediation grade (2022+ EV era)", "evidence_grading.csv",
+     {"link": "total indirect effect (rebate->demand->price)", "scope": "ev_era_2022plus"}, "grade", "not detectable"),
     # --- EV descriptive (ev_registrations_descriptive.csv) ---
     ("ev_n_months", "observed BEV months", "ev_registrations_descriptive.csv",
      {"month": "SUMMARY_observed_months"}, "ev_reg", 35),
     ("ev_mean", "mean EV registrations", "ev_registrations_descriptive.csv",
-     {"month": "SUMMARY_mean_ev_reg"}, "ev_reg", 854.257143),
+     {"month": "SUMMARY_mean_ev_reg"}, "ev_reg", 854.2571428571429),
     ("ev_max", "max EV registrations", "ev_registrations_descriptive.csv",
      {"month": "SUMMARY_max_ev_reg"}, "ev_reg", 2014),
     ("ev_share_mean", "mean EV share", "ev_registrations_descriptive.csv",
-     {"month": "SUMMARY_mean_ev_share"}, "ev_reg", 0.258154),
+     {"month": "SUMMARY_mean_ev_share"}, "ev_reg", 0.2581540692967779),
     ("ev_cum", "cumulative EV registrations", "ev_registrations_descriptive.csv",
      {"month": "SUMMARY_cumulative_ev_reg"}, "ev_reg", 29899),
     ("ev_cov_min", "min coverage (lower-bound decay)", "ev_registrations_descriptive.csv",
-     {"month": "SUMMARY_min_coverage"}, "ev_reg", 0.181713),
+     {"month": "SUMMARY_min_coverage"}, "ev_reg", 0.1817129629629629),
     # --- dose / scope (dose_summary.csv, scope_audit.csv, data_audit.csv) ---
-    ("dose_changes", "effective in-window changes", "dose_summary.csv",
-     {"item": "effective_in_window_changes"}, "value", 4),
-    ("dose_flat", "dose constant 2022-01..2025-05", "dose_summary.csv",
-     {"item": "dose_constant_2022_01_to_2025_05"}, "value", "TRUE"),
-    ("scope_a", "scope audit (a) no 2022+-only rebate exhibit", "scope_audit.csv",
+    ("dose_changes", "effective in-window verified-policy changes", "dose_summary.csv",
+     {"item": "effective_in_window_changes"}, "value", 3),
+    ("dose_distinct", "distinct dose values", "dose_summary.csv",
+     {"item": "n_distinct_dose_values"}, "value", 4),
+    ("dose_distinct_vals", "distinct dose value list", "dose_summary.csv",
+     {"item": "distinct_dose_values"}, "value", "20000; 25000; 40000; 45000"),
+    ("dose_2022plus_n", "2022+ distinct dose count (>=2 -> estimable)", "dose_summary.csv",
+     {"item": "n_distinct_dose_values_2022plus"}, "value", 2),
+    ("dose_2022plus_vals", "2022+ distinct dose values", "dose_summary.csv",
+     {"item": "dose_2022plus_values"}, "value", "40000; 45000"),
+    ("scope_a", "scope audit (a) dual-scope rule", "scope_audit.csv",
      {"detail_prefix": "(a)"}, "status", "PASS"),
     ("scope_b", "scope audit (b) demand regressor = clean", "scope_audit.csv",
      {"detail_prefix": "(b)"}, "status", "PASS"),
-    ("scope_c", "scope audit (c) mediated share full-window", "scope_audit.csv",
+    ("scope_c", "scope audit (c) mediated share dual-scope", "scope_audit.csv",
      {"detail_prefix": "(c)"}, "status", "PASS"),
     ("scope_f", "scope audit (f) layering contract", "scope_audit.csv",
      {"detail_prefix": "(f)"}, "status", "PASS"),
@@ -394,7 +520,7 @@ def check_d() -> None:
 
 
 # ---------------------------------------------------------------------------
-# (e) dose state: count of effective changes + distinct dose values
+# (e) dose state: verified-policy changes + distinct doses; 2022+ has >=2
 # ---------------------------------------------------------------------------
 def check_e() -> None:
     panel = pd.read_csv(PROC / "panel_joint.csv")
@@ -402,55 +528,63 @@ def check_e() -> None:
     ds = pd.read_csv(TABLES / "dose_summary.csv").set_index("item")
     distinct = int(ds.loc["n_distinct_dose_values", "value"])
     changes = int(ds.loc["effective_in_window_changes", "value"])
-    flat_tail = int(ds.loc["flat_tail_value", "value"])
-    sub = panel[panel["month"] >= "2022-01"]
-    flat_ok = (sub["dose_nominal_sgd"].nunique() == 1
-               and int(sub["dose_nominal_sgd"].iloc[0]) == flat_tail == 7500)
+    tail = panel[panel["month"] >= "2022-01"]
+    tail_doses = sorted(tail["dose_nominal_sgd"].unique().tolist())
+    # NEW: 2022+ must have >=2 distinct doses (old flat-tail assertion REMOVED)
+    tail_estimable = len(tail_doses) >= 2
     ok = (
-        distinct == len(doses) == 5
-        and changes == 4
-        and doses == [2000, 3000, 4000, 6000, 7500]
-        and flat_ok
+        distinct == len(doses) == 4
+        and doses == [20000, 25000, 40000, 45000]
+        and changes == 3
+        and tail_doses == [40000, 45000]
+        and tail_estimable
+        and len(tail) == 41
     )
-    add("e", "dose state: 4 effective changes; distinct doses [2000,3000,4000,6000,7500]; flat 7500 from 2022-01",
+    add("e", "dose state (verified policy): 4 distinct doses {20000,25000,40000,45000}; "
+             "3 effective changes (2018-01, 2021-01, 2024-01); 2022+ window has 2 distinct "
+             "doses {40000,45000} over 41 obs -> 2022+ IS a valid estimation scope "
+             "(old flat-tail rule REMOVED)",
         ok, f"panel distinct={doses} (n={len(doses)}); dose_summary: distinct={distinct}, "
-            f"changes={changes}, flat_tail={flat_tail}; 2022-01..2025-05 flat={flat_ok}")
+            f"changes={changes}; 2022-01..2025-05 distinct={tail_doses} (n_obs={len(tail)}) "
+            f"estimable={tail_estimable}")
 
 
 # ---------------------------------------------------------------------------
-# (f) no rebate-intensity exhibit estimated on a 2022+-only sample
+# (f) headline exhibits estimated on full window AND 2022+ EV era (dual-scope)
 # ---------------------------------------------------------------------------
 def check_f() -> None:
     pe = pd.read_csv(TABLES / "price_equation.csv")
-    # every row carrying a rebate term must have a full-window sample
-    rebate_rows = pe[pe["term"].isin(["reg_eeai_202201", "dose_1000", "threshold"])]
-    full = rebate_rows["sample"].astype(str).str.startswith("2016-01..2025-05")
+    # every full-window price row must carry the full-window sample
+    full_ok = pe["sample"].astype(str).str.startswith("2016-01..2025-05").all()
+    # 2022+ EV-era price specs present and ESTIMABLE (nobs=41, no rank-deficient
+    # NA rows — the verified dose varies within the window)
+    rob = pd.read_csv(TABLES / "price_equation_2022plus_robustness.csv")
+    ev_specs = {"E1_ev_era_lagged_dose", "E2_ev_era_lagged_dum", "E3_ev_era_demand_only"}
+    ev_present = ev_specs.issubset(set(rob["spec"]))
+    ev_nobs = (rob[rob["spec"].isin(ev_specs)]["nobs"] == 41).all()
+    ev_no_nan = not rob[rob["spec"].isin(ev_specs)]["coef"].isna().any()
+    # bidding channel: both scopes present
     bd = pd.read_csv(TABLES / "demand_bidding_channel.csv")
-    bd_full = bd[bd["term"].isin(["reg_eeai_202201", "dose_1000", "threshold"])]
-    bd_full = bd_full["sample"].astype(str).str.startswith("2016-01..2025-05").all()
+    bd_full = bd[bd["term"].isin(["dose_1000", "reg_eeai_cap15k_202401"])
+                 & bd["spec"].isin(["dummy", "dose"])]["sample"].astype(str).str.startswith("2016-01..2025-05").all()
+    bd_ev = bd[bd["spec"].isin(["E1_ev_era_dose", "E2_ev_era_dum"])]["sample"].astype(str).str.startswith("2022-01..2025-05").all()
+    bd_ev_n = len(bd[bd["spec"].isin(["E1_ev_era_dose", "E2_ev_era_dum"])]) >= 2
+    # mediation: both scopes present
     med = pd.read_csv(TABLES / "mediation_effects.csv")
-    med_scope = any(
-        str(r["effect"]).startswith("# estimation_scope: 2016-01..2025-05")
-        for _, r in med.iterrows()
-    )
+    med_scopes = set(med["scope"].dropna().unique())
+    med_both = {"full_window", "ev_era_2022plus"}.issubset(med_scopes)
+    # scope-guard audit
     scope_a = (
         pd.read_csv(TABLES / "scope_audit.csv")
         .query("check.str.startswith('(a)')")["status"] == "PASS"
     ).all()
-    rob = pd.read_csv(TABLES / "price_equation_2022plus_robustness.csv")
-    rankdef = (
-        rob[rob["term"].astype(str).str.startswith("rebate (dummies OR dose)")]
-        ["note"].astype(str).str.startswith("RANK-DEFICIENT").all()
-        and len(
-            rob[rob["term"].astype(str).str.startswith("rebate (dummies OR dose)")]
-        ) > 0
-    )
-    ok = full.all() and bd_full and med_scope and scope_a and rankdef
-    add("f", "no rebate-intensity exhibit estimated on a 2022+-only sample",
+    ok = full_ok and ev_present and ev_nobs and ev_no_nan and bd_full and bd_ev and bd_ev_n and med_both and scope_a
+    add("f", "headline exhibits estimated on full window AND 2022+ EV era (dual-scope; "
+             "2022+ estimable under the verified dose)",
         ok,
-        f"price_equation rebate-term rows full-window={full.all()} (n={len(rebate_rows)}) | "
-        f"bidding-channel full-window={bd_full} | mediation est-scope full-window={med_scope} | "
-        f"scope_audit(a) PASS={scope_a} | 2022+ robustness rebate row RANK-DEFICIENT={rankdef}")
+        f"price_equation full-window sample={full_ok} (n={len(pe)}) | 2022+ EV-era price specs present={ev_present} "
+        f"nobs=41={ev_nobs} no rank-deficient NaN={ev_no_nan} | bidding dual-scope={bd_full and bd_ev and bd_ev_n} | "
+        f"mediation both scopes={med_both} (scopes={sorted(med_scopes)}) | scope_audit(a) PASS={scope_a}")
 
 
 # ---------------------------------------------------------------------------
@@ -485,7 +619,7 @@ def check_g() -> None:
 
 
 # ---------------------------------------------------------------------------
-# (h) mediated share on full-window sample, 2022+ interpretation
+# (h) mediated share on full-window sample (primary), 2022+ EV era reported
 # ---------------------------------------------------------------------------
 def check_h() -> None:
     med = pd.read_csv(TABLES / "mediation_effects.csv")
@@ -493,6 +627,9 @@ def check_h() -> None:
            if str(r["effect"]).startswith("# estimation_scope")]
     interp = [r["effect"] for _, r in med.iterrows()
               if str(r["effect"]).startswith("# interpretation_scope")]
+    # the full-window rows must exist (primary sample) AND the EV-era rows
+    full_row = len(med[(med["scope"] == "full_window")]) >= 4
+    ev_row = len(med[(med["scope"] == "ev_era_2022plus")]) >= 4
     scope_c = (
         pd.read_csv(TABLES / "scope_audit.csv")
         .query("check.str.startswith('(c)')")["status"] == "PASS"
@@ -500,10 +637,13 @@ def check_h() -> None:
     ok = (
         len(est) == 1 and "2016-01..2025-05" in est[0]
         and len(interp) == 1 and "2022-01..2025-05" in interp[0]
+        and full_row and ev_row
         and scope_c
     )
-    add("h", "mediated share computed on full-window sample with 2022+ interpretation",
-        ok, f"estimation_scope={est} interpretation_scope={interp} scope_audit(c) PASS={scope_c}")
+    add("h", "mediated share computed on the full-window sample (primary) with the "
+             "2022+ EV-era scope reported alongside",
+        ok, f"estimation_scope={est} interpretation_scope={interp} | full-window rows={full_row} "
+            f"EV-era rows={ev_row} | scope_audit(c) PASS={scope_c}")
 
 
 # ---------------------------------------------------------------------------
@@ -512,8 +652,7 @@ def check_h() -> None:
 def check_i() -> None:
     modules = ["13_charts.py", "14_verify.py", "15_report.py"]
     allowed_read_prefixes = ("data/raw/", "data/processed/", "tables/", "src/")
-    allowed_write = ("tables/", "charts/")
-    root_writes = {"REPORT.md", "STATS_SUMMARY.md"}
+    allowed_write_prefixes = ("tables/", "charts/", "docs/")
     ok_all, details = True, []
     for mod in modules:
         p = SRC / mod
@@ -523,25 +662,23 @@ def check_i() -> None:
             continue
         txt = p.read_text()
         # every quoted workspace-relative path must live in an allowed location
-        paths = set(re.findall(r'["\']((?:data|tables|charts|src)/[^"\'\s]*)["\']', txt))
-        paths |= set(re.findall(r'["\']((?:REPORT\.md|STATS_SUMMARY\.md))["\']', txt))
-        # bare directory-prefix tokens ("data/", "tables/", ...) are the
-        # verifier's own startswith() checks, not file reads
-        bare = {"data/", "tables/", "charts/", "src/", "data", "tables", "charts", "src"}
+        paths = set(re.findall(r'["\']((?:data|tables|charts|src|docs)/[^"\'\s]*)["\']', txt))
+        # bare directory-prefix tokens are the verifier's own startswith() checks,
+        # not file reads
+        bare = {"data/", "tables/", "charts/", "src/", "docs/",
+                "data", "tables", "charts", "src", "docs"}
         bad_reads = [
             q for q in paths
             if q not in bare
-            and not q.startswith(allowed_read_prefixes) and q not in root_writes
+            and not q.startswith(allowed_read_prefixes)
         ]
-        # writes: open(..., "w"/"a") and to_csv(<path>) must target tables/ or charts/ or (15) root reports
+        # writes: open(..., "w"/"a") and to_csv(<path>) must target tables/, charts/ or docs/
         writes = re.findall(r'open\(\s*(?:f?["\'])([^"\']+)', txt)
         writes += re.findall(r'to_csv\(\s*(?:f?["\'])([^"\']+)', txt)
         bad_writes = []
         for w in writes:
             w = w.strip()
-            if w.startswith("tables/") or w.startswith("charts/"):
-                continue
-            if mod == "15_report.py" and w in root_writes:
+            if w.startswith(allowed_write_prefixes):
                 continue
             bad_writes.append(w)
         # no writes into data/
@@ -558,7 +695,7 @@ def check_i() -> None:
         .query("check.str.startswith('(f)')")["status"] == "PASS"
     ).all()
     ok_all &= scope_f
-    add("i", "data-flow/layering contract held (Batch-C modules)", ok_all,
+    add("i", "data-flow/layering contract held (Batch-C modules; 15_report writes docs/)", ok_all,
         " | ".join(details) + f" | scope_audit(f) PASS={scope_f}")
 
 

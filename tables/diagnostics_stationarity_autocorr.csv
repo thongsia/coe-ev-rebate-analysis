@@ -7,9 +7,9 @@ catA_bids_received_clean (demand),level,-2.2185109174679116,0.1995957869772083,F
 catA_bids_received_clean (demand),1st diff,-8.185618468090668,7.914586208642448e-13,True,"ADF, AIC lag"
 cpi_all_items (CPI),level,-0.9628658961737077,0.7665661075088452,False,"ADF, AIC lag"
 cpi_all_items (CPI),1st diff,-1.6658485706070512,0.4487886093657473,False,"ADF, AIC lag"
-primary price eq. residuals,residual,,,,Durbin-Watson = 0.7910
-primary price eq. residuals,residual,37.07457396267874,1.136966357186167e-09,significant,Ljung-Box Q(1)
-primary price eq. residuals,residual,43.02645867963851,4.5386135961583166e-10,significant,Ljung-Box Q(2)
-primary price eq. residuals,residual,43.516431393274225,1.9118351130834438e-09,significant,Ljung-Box Q(3)
-primary price eq. residuals,residual,43.77328904951714,7.150446798755444e-09,significant,Ljung-Box Q(4)
-primary price eq. residuals,residual,40.18492643120156,9.735446766916864e-09,significant,Breusch-Godfrey (nlags=3): F=18.7646
+primary price eq. residuals,residual,,,,Durbin-Watson = 0.7886
+primary price eq. residuals,residual,38.54690159577671,5.345356139355105e-10,significant,Ljung-Box Q(1)
+primary price eq. residuals,residual,48.59159919889962,2.808460373732914e-11,significant,Ljung-Box Q(2)
+primary price eq. residuals,residual,54.54064023177022,8.604093765780565e-12,significant,Ljung-Box Q(3)
+primary price eq. residuals,residual,55.027871914063056,3.205579914651762e-11,significant,Ljung-Box Q(4)
+primary price eq. residuals,residual,41.92937121572408,4.153003486417962e-09,significant,Breusch-Godfrey (nlags=3): F=20.0961

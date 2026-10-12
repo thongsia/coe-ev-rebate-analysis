@@ -1,19 +1,28 @@
-effect,path,estimate,ci_lo,ci_hi,n_obs,note,interpretation_scope
-total,rebate -> price (total),2897.443875855129,1890.1208899496748,4150.698413650733,109,rebate total effect on Cat A clearing price (per 1000 S$ dose),2022-01..2025-05 (headline indirect = 2022+ reading of the full-window estimate; NEVER a 2022+-only number)
-indirect,rebate -> demand -> price,-43.38119107461191,-399.35084222623016,253.0904792259348,109,"mediated (bidding channel only) = a*b; a=rebate->demand, b=demand(lag1)->price",2022-01..2025-05 (headline indirect = 2022+ reading of the full-window estimate; NEVER a 2022+-only number)
-direct,rebate -> price (holding demand fixed),2940.825066929741,,,109,residual direct = c' from stage 2 (point estimate; CI from total/indirect decomposition),2022-01..2025-05 (headline indirect = 2022+ reading of the full-window estimate; NEVER a 2022+-only number)
-mediated_share,indirect / total,-0.014972228258194897,-0.1578989805002462,0.08338368076576824,109,fraction of the rebate total effect routed through the bidding channel,2022-01..2025-05 (headline indirect = 2022+ reading of the full-window estimate; NEVER a 2022+-only number)
+effect,path,scope,estimate,ci_lo,ci_hi,n_obs,note,interpretation_scope
+total,rebate -> price (total),full_window,569.1309324065705,339.7428829965243,824.0921087376558,109,FULL window 2016-01..2025-05 (primary): rebate total effect on Cat A clearing price (per 1000 S$ dose),full-window primary; 2022+ EV era reported (both estimable under verified policy)
+indirect,rebate -> demand -> price,full_window,-9.037756311691187,-52.76822110242712,28.562778249952167,109,"FULL window 2016-01..2025-05 (primary): mediated (bidding channel only) = a*b; a=rebate->demand, b=demand(lag1)->price",full-window primary; 2022+ EV era reported (both estimable under verified policy)
+direct,rebate -> price (holding demand fixed),full_window,578.1686887182617,,,109,FULL window 2016-01..2025-05 (primary): residual direct = c' from stage 2 (point estimate; CI from total/indirect decomposition),full-window primary; 2022+ EV era reported (both estimable under verified policy)
+mediated_share,indirect / total,full_window,-0.01587992463083148,-0.09894994864185233,0.05914019006681247,109,FULL window 2016-01..2025-05 (primary): fraction of the rebate total effect routed through the bidding channel,full-window primary; 2022+ EV era reported (both estimable under verified policy)
+total,rebate -> price (total),ev_era_2022plus,2881.970547296436,1048.4599439153947,5335.512275290545,41,EV era 2022-01..2025-05 (dose 45000->40000 at 2024-01; NOW estimable): rebate total effect on Cat A clearing price (per 1000 S$ dose),full-window primary; 2022+ EV era reported (both estimable under verified policy)
+indirect,rebate -> demand -> price,ev_era_2022plus,-331.774532761807,-1034.6606405283023,436.898067235708,41,"EV era 2022-01..2025-05 (dose 45000->40000 at 2024-01; NOW estimable): mediated (bidding channel only) = a*b; a=rebate->demand, b=demand(lag1)->price",full-window primary; 2022+ EV era reported (both estimable under verified policy)
+direct,rebate -> price (holding demand fixed),ev_era_2022plus,3213.7450800582433,,,41,EV era 2022-01..2025-05 (dose 45000->40000 at 2024-01; NOW estimable): residual direct = c' from stage 2 (point estimate; CI from total/indirect decomposition),full-window primary; 2022+ EV era reported (both estimable under verified policy)
+mediated_share,indirect / total,ev_era_2022plus,-0.11512072289324513,-0.37388777602797935,0.19736765259468872,41,EV era 2022-01..2025-05 (dose 45000->40000 at 2024-01; NOW estimable): fraction of the rebate total effect routed through the bidding channel,full-window primary; 2022+ EV era reported (both estimable under verified policy)
 # ---- metadata ----
-# estimation_scope: 2016-01..2025-05 (FULL window, listwise)
-# interpretation_scope: 2022-01..2025-05 (headline indirect = 2022+ reading of the full-window estimate; NEVER a 2022+-only number)
+# estimation_scope: 2016-01..2025-05 (FULL window, listwise; PRIMARY; mediated share computed on this sample)
+# interpretation_scope: 2022-01..2025-05 (EV era; ALSO an estimation scope under the verified policy: dose 45000->40000 at 2024-01; old rank-deficiency rule removed; both scopes reported)
 # n_obs_full: 109
-# n_bootstrap_used: 2000
-# n_bootstrap_failed: 0
+# n_obs_ev_era: 41
+# n_bootstrap_used_full: 2000
+# n_bootstrap_failed_full: 0
+# n_bootstrap_used_ev: 1000
+# n_bootstrap_failed_ev: 0
 # seed: 20261012
 # mediator_lag: 1
 # treatment: dose_1000
 # price: catA_clearing_price (nominal)
 # simultaneity_flag: FLAGGED: rebate set in response to EV demand; registrations depend on COE price paid -> associational decomposition, not causal
 # pre2022_inclusion: YES -- pre-2022 months included in the full-window sample; bound their EV-relevance (pre-2022 demand = total-car, not EV)
-# ev_relevance_bound: pre-2022 years contribute to the estimate but carry negligible EV signal; the 2022+ window carries the EV-relevant variation
-# wide_ci_expected: YES -- 4 effective treatment changes, 110 obs, noisy mediator
+# ev_relevance_bound: pre-2022 years contribute to the full-window estimate but carry negligible EV signal; the 2022+ window carries the EV-relevant variation
+# wide_ci_expected: YES -- full window: 3 dose steps, ~109 obs, noisy mediator; 2022+ EV era: 41 obs, 2 dose levels -> wide CIs
+# a_full (rebate->demand) = -11.4868; b_full (demand->price) = +0.7868; c'_full = +578.2
+# a_ev (rebate->demand) = -113.4494; b_ev (demand->price) = +2.9244; c'_ev = +3213.7

@@ -1,25 +1,60 @@
 # Do EV rebates make COE bidders bid more? — Final report
 
-**Case:** Singapore COE / EV-rebate bidding analysis, joint window **2016-01 .. 2025-05** (113 months; 110 with COE exercises — 2020-04/05/06 suspended). All numbers below are copied verbatim from `tables/*.csv`; none are recomputed in this document. Figure-traceability: 69/69 report figures verified against their source tables (see `tables/report_figures_checklist.csv` and `tables/verification_report.csv`).
+> **VERIFIED-POLICY RE-RUN.** This analysis was re-run against the VERIFIED real
+> Singapore rebate timeline (CEVS → VES 2018 → enhanced VES + EEAI 2021 → $0 ARF floor
+> 2022 → EEAI cap cut 2024), replacing the original stylized case-study schedule. All
+> numbers below are copied verbatim from `tables/*.csv`; none are recomputed in this
+> document. Figure-traceability: 112/112 report figures verified against
+> their source tables (see `tables/report_figures_checklist.csv` and
+> `tables/verification_report.csv`).
+
+**Case:** Singapore COE / EV-rebate bidding analysis, joint window **2016-01 .. 2025-05** 
+(113 months; 110 with COE exercises — 2020-04/05/06 suspended).
 
 ---
 ## 1. Executive summary
 
-### Bottom line (honest)
+### Bottom line (honest, decided by the NEW verified-policy evidence)
 
-> **The EV rebate offer does NOT detectably cause bidders to bid more, or raise Cat A COE clearing prices, through an EV-specific channel.** Grade (from `tables/evidence_grading.csv`, link = *rebate->price (HEADLINE core question)*): **not detectable**. The full-window price equation does show a positive 2022-01 coefficient (5,880 S$, p=0.034 HC1; CI95 [444, 11,317]) — **but the negative-control check FAILS**: clean control categories C/D/E, to which **no EV rebate applies at all**, show the **same or larger** 2022-01 price jump (C 13.7%, D 41.8%, E 36.4% vs A 10.1%). The 2022-01 increase is therefore a **market-wide common shock** (co-timed with the 97→110kW Cat A threshold change), not an EV-rebate-specific effect. All estimates are **associational at best** given endogeneity (the rebate is set in response to EV demand) and low statistical power (4 effective treatment changes, 110 monthly observations).
+> **Full window (primary, 2016-01..2025-05):** the headline *rebate → price* link grades 
+**not detectable**. The 2022-01 ARF-floor/threshold dummy is positive but not robust
+(3,826 S$, p=0.0643 HC1). The 2022-01 negative-control test **does NOT falsify an EV-rebate reading** — clean control categories C/D/E (no EV rebate) do NOT reproduce the same 2022-01 % jump as A (A -20.6% vs C -32.6%, D -24.1%, E -44.7%). **But** the 2022-01 effect is (i) not statistically robust (p=0.0643) and (ii) a TAX provision ($0 ARF floor) co-timed with the 97→110kW threshold change, not a rebate dose step — so it cannot be credited to the EV rebate.
 
-### Graded evidence per link (from `tables/evidence_grading.csv`)
+> **2022+ EV era (2022-01..2025-05; NOW an estimation scope — 41 obs, dose 45000→40000 at 2024-01):**
+the headline *rebate → price* link grades **supported** — the dose step
+(+4,113 S$/1000 S$, p=4.52e-05; the 45000→40000 step dummy
+-20,564 S$, p=4.52e-05) is statistically significant, and the
+**2024-01 negative-control test does NOT falsify it** (clean controls C/D show a smaller 2024-01
+step: A -23.0% vs C -7.9%, D -7.4%; E moves -36.1%, so it is *not falsified* but not cleanly isolated either). **But** this is a 41-observation, two-dose-level estimate: it has LOW POWER,
+wide CIs, is associational (not causal) given endogeneity, and the 2024-01 step coincides with
+other EV-market activity. We report it as the one scope that *does* detect an EV-era
+rebate→price association — with every caveat — NOT as proof of a causal magnitude.
 
-| Causal link | Full-window estimate | Grade | Interpretation scope |
-|---|---|---|---|
-| **rebate → price (HEADLINE)** | reg_eeai_202201 coef = **+5,880 S$** (dose/1000 = +2,349 S$/1000 S$); nominal↔real non-reversing | **not detectable** | 2022-01..2025-05 (EV-relevant interpretation of full-window est.) |
-| rebate → demand (bidding) | reg_eeai coef = -278 bids (HC1 p=0.04; HAC p=0.12 → **not robust**); dose/1000 = -25.1 bids (p=0.422) → **null** | **not detectable** | 2022-01..2025-05 (EV-relevant); full-window estimate |
-| rebate → demand (registration) | descriptive only (no coefficient; EEAI flat 2022-01..2025-05; no within-window variation) | **not detectable** | 2022-07..2025-05 (observed BEV window) |
-| demand → price | demand_l1 coef = -1.039 S$/bid (CI95 [-2.719, +0.640]), p=0.225 → **not significant** | **not detectable** | full window (mechanism link; no EV-specificity claim) |
-| rebate → demand → price (mediation) | indirect = -43.4 S$/1000 S$ (CI95 [-399.4, +253.1]); mediated share = -0.015 (CI spans 0) | **not detectable** | 2022-01..2025-05 (headline = 2022+ reading of full-window est.) |
+> **Overall honest answer:** on the primary full-window scope the EV rebate does NOT produce a
+> detectable, robust EV-specific price or bidding effect (the 2022-01 ARF-floor effect is not
+> robust and is a tax/threshold confounder, not a rebate). On the newly-estimable 2022+ EV era, a
+> rebate→price association IS detected (2024-01 dose step) and the 2024-01 negative control does
+> not falsify it — but it is low-power (41 obs, 2 dose levels) and associational, not a causal
+> magnitude. The answer is scope-dependent and none of it is a clean causal magnitude; all
+> estimates are bounds (precise magnitude claims are forbidden at this power).
 
-**Read:** the only nominally 'significant' headline coefficient fails the negative control, the bidding-channel coefficient is not robust to HAC standard errors and the dose version is null, the demand→price mechanism is insignificant, and the mediated path is null. Every link grades *not detectable*. The answer to 'does the rebate cause bidders to bid more?' is: **no detectable effect; the evidence is associational at best.**
+### Graded evidence per link — BOTH scopes (from `tables/evidence_grading.csv`)
+
+| Causal link | Full-window estimate | Full-window grade | 2022+ EV-era estimate | 2022+ grade |
+|---|---|---|---|---|
+| **rebate → price (HEADLINE)** | 2022-01 ARF-floor dummy 3,826 S$ (p=0.0643); 2024-01 cap-cut -11,972 S$ (p=0.017); dose/1000 +599 S$/1000 S$ (p=7.94e-07) | **not detectable** | dose/1000 +4,113 S$/1000 S$ (p=4.52e-05); step -20,564 S$ (p=4.52e-05) | **supported** |
+| rebate → demand (bidding) | 2024-01 step dummy +680 bids (p=0.00429; HAC p=0.0215); dose/1000 -11.7 (p=0.285) | **directionally consistent** | EV-era dose/1000 -111.5 (p=0.00541); step +557 (p=0.00541) | **not detectable** |
+| rebate → demand (registration) | descriptive only (no coefficient; observed BEV window 2022-07..2025-05 is too short/censored) | **not detectable** | — | — |
+| demand → price | lag-1 -0.027 S$/bid (p=0.976) | **not detectable** | lag-1 -2.710 S$/bid (p=0.508) | **not detectable** |
+| rebate → demand → price (mediation) | indirect -9.0 (CI spans 0); mediated share -0.016 | **not detectable** | indirect -331.8 (CI spans 0); mediated share -0.115 | **not detectable** |
+
+**Read:** the full-window headline 2022-01 effect is not robust (p=0.064) and is a tax/threshold
+confounder, not a rebate step — the negative-control test does not falsify it but the effect cannot
+be credited to the rebate. The bidding channel is directionally consistent at best (full window) and
+null/opposite-sign (2022+); the demand→price mechanism and the mediated path are not detectable in
+either scope. The 2022+ EV era is the one scope that *does* grade the headline rebate→price link as
+**supported** — but at 41 observations / 2 dose levels it is low-power and associational, not a
+causal magnitude.
 
 ---
 ## 2. Data
@@ -28,182 +63,282 @@
 
 | Store | Raw rows (stated total) | Contents | Processed artifact(s) |
 |---|---|---|---|
-| **COE results** | 1,985 (d_69b3380a…) | one row per (month, bidding_no, vehicle_class); fields `month, bidding_no, vehicle_class, quota, bids_success, bids_received, premium, _id`; categories A (low-power cars), B (high-power cars), C (goods), D (large goods), E (motorcycles); 2010-01..2026-10 | `coe_monthly.csv` (995 rows = 199 months × 5 cats, mean clearing price, summed quota/bids, exercise-count audit); `coe_extension_2025_06_2026_10.csv` (85 rows, COE-only extension) |
-| **Registrations** | 51,669 (d_d3f4d708…) | one row per (month, make, importer_type, fuel_type, vehicle_type, number); `number` null on ~57% of rows, rising over time ⇒ counts are LOWER BOUNDS; `Electric` (BEV) label first appears **2022-07** | `ev_registrations.csv` (113 rows; `ev_reg`, `ev_share`, `coverage_rate`, `nonnull_total`, `rows_total`) |
-| **CPI All Items** | 207 series (d_bdaff844…) | wide-format monthly CPI, 2024 base, 2016-01..2026-08 | `cpi_deflated.csv` (113 rows; real Cat A price = nominal ÷ (CPI/100)) |
+| **COE results** | 1,985 | one row per (month, bidding_no, vehicle_class); categories A (low-power), B (high-power), C (goods), D (large goods), E (motorcycles); 2010-01..2026-10 | `coe_monthly.csv`, `coe_extension_2025_06_2026_10.csv` (COE-only) |
+| **Registrations** | 51,669 | one row per (month, make, importer, fuel_type, vehicle_type, number); `number` null on a rising share ⇒ counts are LOWER BOUNDS; `Electric` (BEV) label first appears **2022-07** | `ev_registrations.csv` |
+| **CPI All Items** | 207 series | monthly CPI, 2024 base, 2016-01..2026-08 | `cpi_deflated.csv` (real Cat A price = nominal ÷ (CPI/100)) |
 
-Joint panel: `panel_joint.csv`, **113 rows** (one per month, 2016-01..2025-05): per-category COE columns (A–E: clearing_price, quota, bids_received, bids_success, exercises) + EV columns + 4 regime step dummies + continuous `dose_nominal_sgd` + `in_interpretation_window`.
+Joint panel: `panel_joint.csv`, **113 rows** (one per month, 2016-01..2025-05): per-category COE columns (A–E) + EV columns + REAL-POLICY dummies (`reg_real_ves_201801`, `reg_real_evstack_202101`, `reg_arffloor_zero_202201`, `reg_eeai_cap15k_202401`) + era dummies (`ves_program`, `eeai_active`) + continuous `dose_nominal_sgd` + `in_interpretation_window`.
 
-### 2.2 Regime timeline (from `tables/rebate_timeline.csv`, incl. verified-policy discrepancies)
+### 2.2 VERIFIED-POLICY rebate timeline (from `tables/rebate_timeline.csv`)
 
-| Effective month | Programme (as encoded by plan) | Size | In joint window | In extension | Verification against cited sources |
+| Effective month | Programme (verified real policy) | Size / dose | In joint window | In extension | Verification (cited) |
 |---|---|---|---|---|---|
-| 2016-11 | CEVS uplift (plan) | nominal +2000 (case-study construct; magnitude not verifiable) | Yes | No | NOT corroborated as a discrete Nov 2016 step; LTA shows a revised CEVS in force 1 Jul 2015 .. 31 Dec 2017 with no Nov 2016 step. |
-| 2018-01 | CEVS lapse (plan) | nominal -4000 (case-study construct; magnitude not verifiable) | Yes | No | CORROBORATED: CEVS applied to cars/taxis registered through 31 Dec 2017, so it lapsed 1 Jan 2018 (VES replaced it). |
-| 2018-09 | VES revival (plan) | nominal +1000 (case-study construct; magnitude not verifiable) | Yes | No | PARTIALLY corroborated: VES came into effect 1 Jan 2018 (NEA), not Sep 2018; the 'revival' framing is not corroborated. |
-| 2022-01 | EEAI introduction incl. 45% ARF rebate capped at $7,500 (plan) | $7,500 (verified policy figure; used as dose anchor) | Yes | No | DISCREPANCY (documented): real EEAI introduced 1 Jan 2021 at 45%-of-ARF capped at $20,000 (2021-23) -> $15,000 (2024-25) -> $7,500 (2026-27). The $7,500 is the 2026 cap, not a Jan 2022 introduction. The actual Jan 2022 change was the $0 ARF floor for EVs. |
-| 2026-01 | EEAI cap cut to $7,500 (real policy) | $15,000 -> $7,500 (verified) | No | Yes (2025-06..2026-10, COE-only) | CORROBORATED: 'From 1 Jan 2026 to 31 Dec 2026, the rebate will be capped at $7,500' (LTA). Outside the joint window; lives in the COE-only extension. |
-| 2013-01 | CEVS introduction (plan says 2012) | — | No (before 2016-01) | No | CORROBORATED at 1 Jan 2013 (NCCS), not 2012. OUTSIDE the 2016-01 window -> contributes nothing to identification. |
+| 2018-01 | CEVS lapse; VES (Band A1 $25,000 off ARF) in force | dose 20000 (CEVS est.) -> 25000 (VES A1, verified) | Yes | No | VERIFIED: revised CEVS in force 1 Jul 2015 .. 31 Dec 2017, so CEVS lapsed 1 Jan 2018; VES came into effect 1 Jan 2018 (NEA joint release 12 Nov 2020 confirms). $5,000 minimum-ARF floor in force for EVs until 31 Dec 2021. |
+| 2021-01 | Enhanced VES (A1 $25,000 maintained) + EEAI introduction (45% off ARF, capped $20,000) | dose 25000 -> 45000 (verified stack; $5,000 ARF floor -> part of nominal cap unusable) | Yes | No | VERIFIED: NEA/LTA joint release 12 Nov 2020 ('increased rebates under enhanced VES') confirms 1 Jan 2021 levels incl. A1 $25,000 and VES in effect from 1 Jan 2018; EEAI rate set read from LTA circulars via coewatch.sg. |
+| 2022-01 | ARF floor lowered to $0 for electric cars (TAX PROVISION, not a rebate) + 97->110 kW Category A threshold change (confounder) | dose stays 45000 (caps unchanged); full caps now usable; confounder marker kept | Yes | No | VERIFIED: Straits Times Budget 2021 + coewatch minimum-ARF column: $0 ARF floor for EVs from 1 Jan 2022 (extended through 31 Dec 2027, LTA circular VRL/16/2025 of 8 Sep 2025). The 97->110 kW Cat A threshold change is an existing confounder, controlled by the threshold dummy in the price/bidding exhibits. |
+| 2024-01 | EEAI cap cut $20,000 -> $15,000 (VES A1 $25,000 maintained per IEA statement) | dose 45000 -> 40000 (verified stack) | Yes | No | VERIFIED: EEAI cap $15,000 for 2024-01-01..2025-12-31 (coewatch.sg rate sets read from LTA circulars); VES rebates 'shall remain at S$25,000 for Band A1 cars' (IEA). This step is what makes the 2022+ window estimable (2 distinct doses inside it). |
+| 2026-01 | EEAI cap cut to $7,500 + VES A1 cut to $22,500 (real policy) | dose 40000 -> 27500 (verified) | No | Yes (2025-06..2026-10, COE-only) | CORROBORATED: 'From 1 Jan 2026 to 31 Dec 2026, the rebate will be capped at $7,500' (LTA); VES 2026 A1 $22,500 (LTA); 2027: $20,000 (LTA, extension window only). Outside the joint window; lives in the COE-only extension. |
+| 2027-01 | EEAI cessation (real policy) | EEAI rebate ceases; dose reverts to VES A1 $20,000 (2027, extension window) | No | No (beyond extension end 2026-10) | CORROBORATED: EEAI ceases 1 Jan 2027 (coewatch.sg glossary; LTA transitioning-to-EVs page). Documented for completeness; no data beyond 2026-10 in this pipeline. |
+| 2013-01 | CEVS introduction (original scheme; revised CEVS from 1 Jul 2015) | original CEVS 2013-2015 Band A ~$20,000; revised CEVS 2015-2017 Band A1 (0-95 g/km, incl. electric) ~$30,000 | No (before 2016-01) | No | CORROBORATED: CEVS in force from 1 Jan 2013 (NCCS); revised CEVS 1 Jul 2015 .. 31 Dec 2017 (LTA emissions-charges page; motorist.sg ask-motorists/591). OUTSIDE the 2016-01 window -> contributes nothing to identification; the in-window CEVS dose (20000) is a CONSERVATIVE ESTIMATE. |
+| 2016-11 | DEPRECATED (plan): 'CEVS uplift' — NOT a real policy step | n/a (no real policy change; no dose step here in the verified schedule) | Yes (deprecated) | No | DEPRECATED: the analysis plan's stylized Nov-2016 uplift does not exist in verified LTA/NEA policy (revised CEVS in force 1 Jul 2015 .. 31 Dec 2017 with no Nov-2016 step). The old dummy reg_cevs_uplift_201611 is kept in the panel for backward compatibility only. |
+| 2018-09 | DEPRECATED (plan): 'VES revival' — NOT a real policy step | n/a (no real policy change; VES in fact started 2018-01) | Yes (deprecated) | No | DEPRECATED: VES came into effect 1 Jan 2018 (NEA), not Sep 2018; the plan's 'revival' framing is not corroborated. The old dummy reg_ves_revival_201809 is kept in the panel for backward compatibility only. |
+| 2013-01 | DEPRECATED (plan): CEVS introduction year 2012 in the plan | — | No (deprecated) | No | DEPRECATED: plan said 2012; verified 1 Jan 2013 (NCCS). OUTSIDE the window either way. |
 
-**Discrepancies (documented, cited):** the plan's 4-event schedule is a stylized case-study design. Verified LTA/NEA/NCCS policy differs: real EEAI introduced 1 Jan 2021 (45% of ARF, capped $20,000 → $15,000 (2024) → **$7,500 (Jan 2026)**); VES in force from 1 Jan 2018; CEVS ran through 31 Dec 2017 (introduced 1 Jan 2013, not 2012); the actual Jan 2022 EV change was the $0 ARF floor. **Only the $7,500 dose anchor is a verified policy figure**; pre-2022 levels are nominal constructs (directions per plan, magnitudes not verifiable).
+**Verified facts (all cited in the table):** CEVS in force 1 Jul 2015..31 Dec 2017 (revised Band A1 ~$30k; we use a CONSERVATIVE CEVS dose of $20,000 for 2016-01..2017-12 — an **ESTIMATE**: direction certain, magnitude approximate — as the pre-VES baseline). CEVS LAPSES 1 Jan 2018; VES (Band A1 $25,000 off ARF, $5,000 ARF floor until 31 Dec 2021) begins 1 Jan 2018. Enhanced VES 1 Jan 2021 (A1 $25,000 maintained) + EEAI (45% off ARF, capped $20,000, 2021-01..2023-12). $0 ARF floor for electric cars 1 Jan 2022..31 Dec 2023 (extended to 2027) — a **TAX PROVISION, not a rebate** (2022-01). EEAI cap cut to $15,000 2024-01, $7,500 2026-01, ceases 2027-01. The 97→110 kW Cat A threshold change 1 Jan 2022 is a kept confounder marker. 2026: VES A1 $22,500. The old plan's 4-event schedule (2016-11 / 2018-01 / 2018-09 / 2022-01, flat 7500 from 2022) is **DEPRECATED** and shown in the timeline for audit only — its old dummy columns are retained at 0/1 for downstream compatibility but are not used in the new exhibits.
 
-### 2.3 Collapsing rules
+### 2.3 The combined EV-rebate dose (column `dose_nominal_sgd`)
 
-- **COE:** mean of `premium` (clearing price) per (month, category); SUM of quota/bids per (month, category); `exercise_count` audit — per-category exercise-count sums equal raw row counts exactly (verified: 220 per category in the 2016-01..2025-05 window, `tables/verification_report.csv` check (b)).
-- **Registrations:** per month, `ev_reg` = SUM of `number` over `fuel_type == 'Electric'` rows; `rows_total` = all raw rows that month; `coverage_rate = rows_nonnull / rows_total`. Hybrids (`Petrol-Electric*`) are never folded in. 2016-01..2022-06 = NA by construction (no BEV label).
-- **Joint window / COE-only extension:** the panel is 2016-01..2025-05. From 2025-06 to 2026-10 COE data continues but registrations stop ⇒ the extension is **COE-only, descriptive only** (85 rows); the Jan-2026 EEAI cap cut ($15k→$7.5k) lives there and is NOT estimated.
-- **Null-coverage caveat:** `number` is null on a rising share of registration rows (coverage 18%→33% across the BEV window), so `ev_reg` is a **lower bound that decays in reliability over time**.
-- **Pandemic months:** 2020-04/05/06 — no COE exercises held (documented in `tables/data_audit.csv`: `coe_exercise_gap = 2020-04; 2020-05; 2020-06`). Listwise dropped (not imputed); estimation sample N=110.
+| Period | Dose (S$, nominal) | Composition | Status |
+|---|---|---|---|
+| 2016-01..2017-12 | 20,000 | CEVS (pre-VES baseline) | **ESTIMATE** (flagged) |
+| 2018-01..2020-12 | 25,000 | VES Band A1 | verified |
+| 2021-01..2023-12 | 45,000 | VES A1 25,000 + EEAI cap 20,000 (stacked; $5,000 ARF floor → part of the cap unusable) | verified |
+| 2024-01..2025-05 | 40,000 | VES A1 25,000 + EEAI cap 15,000 (zero ARF floor → full caps usable) | verified |
 
-### 2.4 Estimable-scope rule (full-window estimation; 2022+ interpretation)
+**Distinct in-window dose values (4):** 20000; 25000; 40000; 45000. **Within the 2022-01..2025-05 window there are 2 values (40000; 45000) — so the 2022+ window is NOW a VALID ESTIMATION scope** (41 obs, 2 dose levels). Estimation windows: FULL 2016-01..2025-05 (primary); 2022+ 2022-01..2025-05 (also valid for headline exhibits).
 
-Every rebate-intensity exhibit is **estimated on the full window 2016-01..2025-05**. The dose is **FLAT from 2022-01 to window end** (`dose_constant_2022_01_to_2025_05 = TRUE`, `tables/dose_summary.csv`), so a 2022+-only estimation would be **rank-deficient** — the 2022+ robustness table literally contains the NA row: *"RANK-DEFICIENT: dose + reg_eeai_202201 are constant on 2022-01..2025-05 (dose flat at 7500; dummy flat at 1). A rebate coefficient is NOT estimable on a 2022+-only sample by the scope rule. Left as NA by design -- not a missing number."* (nobs=41). **2022+ is the INTERPRETATION scope only** (where the EEAI-era level is in force and the EV signal is material); it is never an estimation scope for rebate-intensity exhibits. This is audited by `src/05_scope_guard.py` (`tables/scope_audit.csv`, check (a)) and re-verified by `src/14_verify.py` (check (f)).
+### 2.4 Scope rule (full window PRIMARY + 2022+ EV era ALSO an estimation scope)
+
+(a) The **full window 2016-01..2025-05** remains the PRIMARY estimation scope for the
+CEVS→VES transition and overall level effects (110 monthly obs, 3 pandemic months dropped).
+(b) The **2022+ EV era 2022-01..2025-05** is NOW ALSO a VALID ESTIMATION scope (41 obs,
+2 distinct dose levels 45000→40000 at 2024-01) — the OLD flat-tail rule that made 2022+
+rank-deficient is REMOVED. The headline price + bidding + mediation exhibits are estimated
+on BOTH scopes and both are reported. (c) Collinearity: the continuous dose and the 4
+real-policy dummies are near-exact linear transforms of one another — no spec mixes both;
+each exhibit uses a dose-only OR dummy-only spec (documented per exhibit). Audited by
+`src/05_scope_guard.py` (`tables/scope_audit.csv`) and re-verified by `src/14_verify.py`.
 
 ### 2.5 The `catA_bids_received` correction (data-integrity fix)
 
-Batch A's panel contains a silent corruption: the raw datastore stores bid counts as strings with thousands separators (`'1,039'`) from mid-2023 on; Batch A's numeric coercion failed on those strings, and the monthly collapse summed NaNs to **0** — so `panel_joint.catA_bids_received` is literally 0 for **19 months (2023-10..2025-05)**, i.e. the entire EV-rebate era looks like zero demand. `src/00_data.py` reconstructs the monthly sums from `data/raw/coe_results_raw.csv` with comma-tolerant parsing → `catA_bids_received_clean`, **non-zero for all 110 COE months**. **Every model in this pipeline uses the corrected series**, never the corrupted panel column, never `ev_reg` as a price/bidding regressor (verified by `src/14_verify.py` check (g) and `tables/scope_audit.csv` check (b)).
+The raw datastore stores bid counts as comma-separated strings from mid-2023 on; the panel's
+numeric coercion failed and summed NaNs to **0** for **19 months (2023-10..2025-05)** — the
+entire EV-rebate era looked like zero demand. `src/00_data.py` reconstructs monthly sums from
+`data/raw/coe_results_raw.csv` with comma-tolerant parsing → `catA_bids_received_clean`,
+non-zero for all 110 COE months. **Every model uses the corrected series**, never the
+corrupted panel column, never `ev_reg` (verified by `src/14_verify.py` check (g)).
+
+### 2.6 Collapsing rules
+
+- **COE:** mean of `premium` (clearing price) per (month, category); SUM of quota/bids per
+  (month, category); `exercise_count` audit — per-category sums equal raw row counts exactly
+  (220 per category in-window, `tables/verification_report.csv` check (b)).
+- **Registrations:** per month, `ev_reg` = SUM of `number` over `fuel_type == 'Electric'`;
+  `coverage_rate = rows_nonnull / rows_total` (decays 18%→33%) ⇒ `ev_reg` is a lower bound.
+- **Pandemic months:** 2020-04/05/06 (no COE exercises) listwise-dropped, not imputed; N=110.
 
 ---
-## 3. Results
+## 3. Results (BOTH scopes, per exhibit)
 
-Every causal exhibit below shows (i) the **full-window estimable estimate** and (ii) its bounded **2022+ interpretation**, together with the negative-control verdict where it applies. All coefficients: HC1 robust SEs unless noted; HAC (Newey-West lag-3) reported where autocorrelation matters (DW 0.79 — see §3.8).
+All coefficients: HC1 robust SEs unless noted; HAC (Newey-West lag-3) reported where
+autocorrelation matters (DW 0.7886 — §3.8). Each exhibit states which
+spec (dose-only or dummy-only) it uses, per the collinearity rule.
 
-### 3.1 Price equation (rebate → price) — `tables/price_equation.csv`
+### 3.1 Price equation (rebate → price) — `tables/price_equation.csv`, `tables/price_equation_2022plus_robustness.csv`
 
-Primary spec M1 (lag-1 + lag-2 corrected Cat A demand, 4 regime dummies, quota, linear trend, CPI): full window, listwise N=110 (3 pandemic months dropped), nobs=108.
+**Full window (primary), DUMMY spec M1** (4 real-policy dummies, lag-1+lag-2 demand, quota,
+trend, CPI; nominal, nobs=108):
 
-| Term | Nominal coef (S$) | CI95 | p (HC1) | p (HAC) | Real coef (S$) | p (real, HC1) |
+| Term (real-policy) | Nominal coef (S$) | CI95 | p (HC1) | p (HAC) | Real coef (S$) | p (real) |
 |---|---|---|---|---|---|---|
-| **reg_eeai_202201** (headline) | +5,880.4 | [+443.6, +11,317.1] | 0.034 | 0.104 | +7,532.5 | 0.0122 |
-| reg_cevs_uplift_201611 | -8,565.4 | [-12,995.1, -4,135.7] | 0.000151 | 0.00249 | -10,066.9 | 0.000138 |
-| reg_cevs_lapse_201801 | -15,722.0 | [-20,021.6, -11,422.4] | 7.67e-13 | 8.54e-07 | -18,582.7 | 4.74e-13 |
-| reg_ves_revival_201809 | -7,638.6 | [-11,986.1, -3,291.0] | 0.000574 | 0.00703 | -8,900.5 | 0.000388 |
-| demand_l1 (S$/bid) | -1.0 | [-2.7, +0.6] | 0.225 | 0.226 | -1.2 | 0.219 |
-| demand_l2 (S$/bid) | +0.3 | [-0.8, +1.5] | 0.565 | 0.569 | +0.4 | 0.561 |
-| catA_quota (S$) | -6.1 | [-8.8, -3.3] | 1.71e-05 | 3.3e-05 | -7.3 | 2.2e-06 |
-| trend (S$/month) | -81.0 | [-312.8, +150.9] | 0.494 | 0.602 | -66.8 | 0.589 |
-| cpi_all_items (S$/index-pt) | +3,995.2 | [+2,849.9, +5,140.5] | 8.09e-12 | 5.19e-07 | +3,385.6 | 2.58e-08 |
+| **reg_real_ves_201801** (VES onset; 20000→25000) | -16,580.9 | [-22,047.8, -11,114.1] | 2.77e-09 | 0.000347 | — | — |
+| **reg_real_evstack_202101** (enhanced VES+EEAI; 25000→45000) | +7,666.1 | [+4,200.5, +11,131.8] | 1.45e-05 | 0.00149 | — | — |
+| reg_arffloor_zero_202201 ($0 ARF floor — TAX) | +3,825.6 | [-227.8, +7,879.1] | 0.0643 | 0.0692 | +5,327.6 | 0.0172 |
+| **reg_eeai_cap15k_202401** (EEAI cap cut; 45000→40000) | -11,972.2 | [-21,799.5, -2,145.0] | 0.017 | 0.0086 | -12,056.2 | 0.0184 |
+| demand_l1 (S$/bid) | -0.03 | [-1.80, +1.75] | 0.976 | 0.974 | — | — |
+| demand_l2 (S$/bid) | +1.72 | [+0.14, +3.30] | 0.0327 | 0.0236 | — | — |
 
-Dose spec M3 (continuous, per 1000 S$): **nominal +2,349 S$/1000 S$ (CI95 [1,577, 3,121], p=2.45e-09); real +2,824 S$/1000 S$ (p=2.66e-10); HAC p=3.88e-05** — significant under all variants. **No nominal↔real reversal.**
+**Full window, DOSE spec M3** (continuous, per 1000 S$): **nominal +599 S$/1000 S$ (CI95 [361, 837], p=7.94e-07); HAC p=0.00065; real +730 S$/1000 S$ (p=1.24e-07).** No nominal↔real reversal.
 
-**Honest read:** the 2022-01 jump (5,880 S$ ≈ +10.1% of the Cat A mean) looks positive and significant (HC1), but the HAC p-value is 0.104 and — decisively — the **negative-control check FAILS** (§3.6): clean categories with no EV rebate show the same or larger jump. This is a **market-wide common shock co-timed with the 97→110kW threshold change**, not an EV-rebate-specific price effect.
+**2022+ EV era (2022-01..2025-05, 41 obs, dose 45000→40000 at 2024-01 — NOW ESTIMABLE), DOSE spec E1** (dose + local trend + quota, nominal):
+
+| Term | Coef (S$/1000 S$) | CI95 | p (HC1) | p (HAC) |
+|---|---|---|---|---|
+| **dose_1000 (45000→40000 step)** | +4,112.7 | [+2,136.7, +6,088.8] | **4.52e-05** | 5.14e-10 |
+| reg_eeai_cap15k_202401 (step dummy, E2) | -20,563.6 | [-30,443.8, -10,683.4] | **4.52e-05** | — |
+| demand_l1 (S$/bid, E3) | -2.71 | [-10.73, +5.31] | 0.508 | — |
+
+**Honest read:** full-window, the 2022-01 ARF-floor dummy is positive but not robust (a tax/
+threshold confounder, not a rebate step) and the 2024-01 cap-cut dummy is negative; the negative
+control (§3.6) does not falsify the 2022-01 effect but it cannot be credited to the rebate. **On the
+2022+ EV era, the dose step IS statistically
+significant (+4,113 S$/1000 S$, p=4.52e-05) and survives the 2022+ negative
+control — but at 41 obs / 2 dose levels it is LOW POWER, wide-CI, and associational (not a
+causal magnitude). → **charts/01_price_regime.png**
 
 ### 3.2 Bidding channel (rebate → Cat A bidding demand) — `tables/demand_bidding_channel.csv`, `tables/crosslag_check.csv`
 
-| Spec | Term | Coef (bids) | CI95 | p (HC1) | p (HAC) | Verdict |
-|---|---|---|---|---|---|---|
-| dummy (4 regime steps) | **reg_eeai_202201** | -277.7 | [-542.8, -12.6] | 0.04 | **0.12** | significant HC1 only → **NOT robust** |
-| dose (per 1000 S$) | dose_1000 | -25.1 | [-86.3, +36.1] | 0.422 | — | **null** |
-| cross-lag | dose shifted −1 / 0 / +1 month | -37.8 / — / — | — | 0.226 / 0.422 / 0.226 | — | no timing pattern |
+| Scope | Spec | Term | Coef (bids) | CI95 | p (HC1) | p (HAC) | Verdict |
+|---|---|---|---|---|---|---|---|
+| full window | dummy | 2024-01 cap-cut step | +679.7 | [+213.3, +1,146.1] | 0.00429 | 0.0215 | dir-consistent (full) |
+| full window | dose | dose_1000 | -11.7 | [-33.1, +9.8] | 0.285 | 0.387 | null |
+| cross-lag | dose | shifted −1/0/+1 mo | -7.7 / — / — | — | 0.479 / 0.285 / 0.479 | — | no timing pattern |
+| **2022+ EV era** | dose | dose_1000 | -111.5 | [-190.0, -32.9] | 0.00541 | — | **opposite sign (negative)** |
+| **2022+ EV era** | dummy | cap-cut step | +557.3 | [+164.6, +949.9] | 0.00541 | — | pos. but low power |
 
-**Honest read:** the predicted direction for 'bidders bid more' is coefficient > 0; the estimated 2022-01 effect is −278 bids and only significant under HC1, while the continuous dose is null and the cross-lag shows no pattern. The sign is even the *wrong* direction for the hypothesised bidding channel. **This does NOT support 'the rebate causes bidders to bid more'.** Grade: not detectable. (Context: total Cat A demand is dominated by non-EV cars; the EV signal is material only from ~2022, so the 2022+ interpretation window is 2022-01..2025-05.)
+**Honest read:** the predicted direction for 'bidders bid more' is coefficient > 0. Full-window,
+the 2024-01 step is positive and HC1-significant (but the dose version is null). On the 2022+ EV
+era the dose coefficient is **negative** (opposite the hypothesised direction) — the bidding
+channel does NOT cleanly support 'the rebate causes bidders to bid more'. Total Cat A demand is
+dominated by non-EV cars; the EV signal is material only from ~2022. Grade: directionally
+consistent (full) / not detectable (2022+).
 
 ### 3.3 Registration channel (rebate → EV registrations) — `tables/ev_registrations_descriptive.csv` (DESCRIPTIVE ONLY)
 
-Observed BEV window 2022-07..2025-05 (35 months): mean 854 registrations/month (median 635, min 241, max 2,014); mean EV share 25.8% (max 43.0%); cumulative 29,899; coverage decays 18%→33%. **No within-window rebate variation** (EEAI constant ⇒ flat dose), so **no coefficient is estimable** on this channel — descriptive / correlational only, and `ev_reg` is a lower bound. Grade: not detectable.
+Observed BEV window 2022-07..2025-05 (35 months): mean 854 registrations/month (min 241, max 2,014); mean EV share 25.8% (max 43.0%); cumulative 29,899; coverage decays 18%→33%. The observed BEV window is too short and right-truncated (and `ev_reg` is a lower bound) to estimate a coefficient on this channel — **descriptive only**. Grade: not detectable.
 
 ### 3.4 Mediation (rebate → bidding demand → price) — `tables/mediation_effects.csv`
 
-| Path | Estimate (S$/1000 S$ dose) | CI95 | n_obs |
-|---|---|---|---|
-| total (rebate → price) | +2897.4 | [+1890.1, +4150.7] | 109 |
-| **indirect (rebate → demand → price)** | -43.4 | [-399.4, +253.1] | 109 |
-| direct (holding demand fixed, point est.) | +2940.8 | — | 109 |
-| **mediated share (indirect / total)** | -0.015 | [-0.158, +0.083] | 109 |
+| Path | Full window (S$/1000 S$) | CI95 | 2022+ EV era | CI95 | n_obs (full / EV) |
+|---|---|---|---|---|---|
+| total (rebate → price) | +569.1 | [+339.7, +824.1] | +2882.0 | [+1048.5, +5335.5] | 109 / 41 |
+| **indirect (rebate → demand → price)** | -9.0 | [-52.8, +28.6] | -331.8 | [-1034.7, +436.9] | 109 / 41 |
+| **mediated share (indirect / total)** | -0.016 | [-0.099, +0.059] | -0.115 | [-0.374, +0.197] | 109 / 41 |
 
-**Honest read:** the mediated share is **-0.015** with a CI that spans 0 (-0.158, +0.083) — the price effect is **NOT routed through Cat A bidding demand**. The indirect path is null (−43 S$/1000 S$, CI spans 0). 2-stage bootstrap (N=2000), full-window estimation with 2022+ interpretation; simultaneity flagged (rebate set in response to EV demand). Grade: not detectable. → **charts/06_mediation_diagram.png**
+**Honest read (full window):** mediated share = **-0.016** with a CI spanning 0 (-0.099, +0.059) — the price effect is **NOT routed through Cat A bidding demand** (indirect -9.0, CI spans 0). 2-stage bootstrap (N=2000), full-window primary. **2022+ EV era:** mediated share **-0.115** (CI -0.374, +0.197), indirect -331.8 (CI spans 0) — again NOT routed through bidding; 41 obs → low power. Simultaneity flagged (rebate set in response to EV demand). Grade: not detectable (both scopes). → **charts/06_mediation_diagram.png**
 
-### 3.5 Event study — `tables/event_study_coefficients.csv`, `tables/event_study_prechecks.csv`
+### 3.5 Event study (4 verified-policy events) — `tables/event_study_coefficients.csv`, `tables/event_study_prechecks.csv`
 
-- **Episode 2 (2022-01, EEAI rebate + 97→110kW threshold — BOUNDED, combined):** onset +22,683 S$ [CI95 13,995, 31,370], p=3.1e-07; lag 1-6 +33,132 S$ (p=5.19e-06), lag 7-17 +48,411 S$ (p=1.14e-05); lead −1 +22,884 S$ (p=2.03e-07). Pre-trend check: **CONTAMINATED** (joint leads Wald p=6.16e-11; `pre_trend_clean=False`) — a secular COE trend is present, so the onset is a **bound** relative to a moving pre-trend, co-timed with the threshold change. "CONTAMINATED pre-trend: leads not ~0 (a pre-existing secular trend is present); onset effect is a BOUND relative to a moving pre-trend, not a clean causal jump. Reported honestly."
-- **Episode 1 (2016-11, total/low-emission demand — NEVER EV-specific):** onset +3,485 S$ [CI95 1,478, 5,491], p=0.000664; pre-trend also contaminated (joint leads Wald p=1.05e-50). "CONTAMINATED pre-trend: leads not ~0 (a pre-existing secular trend is present); onset effect is a BOUND relative to a moving pre-trend, not a clean causal jump. Reported honestly."
-- **Jan 2026 EEAI cap cut ($15k→$7.5k): DESCRIPTIVE ONLY** — lives in the COE-only extension 2025-06..2026-10; bounded by the 2026 PARF cut + supply trough; does NOT enter the joint-window event study (`tables/event_study_prechecks.csv`, row `2026-01_capcut_DESCRIPTIVE_ONLY`).
+| Event | Onset coef (S$) | CI95 | p | Pre-trend clean? | Note |
+|---|---|---|---|---|---|
+| 2018-01 CEVS lapse / VES onset (dose 20000 est→25000) | -17,068 | [-19,592, -14,543] | 4.43e-40 | False (joint leads Wald p=6.01e-47) | clean |
+| 2021-01 enhanced VES + EEAI stack (dose 25000→45000) | +11,145 | [+8,142, +14,147] | 3.47e-13 | False (joint leads Wald p=1.03e-12) | clean |
+| 2022-01 $0 ARF floor (TAX) + 97→110kW threshold (confounder) [BOUNDED] | +26,922 | [+18,997, +34,846] | 2.77e-11 | False (joint leads Wald p=3.68e-12) | clean |
+| 2024-01 EEAI cap cut (dose 45000→40000; the EV-era step) | -39,017 | [-43,178, -34,856] | 1.93e-75 | False (joint leads Wald p=7.5e-87) | clean |
 
-→ **charts/05_event_study.png**
+**Honest read:** all four onsets have **contaminated pre-trends** (significant non-zero leads —
+a secular COE trend is present), so every onset is a **bound** relative to a moving pre-trend, not
+a clean causal jump. The 2022-01 event is explicitly bounded (ARF floor + threshold combined,
+co-timed). The 2026-01 cap cut is descriptive-only (COE-only extension). → **charts/05_event_study.png**
 
 ### 3.6 Negative controls (the decisive test) — `tables/negative_controls.csv`
 
-| Category | Role | reg_eeai_202201 coef (S$) | CI95 | p | 2022-01 % jump (coef/mean) |
+**Full window, 2022-01 ARF-floor/threshold dummy** (clean controls C/D/E have NO EV rebate):
+
+| Category | Role | coef (S$) | CI95 | p | 2022-01 % jump (coef/mean) |
 |---|---|---|---|---|---|
-| A | MAIN (low-power cars; EV-eligible) | +5,880 | [+444, +11,317] | 0.034 | **+10.11%** |
-| B | CONTAMINATED upper bound (high-power EVs fall here) | +9,925 | [-359, +20,208] | 0.0586 | **+14.15%** |
-| C | **CLEAN negative control** (goods; no EV rebate) | +6,704 | [-1,133, +14,542] | 0.0936 | **+13.74%** |
-| D | **CLEAN negative control** (large goods; no EV rebate) | +3,195 | [+1,669, +4,721] | 4.07e-05 | **+41.76%** |
-| E | **CLEAN negative control** (motorcycles; no EV rebate) | +25,992 | [+13,353, +38,631] | 5.56e-05 | **+36.42%** |
+| A | MAIN (low-power cars; EV-eligible) | -11,972 | [-21,800, -2,145] | 0.017 | **-20.58%** |
+| B | CONTAMINATED upper bound (high-power EVs fall here) | -31,895 | [-41,688, -22,103] | 1.73e-10 | **-45.49%** |
+| C | **CLEAN negative control** (goods; no EV rebate) | -15,912 | [-21,190, -10,634] | 3.45e-09 | **-32.60%** |
+| D | **CLEAN negative control** (large goods; no EV rebate) | -1,843 | [-2,787, -900] | 0.000128 | **-24.10%** |
+| E | **CLEAN negative control** (motorcycles; no EV rebate) | -31,923 | [-40,055, -23,791] | 1.43e-14 | **-44.73%** |
 
-> **# VERDICT: NEGATIVE-CONTROL FAIL: clean controls C/D/E 2022-01 % jumps = 13.7/41.8/36.4% vs A (EV-eligible) 10.1%. Clean controls show the SAME 2022-01 price jump despite NO EV rebate applying to them -> the apparent 'rebate -> price' effect is a MARKET-WIDE COMMON SHOCK (co-timed 97->110kW threshold + COE market dynamics)**
+> **VERDICT (full window**
 
-Clean controls C/D/E have **no EV rebate at all** yet show the same or a larger 2022-01 jump (13.7% / 41.8% / 36.4% vs A's 10.1%). Verdict: **NEGATIVE-CONTROL FAIL** — the 2022-01 price increase is a market-wide common shock, and the headline 'rebate → price' coefficient cannot be credited to the EV rebate. → **charts/01_price_regime.png** (bottom panel)
+**2022+ EV era, 2024-01 EEAI cap-cut step** (the EV-rebate-specific variation):
 
-### 3.7 2022+ robustness (demand → price only) — `tables/price_equation_2022plus_robustness.csv`
+| Category | 2024-01 % step (coef/mean) | coef (S$) | p |
+|---|---|---|---|
+| A (MAIN (EV-eligible)) | **-22.96%** | -20,204 | 6.3e-05 |
+| C (CLEAN (no EV rebate)) | **-7.93%** | -5,505 | 0.211 |
+| D (CLEAN (no EV rebate)) | **-7.42%** | -754 | 0.117 |
+| E (CLEAN (no EV rebate)) | **-36.07%** | -40,225 | 1.32e-07 |
 
-2022-01..2025-05 subsample (nobs=41; trend + CPI + quota; demand lags; nominal and real): demand_l1 -2.71 (p=0.508), demand_l2 +1.67 (p=0.535), quota -22.62 (p=0.0036), trend +954 (p=0.0308) — the price equation in the EV era is **dominated by trend + regime terms**, and demand is not significant. The rebate-intensity row is left NA by design (rank-deficient on the flat tail — see §2.4). This 2022+ subsample is **interpretation/robustness only**, never the estimation scope for rebate exhibits.
+> **VERDICT (2022+ EV era**
 
-### 3.8 Diagnostics — `tables/diagnostics_stationarity_autocorr.csv`
+**Honest read (per scope, from the verdict rows):** full window — the 2022-01 ARF-floor/threshold dummy is positive in A but the clean controls do NOT show the same % jump, so the test does NOT falsify an EV-rebate reading; however the effect is not robust (p=0.064) and is a TAX provision co-timed with the threshold change, so it is not credited to the rebate. 2022+ EV era — the 2024-01 step (the pure EV-rebate variation) is largest in A and not matched by C/D (E moves comparably but is a single category); the same-effect test is False, so the 2024-01 EV-era step is **NOT falsified** — consistent with an EV-rebate channel (magnitude not identifiable at this power). → **charts/01_price_regime.png**
+
+### 3.7 Diagnostics — `tables/diagnostics_stationarity_autocorr.csv`
 
 - Stationarity: Cat A price (nominal) level ADF p=0.966 (**I(1)**); 1st-diff ADF p=4.86e-17 (stationary). Demand (corrected) level ADF p=0.2 (I(1)). CPI level ADF p=0.767 (I(1)-ish).
-- Residual autocorrelation: **Durbin-Watson = 0.7910** (primary price equation); Ljung-Box Q(1) = 37.1 (p=1.14e-09, significant); Breusch-Godfrey (nlags=3): F=18.7646. ⇒ **HAC (Newey-West) SEs used throughout**; headline significance is HC1-only.
-- **Power:** 4 effective treatment changes, 110 monthly obs — low power; wide CIs are expected. Precise magnitude claims are forbidden; all estimates are bounds, not precise causal magnitudes.
+- Residual autocorrelation: **Durbin-Watson = 0.7886** (primary price equation); Ljung-Box Q(1) = 38.5 (p=5.35e-10, significant); Breusch-Godfrey (nlags=3): F=20.0961. ⇒ **HAC (Newey-West) SEs used**; headline significance is HC1-only.
+- **Power:** full window = 3 verified dose steps + 2 tax/confounder events, 110 monthly obs;
+2022+ EV era = 2 dose levels, **41 obs** — LOW POWER in both scopes; wide CIs expected. Precise
+magnitude claims are forbidden; all estimates are bounds, not precise causal magnitudes.
 
-### 3.9 Sensitivity — `tables/sensitivity_analysis.csv`
+### 3.8 Sensitivity (full window, 2024-01 cap-cut dummy) — `tables/sensitivity_analysis.csv`
 
-| Variant (reg_eeai_202201) | Coef (S$) | CI95 | p | nobs |
+| Variant | Coef (S$) | CI95 | p | nobs |
 |---|---|---|---|---|
-| primary w/o catA_quota | +8,978 | [+2,743, +15,212] | 0.00477 | 108 |
-| primary w/o trend | +6,950 | [+2,672, +11,228] | 0.00145 | 108 |
-| primary w/o CPI | +24,867 | [+18,848, +30,885] | 5.58e-16 | 108 |
-| demand def = bids_received (primary) | +5,880 | [+444, +11,317] | 0.034 | 108 |
-| demand def = bids_success | +4,106 | [-1,429, +9,641] | 0.146 | 108 |
-| lag order = lag-1 only | +6,037 | [+783, +11,291] | 0.0243 | 109 |
-| lag order = lag-2 only | +6,021 | [+594, +11,447] | 0.0297 | 108 |
-| contemporaneous demand | +7,189 | [+1,729, +12,648] | 0.00986 | 110 |
-| price def = nominal (primary) | +5,880 | [+444, +11,317] | 0.034 | 108 |
-| price def = real | +7,532 | [+1,644, +13,421] | 0.0122 | 108 |
+| primary w/o catA_quota | -14,030 | [-23,097, -4,964] | 0.00242 | 108 |
+| primary w/o trend | -14,549 | [-22,164, -6,934] | 0.000181 | 108 |
+| primary w/o CPI | -10,806 | [-21,350, -262] | 0.0446 | 108 |
+| demand def = bids_success | -9,364 | [-19,149, +422] | 0.0607 | 108 |
+| lag order = lag-1 only | -10,733 | [-20,302, -1,163] | 0.0279 | 109 |
+| contemporaneous demand | -10,684 | [-19,451, -1,918] | 0.0169 | 110 |
+| price def = real | -12,056 | [-22,079, -2,034] | 0.0184 | 108 |
 
-The 2022-01 coefficient survives every control/variant in magnitude (positive, +5,900..+24,900 S$; only the bids_success demand definition loses significance, p=0.146) — **but significance is not the question**: the negative-control failure (§3.6) is invariant to all of these, because the common shock hits every category. Robustness of magnitude ≠ identification of cause.
+The 2024-01 coefficient is negative across every variant (robust in sign/magnitude) — the
+negative-control verdict (§3.6) is the identification question, and it is scope-dependent:
+not falsified on the 2022+ EV era, not isolating a clean EV effect on the full window.
 
 ---
 ## 4. Confounder discussion
 
-- **Jan 2022 97→110kW Cat A threshold change (dominant confounder).** Co-timed with the encoded EEAI introduction; raises the eligible class mix and shifts clearing prices market-wide. The negative-control failure is its signature: every category, including rebate-free goods/motorcycle categories, jumps in the same month. The threshold dummy (M1b) reproduces the headline coefficient exactly, i.e. the two cannot be separated with this data.
-- **Secular COE price trend.** Prices are I(1) and trending; the event-study leads are significant and non-zero (contaminated pre-trends), so event onsets are bounds, not clean jumps. The price equation absorbs a linear trend, but a trend cannot fully proxy a regime shift.
-- **2026 PARF cut + 2026 supply trough.** The Jan-2026 EEAI cap cut sits in the COE-only extension alongside the 2026 PARF reform and a COE supply trough; any 2026 price movement there is descriptively confounded and is deliberately NOT estimated.
-- **Category-merge windows.** Historical category reclassifications (e.g. the B/E and goods category restructuring) mean pre-2022 and post-2022 category definitions are not fully comparable; this limits cross-period comparisons of per-category levels (within-category time series remain valid).
-- **CPI deflation.** Nominal vs real: the headline coefficient is +5,880 S$ (nominal) vs +7,532 S$ (real) — same sign, same interpretation; no real-terms reversal that would rescue an EV-specific reading.
-- **Endogeneity / simultaneity.** The rebate was set *in response to* EV demand growth; registration data and rebate timing are mutually determined. Every coefficient is therefore associational at best absent an exogenous rebate shift.
+- **Jan 2022 97→110kW Cat A threshold change (dominant confounder).** Co-timed with the $0 ARF
+  floor; shifts clearing prices across categories (2022-01 % moves, from §3.6: A -20.6%, D -24.1%, E -44.7%, C -32.6%). It is a kept confounder marker,
+  not a rebate dose; it complicates attributing the 2022-01 price move to the EV rebate alone.
+- **Secular COE price trend.** Prices are I(1) and trending; event-study leads are significant
+  and non-zero (contaminated pre-trends), so onsets are bounds, not clean jumps.
+- **$0 ARF floor is a TAX provision, not a rebate.** While the $5,000 ARF floor applied (2021),
+  part of the nominal EEAI cap was unusable; from 1 Jan 2022 the full cap is usable. Encoded as
+  `reg_arffloor_zero_202201` and controlled separately from the rebate dose.
+- **2026 PARF cut + 2026 supply trough.** The Jan-2026 EEAI cap cut sits in the COE-only
+  extension alongside the 2026 PARF reform + a supply trough; descriptively confounded, NOT estimated.
+- **CPI deflation.** Nominal vs real: no real-terms reversal that would change the interpretation.
+- **Endogeneity / simultaneity.** The rebate was set *in response to* EV demand growth; every
+  coefficient is associational at best absent an exogenous rebate shift.
 
 ---
 ## 5. Honest limitations
 
-1. **Aggregate-only; no bid-level data.** Bids are counts, not bid distributions: 'bidders bid more' (bid amounts) is not directly observable; we test total bid *counts* and clearing prices.
-2. **Total vs EV demand.** Cat A bid counts mix EV and non-EV bidders; total Cat A demand is dominated by non-EV cars, so any EV-specific bidding effect is diluted and likely unidentifiable at this aggregation.
-3. **Endogeneity / simultaneity** (see §4): rebate policy responds to EV demand; no exogenous variance in the rebate level within 2022-01..2025-05 (flat $7,500 tail).
-4. **Low power.** 4 effective treatment changes, 110 monthly observations; the headline p is HC1-only (HAC p≈0.104); wide CIs are expected.
-5. **Event-window confounding.** Both event-study episodes have contaminated pre-trends; onsets are bounds; the 2022-01 episode is the rebate AND the threshold combined (bounded by design).
-6. **Pre-2022 near-zero EV content.** Before 2022-07 there are no observed BEV registrations; pre-2022 months contribute to the full-window estimate but carry essentially no EV signal (required by the flat-tail identification design).
-7. **Flat rebate level 2022-01..2025-05.** The dose never varies in the EV-relevant era, so the rebate coefficient is identified only from pre-2022 dose variation — the weakest part of the design.
-8. **Null-coverage decay.** Registration counts are null on a rising share of rows (coverage 18%→33% of rows observed); `ev_reg` is a lower bound whose reliability decays over time.
-9. **EV-label onset 2022-07.** The BEV label first appears 2022-07; the registration channel is right-truncated at the joint window end (2025-05).
-10. **COE-only months after 2025-05.** 2025-06..2026-10 has COE but no registrations; used descriptively only (Jan-2026 cap cut).
-11. **Plan's stylized rebate schedule vs verified real policy.** The 4-event dose path is a case-study construct; only the $7,500 anchor is a verified policy figure; real policy (EEAI 2021→2024→2026 caps, VES from 2018-01, CEVS 2013–2017, $0 ARF floor Jan 2022) differs — fully cited in `tables/rebate_timeline.csv`.
-12. **Pandemic NA months.** 2020-04/05/06 (no COE exercises) are listwise-dropped, not imputed; N=110.
-13. **Data-integrity correction.** The panel's `catA_bids_received` was corrupted to 0 for 19 months; all models use the corrected raw-reconstructed series (§2.5).
+1. **CEVS dose is an ESTIMATE (2016-01..2017-12).** The pre-VES baseline of $20,000 is a
+   conservative estimate (direction certain, magnitude approximate); the revised CEVS Band A1 was
+   ~$30,000. All 2018+ dose levels are verified.
+2. **Combined-dose stacking assumption.** The dose adds VES A1 + EEAI cap when both are in force
+   (45000 / 40000). This is the *maximum combined rebate available*, a CAP, not a realized average
+   rebate actually claimed; real per-vehicle rebates are lower.
+3. **Dose is a CAP, not a realized average.** No vehicle-level redemption data; the coefficient is
+   per $1,000 of *available* rebate capacity, not per $1,000 actually received.
+4. **41-obs 2022+ EV-era power.** The newly-estimable 2022+ scope has only 41 observations and 2
+   dose levels — LOW POWER, wide CIs; the 'supported' grade there is associational, not a causal magnitude.
+5. **Aggregate-only; no bid-level data.** Bids are counts, not bid distributions; 'bidders bid
+   more' (bid amounts) is not directly observable.
+6. **Total vs EV demand.** Cat A bid counts mix EV and non-EV bidders; total Cat A demand is
+   dominated by non-EV cars, diluting any EV-specific bidding effect.
+7. **Endogeneity / simultaneity** (§4): rebate policy responds to EV demand.
+8. **Event-window confounding.** All 4 event-study episodes have contaminated pre-trends; onsets
+   are bounds; 2022-01 is rebate/tax AND threshold combined (bounded).
+9. **Null-coverage decay.** Registration counts are null on a rising share of rows (coverage
+   18%→33%); `ev_reg` is a lower bound whose reliability decays.
+10. **EV-label onset 2022-07 / right-truncation.** The registration channel is too short/censored
+   for a coefficient; descriptive only.
+11. **COE-only months after 2025-05.** 2025-06..2026-10 has COE but no registrations; descriptive
+   only (Jan-2026 cap cut).
+12. **Pandemic NA months.** 2020-04/05/06 listwise-dropped, not imputed; N=110.
+13. **Data-integrity correction.** `catA_bids_received` was corrupted to 0 for 19 months; all
+   models use the corrected raw-reconstructed series (§2.5).
+
+*Dropped from the old limitations:* the 'plan schedule differs from real policy' limitation is no
+*longer applicable — this run IS the verified policy.*
 
 ---
-## 6. Charts (paths relative to the workspace root)
+## 6. Charts (paths relative to the repo root)
 
 | Chart | File | Data table | What it shows |
 |---|---|---|---|
-| 1 | `charts/01_price_regime.png` | `tables/chart01_price_regime.csv` | nominal + real Cat A price with regime step markers, the Jan-2022 confounder marker, and the negative-control C/D/E vs A comparison (market-wide shock) |
+| 1 | `charts/01_price_regime.png` | `tables/chart01_price_regime.csv` | nominal + real Cat A price with REAL policy markers (2018/2021/2024) + 2022-01 confounder, and the negative-control C/D/E vs A panel (per scope: 2022-01 + 2024-01) |
 | 2 | `charts/02_ev_demand.png` | `tables/chart02_ev_demand.csv` | EV registrations + EV share 2022-07..2025-05, with the coverage-rate lower-bound decay note |
-| 3 | `charts/03_price_demand_dual.png` | `tables/chart03_price_demand_dual.csv` | dual-axis Cat A price vs CORRECTED Cat A bids received, 2022+ interpretation window shaded |
+| 3 | `charts/03_price_demand_dual.png` | `tables/chart03_price_demand_dual.csv` | dual-axis Cat A price vs CORRECTED Cat A bids received; 2022+ EV era shaded |
 | 4 | `charts/04_scatter_fit_ci.png` | `tables/chart04_scatter_fit_ci.csv` | price-vs-demand scatter with bivariate fitted line + 95% CI band (association only) |
-| 5 | `charts/05_event_study.png` | `tables/chart05_event_study.csv` | event-study coefficients with CIs for both episodes; pre-trend contamination annotated |
-| 6 | `charts/06_mediation_diagram.png` | `tables/chart06_mediation_effects.csv` | mediation path (rebate → demand → price) with effect sizes; null mediation verdict |
+| 5 | `charts/05_event_study.png` | `tables/chart05_event_study.csv` | event-study coefficients with CIs for the 4 verified-policy events; pre-trend contamination annotated |
+| 6 | `charts/06_mediation_diagram.png` | `tables/chart06_mediation_effects.csv` | mediation path (rebate → demand → price) with effect sizes for BOTH scopes |
 
 ---
 ## 7. Verification
 
-`src/14_verify.py` re-confirmed from disk (see `tables/verification_report.csv`): fetched row counts == stated totals (a); analysis months map to real exercises + real registration rows, with the 3 pandemic NA months documented (b); every rebate step date carries a cited policy source (c); **69/69 report figures trace to saved tables** (d, `tables/report_figures_checklist.csv`); dose state = 4 changes, values [2000; 3000; 4000; 6000; 7500], flat 7500 from 2022-01 (e); no rebate-intensity exhibit estimated on a 2022+-only sample (f); price-equation demand regressor = corrected catA_bids_received, never ev_reg (g); mediated share on the full-window sample with 2022+ interpretation (h); data-flow/layering contract held (i).
+`src/14_verify.py` re-confirmed from disk (see `tables/verification_report.csv`): fetched row
+counts == stated totals (a); analysis months map to real exercises + real registration rows, with
+the 3 pandemic NA months documented (b); every VERIFIED rebate-step date (2018-01, 2021-01,
+2022-01, 2024-01) + out-of-window rows (2013/2026/2027) carry a cited policy source (c);
+**112/112 report figures trace to saved tables** (d,
+`tables/report_figures_checklist.csv`); dose state = 3 verified changes, 4 distinct
+doses [20000; 25000; 40000; 45000], and the 2022+ window has 2 distinct doses (40000; 45000) → a
+valid estimation scope, old flat-tail rule removed (e); headline exhibits estimated on the full
+window AND the 2022+ EV era (f); price-equation demand regressor = corrected
+catA_bids_received, never ev_reg (g); mediated share on the full-window sample with the 2022+ EV
+era reported alongside (h); data-flow/layering contract held (i).
 
-*Generated by `src/15_report.py`. Every numeric claim above was read from a saved `tables/*.csv` at generation time; if any value is missing, the generator fails rather than fabricate.*
+*Generated by `src/15_report.py`. Every numeric claim above was read from a saved
+`tables/*.csv` at generation time; if any value is missing, the generator fails rather than
+fabricate.*

@@ -70,8 +70,12 @@ def register_exhibit(
 ):
     """Declare an exhibit's scope so the scope guard can verify it.
 
-    est_scope must be the FULL window ``2016-01..2025-05`` for every
-    rebate-intensity exhibit (a 2022+-only scope is forbidden).
+    est_scope must CONTAIN the full window ``2016-01..2025-05`` for every
+    rebate-intensity exhibit (a 2022+-only scope is forbidden). For the
+    headline exhibits (price equation, bidding channel, mediation) est_scope
+    is dual: ``2016-01..2025-05;2022-01..2025-05`` — the verified real dose
+    varies inside the 2022+ window (45000 -> 40000 at 2024-01), so 2022+ is
+    ALSO a valid estimation scope there; the full window remains primary.
     """
     EXHIBITS.append(
         dict(

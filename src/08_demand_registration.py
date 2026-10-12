@@ -8,12 +8,14 @@ observed window 2022-07..2025-05 (BEV registrations first appear 2022-07; before
 that ev_reg / ev_share are NA by construction).
 
 CHANNEL STATUS (stated explicitly):
-  * There is NO within-window rebate variation in this channel — the EEAI
-    (the EV-specific rebate) is a constant baseline across the observed window
-    (the $7,500 anchor is flat 2022-01..2025-05), and the EV registration
-    series only begins 2022-07. A rebate-coefficient cannot be identified from
-    this channel alone (no within-window dose variation and a short,
-    right-truncated series).
+  * There is NO within-window rebate variation in the OBSERVED window
+    2022-07..2025-05 that this short series can use — the verified combined
+    dose is flat at 45000 from 2022-01..2023-12 and 40000 from 2024-01
+    (the 2024-01 step arrives 8 months after the series starts and the
+    series is right-truncated at 2025-05), and the EV registration series
+    only begins 2022-07. A rebate-coefficient cannot be identified from
+    this channel alone (short, right-truncated series; the dose step is
+    too close to the window end).
   * It is therefore DESCRIPTIVE / CORRELATIONAL ONLY and FEEDS NO coefficient
     exhibit (it is excluded from the price equation, bidding channel, and
     mediation by the scope rule -- see 05_scope_guard assertion (d)).
@@ -39,8 +41,9 @@ OUT_DIR = D.ROOT / "tables"
 OUT = OUT_DIR / "ev_registrations_descriptive.csv"
 
 NOTE = (
-    "DESCRIPTIVE / correlational only. NO within-window rebate variation "
-    "(EEAI constant baseline); EV series begins 2022-07 (right-truncated, "
+    "DESCRIPTIVE / correlational only. NO within-window rebate variation in "
+    "the OBSERVED window 2022-07..2025-05 (combined dose is flat 45000 until "
+    "2024-01, then 40000; the EV series begins 2022-07, right-truncated, "
     "right-censored). ev_reg is a LOWER BOUND (count null on a rising "
     "fraction of rows; coverage_rate decays ~0.33 -> ~0.20). FEEDS NO "
     "coefficient exhibit (excluded from price/bidding/mediation models)."
