@@ -236,12 +236,48 @@ python3 src/15_report.py
 
 ### Charts
 
-- [`charts/01_price_regime.png`](charts/01_price_regime.png) — nominal + real Cat A price with regime/confounder markers **and the negative-control comparison** (shows the 2022-01 market-wide jump and the 2024-01 dose step in the EV era)
-- [`charts/02_ev_demand.png`](charts/02_ev_demand.png) — EV registrations + share with coverage lower-bound (shows the 2022-07 EV-label onset and subsequent uptake)
-- [`charts/03_price_demand_dual.png`](charts/03_price_demand_dual.png) — dual-axis price vs bids (shows the divergent trajectories post-2022)
-- [`charts/04_scatter_fit_ci.png`](charts/04_scatter_fit_ci.png) — price-vs-demand scatter with fit + CI band (illustrates the null demand→price link)
-- [`charts/05_event_study.png`](charts/05_event_study.png) — event-study coefficients with CIs for all 4 verified-policy onsets
-- [`charts/06_mediation_diagram.png`](charts/06_mediation_diagram.png) — mediation path with effect sizes for both scopes
+**Chart 1 — Price, regimes, and the negative-control test**
+
+![Chart 1: nominal + real Cat A price with regime/confounder markers and the negative-control comparison](charts/01_price_regime.png)
+
+*Nominal + real Cat A price with regime/confounder markers **and the
+negative-control comparison** — the 2022-01 market-wide jump (all categories)
+and the 2024-01 dose step in the EV era.*
+
+**Chart 2 — EV demand**
+
+![Chart 2: EV registrations and share with coverage lower-bound](charts/02_ev_demand.png)
+
+*EV registrations + share with coverage lower-bound — the 2022-07 EV-label
+onset and subsequent uptake.*
+
+**Chart 3 — Price vs demand**
+
+![Chart 3: dual-axis Cat A clearing price vs bids received](charts/03_price_demand_dual.png)
+
+*Dual-axis price vs bids — the divergent trajectories post-2022.*
+
+**Chart 4 — Price-demand relationship**
+
+![Chart 4: price-vs-demand scatter with OLS fit and 95% CI band](charts/04_scatter_fit_ci.png)
+
+*Price-vs-demand scatter with fit + CI band — illustrates the null
+demand→price link.*
+
+**Chart 5 — Event study**
+
+![Chart 5: event-study coefficients with CIs for the four verified-policy onsets](charts/05_event_study.png)
+
+*Event-study coefficients with CIs for all four verified-policy onsets
+(2018-01, 2021-01, 2022-01, 2024-01) — contaminated pre-trends reported as
+bounds.*
+
+**Chart 6 — Mediation**
+
+![Chart 6: mediation path diagram with effect sizes for both scopes](charts/06_mediation_diagram.png)
+
+*Mediation path (rebate → bidding demand → price) with effect sizes for both
+the full window and the 2022+ EV era — the indirect effect is null in both.*
 
 ---
 
