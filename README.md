@@ -5,12 +5,17 @@ An empirical analysis of whether Singapore's EV rebate system affects **COE
 specifically, whether the *offer* of a rebate causes bidders to bid more.
 EV rebates are used as the case study.
 
-> **Bottom line (honest):** The EV rebate offer does **not** detectably cause
-> bidders to bid more, or raise Category A COE clearing prices, *through an
-> EV-specific channel*. The 2022-01 price jump in Category A fails the negative-control test —
-> rebate-free categories C/D/E show the same jump — pointing to a
-> market-wide common shock rather than a rebate effect. Every causal link
-> in the study grades **not detectable**; the evidence is associational at
+> **Bottom line (honest):** The result is **scope-dependent**. On the primary
+> full-window scope (2016–2025, 4 dose levels), the EV rebate offer does
+> **not** detectably raise Category A COE prices or bidding through an
+> EV-specific channel — the 2022-01 price jump fails the negative-control
+> test (rebate-free categories C/D/E show the same jump: a market-wide
+> common shock, not a rebate effect). On the newly-estimable **2022+ EV era**
+> (dose drops $45k → $40k at 2024-01), a rebate→price association **is**
+> detected (+S$4,113 per S$1,000 of dose, p=4.5e-5) and is not falsified by
+> the negative control — but it is low-power (41 obs, 2 dose levels),
+> associational, and not a causal magnitude. Every causal link grades
+> **not detectable** on the primary scope; the evidence is associational at
 > best, given endogeneity and low statistical power. See
 > [`docs/REPORT.md`](docs/REPORT.md) for the full report.
 
@@ -196,13 +201,15 @@ python3 src/15_report.py
    Whatever price effect exists is **not routed through Category A bidding
    demand**. See [`Chart 6`](charts/06_mediation_diagram.png).
 
-5. **All causal links grade *not detectable*.**
-   - rebate→price (full window): not detectable (2022-01 confounded)
-   - rebate→price (2022+ EV era): detected but low-power, not causal
-   - rebate→demand bidding: not detectable (wrong sign in 2022+)
-   - demand→price: not detectable in both scopes
-   - mediation (indirect effect): not detectable in both scopes
-   See [`Chart 4`](charts/04_scatter_fit_ci.png) for the price-demand relationship.
+5. **All causal links grade *not detectable* on the primary (full-window)
+   scope** (rebate→price headline, rebate→demand bidding,
+   rebate→demand registration, demand→price, and the total indirect effect).
+   The only detected association is the 2022+ EV-era rebate→price effect
+   (insight 2), which is low-power and not a causal claim. Event-study
+   pre-trends for all four onsets are
+   contaminated by the secular COE price trend, so event effects are reported
+   as bounds. Prices and demand are I(1) with strong residual autocorrelation
+   (DW ≈ 0.79), which is why HAC standard errors are used throughout.
 
 6. **Event study: all four onsets have contaminated pre-trends.**
    Onset effects: 2018-01 −S$17,068 / 2021-01 +S$11,145 /
