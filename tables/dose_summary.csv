@@ -1,0 +1,7 @@
+item,value,note
+effective_in_window_changes,4,"4 regime step dummies, each switching on at its effective month"
+distinct_dose_values,2000; 3000; 4000; 6000; 7500,"nominal S$; only $7,500 (2022-01..) is a verified policy figure; pre-2022 levels are nominal case-study constructs (directions per plan, magnitudes not verifiable)"
+n_distinct_dose_values,5,
+dose_constant_2022_01_to_2025_05,TRUE,ASSERTED — underpins the full-window estimation / 2022+ interpretation rule (2022+-only estimation is rank-deficient)
+flat_tail_value,7500,dose level in force 2022-01..2025-05
+estimation_window,2016-01..2025-05,every rebate-intensity exhibit estimated here; 2022+ is interpretation scope ONLY

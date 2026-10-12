@@ -1,0 +1,19 @@
+effect,path,estimate,ci_lo,ci_hi,n_obs,note,interpretation_scope
+total,rebate -> price (total),2897.443875855129,1890.1208899496748,4150.698413650733,109,rebate total effect on Cat A clearing price (per 1000 S$ dose),2022-01..2025-05 (headline indirect = 2022+ reading of the full-window estimate; NEVER a 2022+-only number)
+indirect,rebate -> demand -> price,-43.38119107461191,-399.35084222623016,253.0904792259348,109,"mediated (bidding channel only) = a*b; a=rebate->demand, b=demand(lag1)->price",2022-01..2025-05 (headline indirect = 2022+ reading of the full-window estimate; NEVER a 2022+-only number)
+direct,rebate -> price (holding demand fixed),2940.825066929741,,,109,residual direct = c' from stage 2 (point estimate; CI from total/indirect decomposition),2022-01..2025-05 (headline indirect = 2022+ reading of the full-window estimate; NEVER a 2022+-only number)
+mediated_share,indirect / total,-0.014972228258194897,-0.1578989805002462,0.08338368076576824,109,fraction of the rebate total effect routed through the bidding channel,2022-01..2025-05 (headline indirect = 2022+ reading of the full-window estimate; NEVER a 2022+-only number)
+# ---- metadata ----
+# estimation_scope: 2016-01..2025-05 (FULL window, listwise)
+# interpretation_scope: 2022-01..2025-05 (headline indirect = 2022+ reading of the full-window estimate; NEVER a 2022+-only number)
+# n_obs_full: 109
+# n_bootstrap_used: 2000
+# n_bootstrap_failed: 0
+# seed: 20261012
+# mediator_lag: 1
+# treatment: dose_1000
+# price: catA_clearing_price (nominal)
+# simultaneity_flag: FLAGGED: rebate set in response to EV demand; registrations depend on COE price paid -> associational decomposition, not causal
+# pre2022_inclusion: YES -- pre-2022 months included in the full-window sample; bound their EV-relevance (pre-2022 demand = total-car, not EV)
+# ev_relevance_bound: pre-2022 years contribute to the estimate but carry negligible EV signal; the 2022+ window carries the EV-relevant variation
+# wide_ci_expected: YES -- 4 effective treatment changes, 110 obs, noisy mediator

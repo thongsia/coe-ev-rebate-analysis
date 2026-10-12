@@ -1,0 +1,70 @@
+fig_id,label,source_table,filter,value_col,value_in_table,value_quoted_in_report,match
+pe_headline_coef,"headline reg_eeai_202201 coef (nominal, M1 primary, HC1)",price_equation.csv,"{'term': 'reg_eeai_202201', 'spec': 'M1_primary_lagged_dum', 'price_def': 'nominal', 'cov_type': 'HC1'}",coef,5880.369135737933,5880.369135737933,OK
+pe_headline_ci_lo,headline CI lo,price_equation.csv,"{'term': 'reg_eeai_202201', 'spec': 'M1_primary_lagged_dum', 'price_def': 'nominal', 'cov_type': 'HC1'}",ci_lo,443.59300908121895,443.59300908121895,OK
+pe_headline_ci_hi,headline CI hi,price_equation.csv,"{'term': 'reg_eeai_202201', 'spec': 'M1_primary_lagged_dum', 'price_def': 'nominal', 'cov_type': 'HC1'}",ci_hi,11317.145262394646,11317.145262394646,OK
+pe_headline_p,headline p (HC1),price_equation.csv,"{'term': 'reg_eeai_202201', 'spec': 'M1_primary_lagged_dum', 'price_def': 'nominal', 'cov_type': 'HC1'}",p,0.0340161858972687,0.034016185897268764,OK
+pe_headline_hac_p,headline p (HAC),price_equation.csv,"{'term': 'reg_eeai_202201', 'spec': 'M1_primary_lagged_dum_HAC', 'price_def': 'nominal', 'cov_type': 'HAC'}",p,0.1039786081612862,0.1039786,OK
+pe_dose_coef,"dose/1000 coef (nominal, M3, HC1)",price_equation.csv,"{'term': 'dose_1000', 'spec': 'M3_lagged_dose', 'price_def': 'nominal', 'cov_type': 'HC1'}",coef,2348.817485021629,2348.817485021629,OK
+pe_dose_p,"dose/1000 p (nominal, M3, HC1)",price_equation.csv,"{'term': 'dose_1000', 'spec': 'M3_lagged_dose', 'price_def': 'nominal', 'cov_type': 'HC1'}",p,2.45113461705964e-09,2.451135e-09,OK
+pe_dose_real,"dose/1000 coef (real, M3, HC1)",price_equation.csv,"{'term': 'dose_1000', 'spec': 'M3_lagged_dose', 'price_def': 'real', 'cov_type': 'HC1'}",coef,2824.408602579408,2824.408603,OK
+pe_real_headline,"reg_eeai coef (real, M1 primary, HC1)",price_equation.csv,"{'term': 'reg_eeai_202201', 'spec': 'M1_primary_lagged_dum', 'price_def': 'real', 'cov_type': 'HC1'}",coef,7532.475896783361,7532.475897,OK
+pe_real_headline_p,"reg_eeai p (real, M1 primary, HC1)",price_equation.csv,"{'term': 'reg_eeai_202201', 'spec': 'M1_primary_lagged_dum', 'price_def': 'real', 'cov_type': 'HC1'}",p,0.0121655313789627,0.01216553,OK
+pe_demand_l1,"demand_l1 coef (nominal, M1 primary, HC1)",price_equation.csv,"{'term': 'demand_l1', 'spec': 'M1_primary_lagged_dum', 'price_def': 'nominal', 'cov_type': 'HC1'}",coef,-1.0393435388757877,-1.0393435388757877,OK
+pe_demand_l1_p,demand_l1 p,price_equation.csv,"{'term': 'demand_l1', 'spec': 'M1_primary_lagged_dum', 'price_def': 'nominal', 'cov_type': 'HC1'}",p,0.2251291287656698,0.22512912876566982,OK
+bd_dummy_hc1,"rebate->demand reg_eeai coef (dummy, HC1)",demand_bidding_channel.csv,"{'term': 'reg_eeai_202201', 'spec': 'dummy', 'cov_type': 'HC1'}",coef,-277.714269310146,-277.714269,OK
+bd_dummy_hc1_p,"rebate->demand p (dummy, HC1)",demand_bidding_channel.csv,"{'term': 'reg_eeai_202201', 'spec': 'dummy', 'cov_type': 'HC1'}",p,0.0400384050611151,0.0400384050611151,OK
+bd_dummy_hc1_ci,"rebate->demand CI (dummy, HC1)",demand_bidding_channel.csv,"{'term': 'reg_eeai_202201', 'spec': 'dummy', 'cov_type': 'HC1'}",ci_lo,-542.797820571054,-542.797821,OK
+bd_dummy_hac_p,"rebate->demand p (dummy, HAC)",demand_bidding_channel.csv,"{'term': 'reg_eeai_202201', 'spec': 'dummy_HAC', 'cov_type': 'HAC'}",p,0.12010309001046,0.1201031,OK
+bd_dose,rebate->demand dose/1000 coef (dose spec),demand_bidding_channel.csv,"{'term': 'dose_1000', 'spec': 'dose', 'cov_type': 'HC1'}",coef,-25.071183986593205,-25.071184,OK
+bd_dose_p,rebate->demand dose/1000 p,demand_bidding_channel.csv,"{'term': 'dose_1000', 'spec': 'dose', 'cov_type': 'HC1'}",p,0.4220217203002688,0.4220217,OK
+xl_minus1_p,cross-lag dose(-1) p,crosslag_check.csv,"{'term': 'dose_-1_month', 'cov_type': 'HC1'}",p,0.2262519929942272,0.22625199299422727,OK
+xl_plus0_p,cross-lag dose(0) p,crosslag_check.csv,"{'term': 'dose_+0_month', 'cov_type': 'HC1'}",p,0.4220217203002688,0.4220217,OK
+xl_plus1_p,cross-lag dose(+1) p,crosslag_check.csv,"{'term': 'dose_+1_month', 'cov_type': 'HC1'}",p,0.2262519929942272,0.22625199299422727,OK
+med_total,mediation total effect,mediation_effects.csv,{'effect': 'total'},estimate,2897.443875855129,2897.443875855129,OK
+med_total_ci,mediation total CI lo,mediation_effects.csv,{'effect': 'total'},ci_lo,1890.1208899496748,1890.1208899496748,OK
+med_indirect,mediation indirect effect,mediation_effects.csv,{'effect': 'indirect'},estimate,-43.38119107461191,-43.38119107461191,OK
+med_indirect_ci_lo,mediation indirect CI lo,mediation_effects.csv,{'effect': 'indirect'},ci_lo,-399.35084222623016,-399.35084222623016,OK
+med_indirect_ci_hi,mediation indirect CI hi,mediation_effects.csv,{'effect': 'indirect'},ci_hi,253.0904792259348,253.0904792259348,OK
+med_direct,mediation direct effect,mediation_effects.csv,{'effect': 'direct'},estimate,2940.825066929741,2940.825066929741,OK
+med_share,mediated share,mediation_effects.csv,{'effect': 'mediated_share'},estimate,-0.014972228258194897,-0.014972228258194897,OK
+med_share_ci_lo,mediated share CI lo,mediation_effects.csv,{'effect': 'mediated_share'},ci_lo,-0.1578989805002462,-0.157899,OK
+med_nobs,mediation n_obs,mediation_effects.csv,{'effect': 'mediated_share'},n_obs,109.0,109,OK
+es_onset22,2022-01 episode onset coef (bounded),event_study_coefficients.csv,"{'episode': '2022-01_eeai_rebate_PLUS_threshold_bounded', 'term': 'onset_0'}",coef,22682.69369578363,22682.693696,OK
+es_onset22_ci_lo,2022-01 onset CI lo,event_study_coefficients.csv,"{'episode': '2022-01_eeai_rebate_PLUS_threshold_bounded', 'term': 'onset_0'}",ci_lo,13995.266283236302,13995.266283,OK
+es_onset22_p,2022-01 onset p,event_study_coefficients.csv,"{'episode': '2022-01_eeai_rebate_PLUS_threshold_bounded', 'term': 'onset_0'}",p,3.097343141200579e-07,3.097343e-07,OK
+es_onset16,"2016-11 episode onset coef (total/low-emission, NOT EV-specific)",event_study_coefficients.csv,"{'episode': '2016-2018_episode_total_low_emission', 'term': 'onset_0'}",coef,3484.904917090898,3484.904917,OK
+nc_A_pct,2022-01 jump Cat A (EV-eligible) %,negative_controls.csv,"{'term': 'reg_eeai_202201', 'category': 'A'}",coef_pct_of_mean,10.110609579766615,10.110609579766617,OK
+nc_C_pct,2022-01 jump Cat C (clean control) %,negative_controls.csv,"{'term': 'reg_eeai_202201', 'category': 'C'}",coef_pct_of_mean,13.736182770613455,13.736183,OK
+nc_D_pct,2022-01 jump Cat D (clean control) %,negative_controls.csv,"{'term': 'reg_eeai_202201', 'category': 'D'}",coef_pct_of_mean,41.7629591929574,41.762959,OK
+nc_E_pct,2022-01 jump Cat E (clean control) %,negative_controls.csv,"{'term': 'reg_eeai_202201', 'category': 'E'}",coef_pct_of_mean,36.415948708693215,36.415949,OK
+diag_adf_price_level,ADF price level p (I(1) evidence),diagnostics_stationarity_autocorr.csv,"{'variable': 'catA_clearing_price (nominal)', 'form': 'level'}",adf_p,0.9664896298423258,0.9664896298423258,OK
+diag_adf_price_diff,ADF price 1st-diff p,diagnostics_stationarity_autocorr.csv,"{'variable': 'catA_clearing_price (nominal)', 'form': '1st diff'}",adf_p,4.8640856201081866e-17,4.864086e-17,OK
+diag_dw,Durbin-Watson of primary residuals (0.7910 row),diagnostics_stationarity_autocorr.csv,"{'variable': 'primary price eq. residuals', 'form': 'residual', 'note': 'Durbin-Watson = 0.7910'}",variable,primary price eq. residuals,primary price eq. residuals,OK
+sens_noquota,reg_eeai without catA_quota,sensitivity_analysis.csv,"{'spec': 'drop_control_catA_quota', 'term': 'reg_eeai_202201'}",coef,8977.563358452839,8977.563358452839,OK
+sens_notrend,reg_eeai without trend,sensitivity_analysis.csv,"{'spec': 'drop_control_trend', 'term': 'reg_eeai_202201'}",coef,6950.0213691983945,6950.021369,OK
+sens_nocpi,reg_eeai without cpi,sensitivity_analysis.csv,"{'spec': 'drop_control_cpi_all_items', 'term': 'reg_eeai_202201'}",coef,24866.85972272621,24866.859723,OK
+sens_bidssucc,reg_eeai demand=bids_success,sensitivity_analysis.csv,"{'spec': 'demand_bids_success', 'term': 'reg_eeai_202201'}",p,0.1459260783610816,0.1459261,OK
+sens_lag1,reg_eeai lag1_only,sensitivity_analysis.csv,"{'spec': 'lag_lag1_only', 'term': 'reg_eeai_202201'}",coef,6036.897254715421,6036.897255,OK
+sens_contemp,reg_eeai contemporaneous,sensitivity_analysis.csv,"{'spec': 'lag_contemporaneous', 'term': 'reg_eeai_202201'}",coef,7188.714026176006,7188.714026,OK
+sens_real,reg_eeai real price def,sensitivity_analysis.csv,"{'spec': 'price_real', 'term': 'reg_eeai_202201'}",coef,7532.475896781932,7532.475897,OK
+rob22_d1_p,2022+ demand_l1 p (nominal),price_equation_2022plus_robustness.csv,"{'term': 'demand_l1', 'price_def': 'nominal'}",p,0.5077517510098493,0.507752,OK
+rob22_quota,2022+ catA_quota coef (nominal),price_equation_2022plus_robustness.csv,"{'term': 'catA_quota', 'price_def': 'nominal'}",coef,-22.61749959874709,-22.6175,OK
+rob22_rankdef,2022+ rebate-intensity row is the RANK-DEFICIENT NA row (nobs=41),price_equation_2022plus_robustness.csv,{'term': 'rebate (dummies OR dose)'},nobs,41,41,OK
+grade_headline,headline grade,evidence_grading.csv,{'link': 'rebate->price (HEADLINE core question)'},grade,not detectable,not detectable,OK
+grade_bidding,bidding-channel grade,evidence_grading.csv,{'link': 'rebate->demand (bidding channel)'},grade,not detectable,not detectable,OK
+grade_reg,registration-channel grade,evidence_grading.csv,{'link': 'rebate->demand (registration channel)'},grade,not detectable,not detectable,OK
+grade_demand_price,demand->price grade,evidence_grading.csv,{'link': 'demand->price'},grade,not detectable,not detectable,OK
+grade_med,mediation grade,evidence_grading.csv,{'link': 'total indirect effect (rebate->demand->price)'},grade,not detectable,not detectable,OK
+ev_n_months,observed BEV months,ev_registrations_descriptive.csv,{'month': 'SUMMARY_observed_months'},ev_reg,35.0,35,OK
+ev_mean,mean EV registrations,ev_registrations_descriptive.csv,{'month': 'SUMMARY_mean_ev_reg'},ev_reg,854.2571428571429,854.257143,OK
+ev_max,max EV registrations,ev_registrations_descriptive.csv,{'month': 'SUMMARY_max_ev_reg'},ev_reg,2014.0,2014,OK
+ev_share_mean,mean EV share,ev_registrations_descriptive.csv,{'month': 'SUMMARY_mean_ev_share'},ev_reg,0.2581540692967779,0.258154,OK
+ev_cum,cumulative EV registrations,ev_registrations_descriptive.csv,{'month': 'SUMMARY_cumulative_ev_reg'},ev_reg,29899.0,29899,OK
+ev_cov_min,min coverage (lower-bound decay),ev_registrations_descriptive.csv,{'month': 'SUMMARY_min_coverage'},ev_reg,0.1817129629629629,0.181713,OK
+dose_changes,effective in-window changes,dose_summary.csv,{'item': 'effective_in_window_changes'},value,4,4,OK
+dose_flat,dose constant 2022-01..2025-05,dose_summary.csv,{'item': 'dose_constant_2022_01_to_2025_05'},value,TRUE,TRUE,OK
+scope_a,scope audit (a) no 2022+-only rebate exhibit,scope_audit.csv,{'detail_prefix': '(a)'},status,PASS,PASS,OK
+scope_b,scope audit (b) demand regressor = clean,scope_audit.csv,{'detail_prefix': '(b)'},status,PASS,PASS,OK
+scope_c,scope audit (c) mediated share full-window,scope_audit.csv,{'detail_prefix': '(c)'},status,PASS,PASS,OK
+scope_f,scope audit (f) layering contract,scope_audit.csv,{'detail_prefix': '(f)'},status,PASS,PASS,OK
+audit_panel_rows,panel row count,data_audit.csv,{'metric': 'panel_row_count'},value,113,113,OK

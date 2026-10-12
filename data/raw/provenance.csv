@@ -1,0 +1,4 @@
+key,resource_id,retrieval_timestamp_utc,stated_source_total,fetched_count,unique_id_count,match,raw_file,n_fields
+coe,d_69b3380ad7e51aff3a7dcc84eba52b8a,2026-10-12T12:08:26+00:00,1985,1985,1985,OK,data/raw/coe_results_raw.csv,8
+registrations,d_d3f4d708e1d0a37b4365414e2fad3a07,2026-10-12T12:08:26+00:00,51669,51669,51669,OK,data/raw/registrations_raw.csv,7
+cpi,d_bdaff844e3ef89d39fceb962ff8f0791,2026-10-12T12:08:26+00:00,207,207,207,OK,data/raw/cpi_raw.csv,790

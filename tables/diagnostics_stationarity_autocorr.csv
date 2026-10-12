@@ -1,0 +1,15 @@
+variable,form,adf_stat,adf_p,stationary_005,note
+catA_clearing_price (nominal),level,0.10631524969412981,0.9664896298423258,False,"ADF, AIC lag"
+catA_clearing_price (nominal),1st diff,-9.83704726920975,4.864085620108187e-17,True,"ADF, AIC lag"
+catA_clearing_price (real),level,-0.1959837934068416,0.9389986484362638,False,"ADF, AIC lag"
+catA_clearing_price (real),1st diff,-10.041833325728636,1.4892474802307523e-17,True,"ADF, AIC lag"
+catA_bids_received_clean (demand),level,-2.2185109174679116,0.1995957869772083,False,"ADF, AIC lag"
+catA_bids_received_clean (demand),1st diff,-8.185618468090668,7.914586208642448e-13,True,"ADF, AIC lag"
+cpi_all_items (CPI),level,-0.9628658961737077,0.7665661075088452,False,"ADF, AIC lag"
+cpi_all_items (CPI),1st diff,-1.6658485706070512,0.4487886093657473,False,"ADF, AIC lag"
+primary price eq. residuals,residual,,,,Durbin-Watson = 0.7910
+primary price eq. residuals,residual,37.07457396267874,1.136966357186167e-09,significant,Ljung-Box Q(1)
+primary price eq. residuals,residual,43.02645867963851,4.5386135961583166e-10,significant,Ljung-Box Q(2)
+primary price eq. residuals,residual,43.516431393274225,1.9118351130834438e-09,significant,Ljung-Box Q(3)
+primary price eq. residuals,residual,43.77328904951714,7.150446798755444e-09,significant,Ljung-Box Q(4)
+primary price eq. residuals,residual,40.18492643120156,9.735446766916864e-09,significant,Breusch-Godfrey (nlags=3): F=18.7646

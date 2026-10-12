@@ -1,0 +1,5 @@
+effect,path,estimate,ci_lo,ci_hi,n_obs,note,interpretation_scope
+total,rebate -> price (total),2897.443875855129,1890.1208899496748,4150.698413650733,109.0,rebate total effect on Cat A clearing price (per 1000 S$ dose),2022-01..2025-05 (headline indirect = 2022+ reading of the full-window estimate; NEVER a 2022+-only number)
+indirect,rebate -> demand -> price,-43.38119107461191,-399.35084222623016,253.0904792259348,109.0,"mediated (bidding channel only) = a*b; a=rebate->demand, b=demand(lag1)->price",2022-01..2025-05 (headline indirect = 2022+ reading of the full-window estimate; NEVER a 2022+-only number)
+direct,rebate -> price (holding demand fixed),2940.825066929741,,,109.0,residual direct = c' from stage 2 (point estimate; CI from total/indirect decomposition),2022-01..2025-05 (headline indirect = 2022+ reading of the full-window estimate; NEVER a 2022+-only number)
+mediated_share,indirect / total,-0.0149722282581948,-0.1578989805002462,0.0833836807657682,109.0,fraction of the rebate total effect routed through the bidding channel,2022-01..2025-05 (headline indirect = 2022+ reading of the full-window estimate; NEVER a 2022+-only number)

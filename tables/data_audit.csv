@@ -1,0 +1,22 @@
+metric,value,note
+fetched_rows_coe,1985,stated_source_total=1985
+stated_total_coe,1985,resource_id=d_69b3380ad7e51aff3a7dcc84eba52b8a
+reconciliation_coe,OK,OK = fetched_count == stated_source_total
+fetched_rows_registrations,51669,stated_source_total=51669
+stated_total_registrations,51669,resource_id=d_d3f4d708e1d0a37b4365414e2fad3a07
+reconciliation_registrations,OK,OK = fetched_count == stated_source_total
+fetched_rows_cpi,207,stated_source_total=207
+stated_total_cpi,207,resource_id=d_bdaff844e3ef89d39fceb962ff8f0791
+reconciliation_cpi,OK,OK = fetched_count == stated_source_total
+panel_row_count,113,expected 113 (2016-01..2025-05)
+exercises_per_month_min,0,"sum across 5 categories, 2016-01..2025-05"
+exercises_per_month_mean,9.735,
+exercises_per_month_max,10,
+exercises_per_month_category_min,2,"per (month,category): 1 or 2 exercises"
+exercises_per_month_category_max,2,
+distinct_dose_values,2000; 3000; 4000; 6000; 7500,"nominal S$ (only $7,500 verified)"
+adaptation,coverage_rate defined as rows_nonnull/rows_total,fraction of raw rows with an observed (non-null) count; decays 1.0->0.23 over the window. The plan's literal nonnull_total/(total rows) mixes count-sum/row-count and is not a rate; ev_reg remains a lower bound under either definition.
+adaptation,category parse: last token of vehicle_class,'Category A' must be parsed by its trailing letter; a substring match on 'A' would mis-assign every row to Category A (caught by reconciliation).
+adaptation,plan vs real rebate policy discrepancy,"The 4-event schedule is a stylized case-study design (plan). Verified LTA/NEA policy differs: EEAI from 1 Jan 2021 at $20k cap -> $15k (2024) -> $7.5k (2026); VES from 1 Jan 2018; CEVS ran through 31 Dec 2017; $0 ARF floor from 1 Jan 2022. Only the $7,500 dose anchor is a verified figure; pre-2022 dose levels are nominal constructs. See tables/rebate_timeline.csv."
+adaptation,registrations fetched via 20k pagination,"datastore limit=100000 returns HTTP 413 on the 51,669-row store; paged at limit=20000. All _id unique (51,669)."
+coe_exercise_gap,2020-04; 2020-05; 2020-06,NO COE exercises held 2020-04/05/06 (LTA pandemic suspension) -> these 3 months have NA COE clearing prices / quota / bids in panel_joint.csv and cpi_deflated.csv. Not an error; the panel keeps the month rows (month-keyed) with missing COE values. 199 of 202 months in 2010-01..2026-10 have >=1 exercise.

@@ -1,0 +1,9 @@
+check,status,detail,timestamp
+DATA-INTEGRITY: panel catA_bids_received corruption detected & corrected,PASS,panel==0 but raw>0 in 19 months (2023-10..2025-05); corrected col nonzero for 110/110 COE months. All Batch-B models use catA_bids_received_clean.,2026-10-12T13:26:07Z
+(a) no rebate-intensity exhibit estimated on a 2022+-only sample,PASS,4 coefficient exhibits registered (descriptive exhibits exempt); est_scope=['2016-01..2025-05'] (full window 2016-01..2025-05). 2022+ = interpretation only.,2026-10-12T13:26:07Z
+"(b) price-equation demand regressor = catA_bids_received (corrected), never ev_reg",PASS,price_equation key_regressor=['catA_bids_received_clean']; static scan for corrupted-panel demand usage (code): clean,2026-10-12T13:26:07Z
+(c) mediated share computed on full-window sample; 2022+ interpretation stated,PASS,mediation exhibits=1; full-window=[True]; interpretation=['2022-01..2025-05'],2026-10-12T13:26:07Z
+(d) ev_reg / ev_share enter NO rebate-coefficient model,PASS,static scan (excluding descriptive module 08): clean,2026-10-12T13:26:07Z
+(e) event-study samples span pre- AND post-treatment months,PASS,event_study exhibits=1; spans_pre_post=[True],2026-10-12T13:26:07Z
+(f) data-flow layering contract: no forward reads / no disallowed inputs,PASS,forward_reads=none; disallowed_inputs=none,2026-10-12T13:26:07Z
+"SCOPE-FACT: effective treatment changes = 4 (2016-11, 2018-01, 2018-09, 2022-01)",PASS,"4 regime step dummies; low-power caveat: 4 events, 110 monthly obs (113 months, 3 pandemic NA). Grades bounded accordingly (step 13).",2026-10-12T13:26:07Z
