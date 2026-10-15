@@ -2,7 +2,7 @@
 """
 Step 14 (Batch C) — Charts + per-chart data tables. VERIFIED-POLICY RE-RUN.
 
-Produces 6 PNGs under charts/ and the matching underlying data table under
+Produces 7 PNGs under charts/ and the matching underlying data table under
 tables/ for each. Every chart plots ONLY data that already exists upstream
 (data/processed/*.csv, tables/*.csv from Batches A+B) — no re-estimation of
 causal exhibits. The corrected bids series (catA_bids_received_clean,
@@ -10,21 +10,23 @@ reconstructed from data/raw/coe_results_raw.csv by src/00_data.py) is used
 everywhere the corrupted panel column would otherwise appear.
 
 Honest-findings rule: the charts VISUALLY show the negative-control verdicts
-(chart 1: 2022-01 market-wide shock, Cat C/D/E vs A, per scope) and the
-bounded / associational nature of the headline estimates (charts 5, 6).
+(chart 2: 2022-01 market-wide shock, Cat C/D/E vs A, per scope) and the
+bounded / associational nature of the headline estimates (charts 6, 7).
 Nothing here is presented as a clean causal effect.
 
-Layout (same 6-chart structure, updated for the verified policy):
+Layout (7 charts; the former 4-panel chart 01 is split into the price time
+series and the negative-control comparison):
   01  Cat A price (nominal + real) with the REAL policy markers (2018-01,
-      2021-01, 2022-01, 2024-01) + the 97->110kW confounder marker, and the
-      negative-control panel (per-scope: 2022-01 full window + 2024-01 EV era).
-  02  EV registrations + EV share (descriptive; lower-bound note).
-  03  dual-axis Cat A price vs CORRECTED Cat A bids received.
-  04  price-vs-demand scatter with fitted line + 95% CI band.
-  05  event-study coefficients with CIs for the 4 verified-policy events
-      (2018-01, 2021-01, 2022-01, 2024-01); pre-trend contamination annotated.
+      2021-01, 2024-01) + the 2022-01 97->110kW confounder marker.
+  02  negative-control check: % price jump by category, per scope
+      (2022-01 full window + 2024-01 EV era), with the verdict rows.
+  03  EV registrations + EV share (descriptive; lower-bound note).
+  04  dual-axis Cat A price vs CORRECTED Cat A bids received.
+  05  price-vs-demand scatter with fitted line + 95% CI band.
   06  mediation path diagram with effect sizes for BOTH scopes (full window
       + 2022+ EV era).
+  07  event-study coefficients with CIs for the 4 verified-policy events
+      (2018-01, 2021-01, 2022-01, 2024-01); pre-trend contamination annotated.
 
 Layering contract (read-only upstream):
   READS  data/processed/{panel_joint,cpi_deflated,ev_registrations}.csv,
@@ -34,7 +36,7 @@ Layering contract (read-only upstream):
                  demand_bidding_channel,price_equation,
                  price_equation_2022plus_robustness,dose_summary,
                  rebate_timeline}.csv
-  WRITES charts/01..06 PNGs + tables/chart01..chart06 CSVs
+  WRITES charts/01..07 PNGs + tables/chart01..chart07 CSVs
   (writes NOTHING to data/ or to any earlier batch's file).
 """
 
@@ -90,9 +92,8 @@ def _p(s: str) -> pd.Timestamp:
 
 
 # ===========================================================================
-# Chart 1 — Cat A clearing price (nominal + real) with REAL policy markers,
-#            the Jan-2022 confounder (ARF floor + 97->110kW threshold), and
-#            the negative-control comparison (per scope: 2022-01 + 2024-01).
+# Chart 1 — Cat A clearing price (nominal + real) with REAL policy markers
+#            and the Jan-2022 confounder (ARF floor + 97->110kW threshold).
 # ===========================================================================
 def chart01() -> None:
     panel = pd.read_csv(ROOT / "data/processed/panel_joint.csv")
@@ -107,12 +108,9 @@ def chart01() -> None:
     df = df[df["nominal"].notna()]  # drop 3 pandemic months
     df.to_csv(TABLES / "chart01_price_regime.csv", index=False)
 
-    fig, (ax1, ax2, ax3, ax4) = plt.subplots(
-        4, 1, figsize=(11, 12), sharex=False,
-        gridspec_kw={"height_ratios": [1, 1, 0.8, 0.8]},
-    )
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(11, 7))
     ax1.plot(df["ts"], df["nominal"], color="#1f4e79", lw=1.6,
-             label="Cat A clearing price — nominal S$ (left)")
+             label="Cat A clearing price — nominal S$")
     ax1.set_ylabel("Nominal S$")
     ax1.set_title(
         "Chart 1 — Category A COE clearing price, 2016-01..2025-05 (VERIFIED-POLICY re-run)\n"
@@ -144,8 +142,27 @@ def chart01() -> None:
         )
     ax1.legend(loc="upper left")
     ax2.legend(loc="upper left")
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
+    ax1.xaxis.set_major_locator(mdates.YearLocator())
+    ax2.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
+    ax2.xaxis.set_major_locator(mdates.YearLocator())
+    fig.autofmt_xdate()
+    fig.tight_layout()
+    fig.savefig(CHARTS / "01_price_regime.png")
+    plt.close(fig)
+    print("[chart01] wrote charts/01_price_regime.png + tables/chart01_price_regime.csv")
 
-    # --- negative-control comparison: % jump per category, PER SCOPE ---
+
+# ===========================================================================
+# Chart 2 — negative-control comparison: % price jump by category, per scope
+#            (2022-01 full window + 2024-01 EV era), with the verdict rows.
+# ===========================================================================
+def chart02() -> None:
+    panel = pd.read_csv(ROOT / "data/processed/panel_joint.csv")
+    df = panel[["month", "catC_clearing_price", "catD_clearing_price",
+                "catE_clearing_price"]].copy()
+    df.to_csv(TABLES / "chart02_negative_controls.csv", index=False)
+
     nc = pd.read_csv(TABLES / "negative_controls.csv")
     colours = ["#1f4e79", "#8a8a8a", "#b23b3b", "#b23b3b", "#b23b3b"]
     labels = [
@@ -167,7 +184,7 @@ def chart01() -> None:
         ax.bar(cats, pcts, width=0.6, color=colours, alpha=0.85, zorder=3)
         ax.set_xticks(range(len(cats)), labels)
         ax.set_ylabel("% jump")
-        ax.set_title(title)
+        ax.set_title(title, fontsize=10)
         for i, v in enumerate(pcts):
             ax.annotate(
                 f"{v:+.1f}%", xy=(i, v),
@@ -175,51 +192,49 @@ def chart01() -> None:
                 ha="center", fontsize=8.5,
             )
 
-    nc_panel(ax3, "reg_arffloor_zero_202201",
-             "Negative-control check — 2022-01 price jump by category "
-             "(full window; $0 ARF floor + 97->110kW threshold, market-wide)")
-    nc_panel(ax4, "reg_eeai_cap15k_202401",
-             "Negative-control check — 2024-01 EEAI cap-cut step by category "
-             "(2022+ EV era, dose 45000->40000; EV-rebate variation only)")
-
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(11, 6.5))
+    ax1.set_title(
+        "Chart 2 — Negative-control check: % price jump by category\n"
+        "2022-01 (full window; $0 ARF floor + 97->110kW threshold, market-wide) "
+        "and 2024-01 (EV era; the pure EV-rebate variation)",
+    )
+    nc_panel(ax1, "reg_arffloor_zero_202201",
+             "2022-01 price jump by category (full window)")
+    nc_panel(ax2, "reg_eeai_cap15k_202401",
+             "2024-01 EEAI cap-cut step by category (2022+ EV era, dose 45000->40000)")
     verdicts = []
     for line in (TABLES / "negative_controls.csv").read_text().splitlines():
         if line.startswith("# VERDICT"):
             verdicts.append(line)
     verdict_txt = "  ".join(v[len("# VERDICT "):] for v in verdicts)
-    ax4.annotate(
+    ax2.annotate(
         verdict_txt[:380],
         xy=(0.01, 0.02), xycoords="axes fraction", ha="left", va="bottom",
         fontsize=7.0, color="#222222",
         bbox=dict(boxstyle="round", fc="white", ec="#888888", alpha=0.95),
     )
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
-    ax1.xaxis.set_major_locator(mdates.YearLocator())
-    ax2.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
-    ax2.xaxis.set_major_locator(mdates.YearLocator())
-    fig.autofmt_xdate()
     fig.tight_layout()
-    fig.savefig(CHARTS / "01_price_regime.png")
+    fig.savefig(CHARTS / "02_negative_controls.png")
     plt.close(fig)
-    print("[chart01] wrote charts/01_price_regime.png + tables/chart01_price_regime.csv")
+    print("[chart02] wrote charts/02_negative_controls.png + tables/chart02_negative_controls.csv")
 
 
 # ===========================================================================
-# Chart 2 — EV registrations + EV share, 2022-07..2025-05 (observed BEV window)
+# Chart 3 — EV registrations + EV share, 2022-07..2025-05 (observed BEV window)
 # ===========================================================================
-def chart02() -> None:
+def chart03() -> None:
     ev = pd.read_csv(TABLES / "ev_registrations_descriptive.csv")
     ev = ev[~ev["month"].astype(str).str.startswith("SUMMARY")].copy()
     ev = ev[ev["is_bev_observed"] == 1]
     ev["ts"] = ev["month"].map(_p)
-    ev.to_csv(TABLES / "chart02_ev_demand.csv", index=False)
+    ev.to_csv(TABLES / "chart03_ev_demand.csv", index=False)
 
     fig, ax1 = plt.subplots(figsize=(11, 5))
     ax1.bar(ev["ts"], ev["ev_reg"], width=22, color="#2e7d32", alpha=0.85,
             label="EV (BEV) registrations — LOWER BOUND (right axis = left)")
     ax1.set_ylabel("EV registrations (per month)")
     ax1.set_title(
-        "Chart 2 — EV registrations & EV share of registrations, 2022-07..2025-05\n"
+        "Chart 3 — EV registrations & EV share of registrations, 2022-07..2025-05\n"
         "DESCRIPTIVE ONLY — observed window: combined dose flat 45000 (2022-01..2023-12) "
         "then 40000 (2024-01+); series too short/censored for a coefficient; ev_reg is a lower bound",
     )
@@ -249,15 +264,15 @@ def chart02() -> None:
     ax1.xaxis.set_major_locator(mdates.MonthLocator(bymonth=(1, 7)))
     fig.autofmt_xdate()
     fig.tight_layout()
-    fig.savefig(CHARTS / "02_ev_demand.png")
+    fig.savefig(CHARTS / "03_ev_demand.png")
     plt.close(fig)
-    print("[chart02] wrote charts/02_ev_demand.png + tables/chart02_ev_demand.csv")
+    print("[chart03] wrote charts/03_ev_demand.png + tables/chart03_ev_demand.csv")
 
 
 # ===========================================================================
-# Chart 3 — dual-axis Cat A price vs Cat A bids received (CORRECTED series)
+# Chart 4 — dual-axis Cat A price vs Cat A bids received (CORRECTED series)
 # ===========================================================================
-def chart03() -> None:
+def chart04() -> None:
     frame = D.load_estimation_frame()
     panel = pd.read_csv(ROOT / "data/processed/panel_joint.csv")
     df = frame[frame["n_obs"] == 1].copy()  # 110 COE months
@@ -269,14 +284,14 @@ def chart03() -> None:
     ].copy()
     df["ts"] = df["month"].map(_p)
     df["series"] = "corrected"
-    df.to_csv(TABLES / "chart03_price_demand_dual.csv", index=False)
+    df.to_csv(TABLES / "chart04_price_demand_dual.csv", index=False)
 
     fig, ax1 = plt.subplots(figsize=(11, 5.5))
     ax1.plot(df["ts"], df["nominal"], color="#1f4e79", lw=1.6,
              label="Cat A clearing price (nominal S$, left)")
     ax1.set_ylabel("Cat A clearing price (nominal S$)")
     ax1.set_title(
-        "Chart 3 — Cat A clearing price vs Cat A bids received (CORRECTED bids series)\n"
+        "Chart 4 — Cat A clearing price vs Cat A bids received (CORRECTED bids series)\n"
         "Bids series = catA_bids_received_clean (reconstructed from raw; panel column "
         "was corrupted/zero for 19 months incl. all of 2023-10..2025-05)",
     )
@@ -298,16 +313,16 @@ def chart03() -> None:
     ax1.xaxis.set_major_locator(mdates.YearLocator())
     fig.autofmt_xdate()
     fig.tight_layout()
-    fig.savefig(CHARTS / "03_price_demand_dual.png")
+    fig.savefig(CHARTS / "04_price_demand_dual.png")
     plt.close(fig)
-    print("[chart03] wrote charts/03_price_demand_dual.png + tables/chart03_price_demand_dual.csv")
+    print("[chart04] wrote charts/04_price_demand_dual.png + tables/chart04_price_demand_dual.csv")
 
 
 # ===========================================================================
-# Chart 4 — price-vs-demand scatter with fitted line + 95% CI band
+# Chart 5 — price-vs-demand scatter with fitted line + 95% CI band
 #          (bivariate descriptive fit on the CORRECTED series, 110 COE months)
 # ===========================================================================
-def chart04() -> None:
+def chart05() -> None:
     import statsmodels.api as sm
 
     frame = D.load_estimation_frame()
@@ -360,7 +375,7 @@ def chart04() -> None:
             },
         ]
     )
-    with open(TABLES / "chart04_scatter_fit_ci.csv", "w") as fh:
+    with open(TABLES / "chart05_scatter_fit_ci.csv", "w") as fh:
         out.to_csv(fh, index=False)
         fh.write("\n# --- fit metadata ---\n")
         meta.to_csv(fh, index=False)
@@ -376,106 +391,15 @@ def chart04() -> None:
     ax.set_xlabel("Cat A bids received (CORRECTED series)")
     ax.set_ylabel("Cat A clearing price (nominal S$)")
     ax.set_title(
-        "Chart 4 — Cat A price vs demand: scatter + fitted line + 95% CI\n"
+        "Chart 5 — Cat A price vs demand: scatter + fitted line + 95% CI\n"
         "BIVARIATE association only (no controls); see the price equation for the "
         "demand term's own (lags, controls) significance",
     )
     ax.legend(loc="upper left", fontsize=8)
     fig.tight_layout()
-    fig.savefig(CHARTS / "04_scatter_fit_ci.png")
+    fig.savefig(CHARTS / "05_scatter_fit_ci.png")
     plt.close(fig)
-    print("[chart04] wrote charts/04_scatter_fit_ci.png + tables/chart04_scatter_fit_ci.csv")
-
-
-# ===========================================================================
-# Chart 5 — event-study coefficients with CIs (4 verified-policy events)
-# ===========================================================================
-def chart05() -> None:
-    es = pd.read_csv(TABLES / "event_study_coefficients.csv")
-    pre = pd.read_csv(TABLES / "event_study_prechecks.csv")
-    es.to_csv(TABLES / "chart05_event_study.csv", index=False)
-
-    # term -> integer x position (lead -k at -k, onset at 0, lag groups ordered)
-    def xpos(term: str) -> int:
-        if term.startswith("lead_-"):
-            return -int(term.split("_")[-1])
-        if term == "onset_0":
-            return 0
-        m = {
-            "lag_1_6": 1, "lag_7_12": 4, "lag_13_plus": 8,
-            "lag_1_12": 4, "lag_13_plus": 8,
-            "lag_7_plus": 6,
-        }
-        return m.get(term, 1)
-
-    episodes = [
-        ("2018-01_cevs_lapse_VES_onset",
-         "Event 1 — CEVS lapse / VES onset (2018-01): dose 20000 (CEVS est.) "
-         "-> 25000 (VES A1, verified)"),
-        ("2021-01_enhanced_VES_EEAI_stack",
-         "Event 2 — Enhanced VES + EEAI (2021-01): dose 25000 -> 45000 "
-         "(verified stack); EV-relevant from here on"),
-        ("2022-01_ARF_floor_zero_PLUS_threshold_bounded",
-         "Event 3 — $0 ARF floor (TAX; dose unchanged) + 97->110kW threshold "
-         "(confounder) (2022-01) [COMBINED / BOUNDED]"),
-        ("2024-01_eeai_cap15k_step",
-         "Event 4 — EEAI cap cut 20k -> 15k (2024-01): dose 45000 -> 40000 "
-         "(verified; the EV-era step)"),
-    ]
-    fig, axes = plt.subplots(4, 1, figsize=(11, 13), sharex=True)
-    for ax, (ep, title) in zip(axes, episodes):
-        sub = es[es["episode"] == ep].copy()
-        sub["x"] = sub["term"].map(xpos)
-        sub = sub.sort_values("x")
-        for r in sub.itertuples():
-            if r.role == "lead":
-                c = "#b23b3b"   # contaminated pre-trend
-            elif r.role == "onset":
-                c = "#2e7d32"
-            else:
-                c = "#1f4e79"
-            ax.errorbar(
-                r.x, r.coef / 1000,
-                yerr=[[r.coef / 1000 - r.ci_lo / 1000], [r.ci_hi / 1000 - r.coef / 1000]],
-                fmt="o", color=c, ecolor=c, elinewidth=1.2, capsize=4, ms=5,
-            )
-            ax.annotate(
-                f"{r.term}\np={r.p:.1e}", xy=(r.x, r.coef / 1000),
-                xytext=(0, 12 if r.coef >= 0 else -18), textcoords="offset points",
-                ha="center", fontsize=6.4, color=c,
-            )
-        ax.axhline(0, color="black", lw=0.8)
-        ax.axvline(0, color="gray", ls="--", lw=1)
-        ax.set_title(title, fontsize=9.5)
-        ax.set_ylabel("coef (S$ thousands)")
-
-    # pre-trend verdicts (from prechecks, verbatim) — annotate each panel
-    for ax, (ep, _title) in zip(axes, episodes):
-        p = pre[pre["episode"] == ep]
-        if not len(p):
-            continue
-        p = p.iloc[0]
-        onset = es[(es["episode"] == ep) & (es["term"] == "onset_0")]
-        onset_txt = ""
-        if len(onset):
-            o = onset.iloc[0]
-            onset_txt = (f" onset {o['coef']/1000:+.1f}k S$ "
-                         f"[{o['ci_lo']/1000:+.1f}k, {o['ci_hi']/1000:+.1f}k]")
-        ax.annotate(
-            f"pre_trend_clean={p['pre_trend_clean']}{onset_txt}; "
-            + p["pre_trend_interpretation"][:120],
-            xy=(0.99, 0.03), xycoords="axes fraction", ha="right", va="bottom",
-            fontsize=7.4,
-            color="#b23b3b" if not p["pre_trend_clean"] else "#2e7d32",
-            bbox=dict(boxstyle="round", fc="white",
-                      ec="#b23b3b" if not p["pre_trend_clean"] else "#2e7d32",
-                      alpha=0.95),
-        )
-    axes[-1].set_xlabel("Relative month to onset (leads < 0 = before, 0 = onset, lags > 0 = after)")
-    fig.tight_layout()
-    fig.savefig(CHARTS / "05_event_study.png")
-    plt.close(fig)
-    print("[chart05] wrote charts/05_event_study.png + tables/chart05_event_study.csv")
+    print("[chart05] wrote charts/05_scatter_fit_ci.png + tables/chart05_scatter_fit_ci.csv")
 
 
 # ===========================================================================
@@ -635,6 +559,97 @@ def chart06() -> None:
     print("[chart06] wrote charts/06_mediation_diagram.png + tables/chart06_mediation_effects.csv")
 
 
+# ===========================================================================
+# Chart 7 — event-study coefficients with CIs (4 verified-policy events)
+# ===========================================================================
+def chart07() -> None:
+    es = pd.read_csv(TABLES / "event_study_coefficients.csv")
+    pre = pd.read_csv(TABLES / "event_study_prechecks.csv")
+    es.to_csv(TABLES / "chart07_event_study.csv", index=False)
+
+    # term -> integer x position (lead -k at -k, onset at 0, lag groups ordered)
+    def xpos(term: str) -> int:
+        if term.startswith("lead_-"):
+            return -int(term.split("_")[-1])
+        if term == "onset_0":
+            return 0
+        m = {
+            "lag_1_6": 1, "lag_7_12": 4, "lag_13_plus": 8,
+            "lag_1_12": 4, "lag_13_plus": 8,
+            "lag_7_plus": 6,
+        }
+        return m.get(term, 1)
+
+    episodes = [
+        ("2018-01_cevs_lapse_VES_onset",
+         "Event 1 — CEVS lapse / VES onset (2018-01): dose 20000 (CEVS est.) "
+         "-> 25000 (VES A1, verified)"),
+        ("2021-01_enhanced_VES_EEAI_stack",
+         "Event 2 — Enhanced VES + EEAI (2021-01): dose 25000 -> 45000 "
+         "(verified stack); EV-relevant from here on"),
+        ("2022-01_ARF_floor_zero_PLUS_threshold_bounded",
+         "Event 3 — $0 ARF floor (TAX; dose unchanged) + 97->110kW threshold "
+         "(confounder) (2022-01) [COMBINED / BOUNDED]"),
+        ("2024-01_eeai_cap15k_step",
+         "Event 4 — EEAI cap cut 20k -> 15k (2024-01): dose 45000 -> 40000 "
+         "(verified; the EV-era step)"),
+    ]
+    fig, axes = plt.subplots(4, 1, figsize=(11, 13), sharex=True)
+    for ax, (ep, title) in zip(axes, episodes):
+        sub = es[es["episode"] == ep].copy()
+        sub["x"] = sub["term"].map(xpos)
+        sub = sub.sort_values("x")
+        for r in sub.itertuples():
+            if r.role == "lead":
+                c = "#b23b3b"   # contaminated pre-trend
+            elif r.role == "onset":
+                c = "#2e7d32"
+            else:
+                c = "#1f4e79"
+            ax.errorbar(
+                r.x, r.coef / 1000,
+                yerr=[[r.coef / 1000 - r.ci_lo / 1000], [r.ci_hi / 1000 - r.coef / 1000]],
+                fmt="o", color=c, ecolor=c, elinewidth=1.2, capsize=4, ms=5,
+            )
+            ax.annotate(
+                f"{r.term}\np={r.p:.1e}", xy=(r.x, r.coef / 1000),
+                xytext=(0, 12 if r.coef >= 0 else -18), textcoords="offset points",
+                ha="center", fontsize=6.4, color=c,
+            )
+        ax.axhline(0, color="black", lw=0.8)
+        ax.axvline(0, color="gray", ls="--", lw=1)
+        ax.set_title(title, fontsize=9.5)
+        ax.set_ylabel("coef (S$ thousands)")
+
+    # pre-trend verdicts (from prechecks, verbatim) — annotate each panel
+    for ax, (ep, _title) in zip(axes, episodes):
+        p = pre[pre["episode"] == ep]
+        if not len(p):
+            continue
+        p = p.iloc[0]
+        onset = es[(es["episode"] == ep) & (es["term"] == "onset_0")]
+        onset_txt = ""
+        if len(onset):
+            o = onset.iloc[0]
+            onset_txt = (f" onset {o['coef']/1000:+.1f}k S$ "
+                         f"[{o['ci_lo']/1000:+.1f}k, {o['ci_hi']/1000:+.1f}k]")
+        ax.annotate(
+            f"pre_trend_clean={p['pre_trend_clean']}{onset_txt}; "
+            + p["pre_trend_interpretation"][:120],
+            xy=(0.99, 0.03), xycoords="axes fraction", ha="right", va="bottom",
+            fontsize=7.4,
+            color="#b23b3b" if not p["pre_trend_clean"] else "#2e7d32",
+            bbox=dict(boxstyle="round", fc="white",
+                      ec="#b23b3b" if not p["pre_trend_clean"] else "#2e7d32",
+                      alpha=0.95),
+        )
+    axes[-1].set_xlabel("Relative month to onset (leads < 0 = before, 0 = onset, lags > 0 = after)")
+    fig.tight_layout()
+    fig.savefig(CHARTS / "07_event_study.png")
+    plt.close(fig)
+    print("[chart07] wrote charts/07_event_study.png + tables/chart07_event_study.csv")
+
+
 def main() -> None:
     chart01()
     chart02()
@@ -642,7 +657,8 @@ def main() -> None:
     chart04()
     chart05()
     chart06()
-    print("[charts] all 6 charts written.")
+    chart07()
+    print("[charts] all 7 charts written.")
 
 
 if __name__ == "__main__":

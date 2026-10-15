@@ -209,7 +209,7 @@ Observed BEV window 2022-07..2025-05 (35 months): mean 854 registrations/month (
 **Honest read:** all four onsets have **contaminated pre-trends** (significant non-zero leads —
 a secular COE trend is present), so every onset is a **bound** relative to a moving pre-trend, not
 a clean causal jump. The 2022-01 event is explicitly bounded (ARF floor + threshold combined,
-co-timed). The 2026-01 cap cut is descriptive-only (COE-only extension). → **charts/05_event_study.png**
+co-timed). The 2026-01 cap cut is descriptive-only (COE-only extension). → **charts/07_event_study.png**
 
 ### 3.6 Negative controls (the decisive test) — `tables/negative_controls.csv`
 
@@ -236,7 +236,7 @@ co-timed). The 2026-01 cap cut is descriptive-only (COE-only extension). → **c
 
 > **VERDICT (2022+ EV era**
 
-**Honest read (per scope, from the verdict rows):** full window — the 2022-01 ARF-floor/threshold dummy is positive in A but the clean controls do NOT show the same % jump, so the test does NOT falsify an EV-rebate reading; however the effect is not robust (p=0.064) and is a TAX provision co-timed with the threshold change, so it is not credited to the rebate. 2022+ EV era — the 2024-01 step (the pure EV-rebate variation) is largest in A and not matched by C/D (E moves comparably but is a single category); the same-effect test is False, so the 2024-01 EV-era step is **NOT falsified** — consistent with an EV-rebate channel (magnitude not identifiable at this power). → **charts/01_price_regime.png**
+**Honest read (per scope, from the verdict rows):** full window — the 2022-01 ARF-floor/threshold dummy is positive in A but the clean controls do NOT show the same % jump, so the test does NOT falsify an EV-rebate reading; however the effect is not robust (p=0.064) and is a TAX provision co-timed with the threshold change, so it is not credited to the rebate. 2022+ EV era — the 2024-01 step (the pure EV-rebate variation) is largest in A and not matched by C/D (E moves comparably but is a single category); the same-effect test is False, so the 2024-01 EV-era step is **NOT falsified** — consistent with an EV-rebate channel (magnitude not identifiable at this power). → **charts/02_negative_controls.png**
 
 ### 3.7 Diagnostics — `tables/diagnostics_stationarity_autocorr.csv`
 
@@ -317,12 +317,13 @@ not falsified on the 2022+ EV era, not isolating a clean EV effect on the full w
 
 | Chart | File | Data table | What it shows |
 |---|---|---|---|
-| 1 | `charts/01_price_regime.png` | `tables/chart01_price_regime.csv` | nominal + real Cat A price with REAL policy markers (2018/2021/2024) + 2022-01 confounder, and the negative-control C/D/E vs A panel (per scope: 2022-01 + 2024-01) |
-| 2 | `charts/02_ev_demand.png` | `tables/chart02_ev_demand.csv` | EV registrations + EV share 2022-07..2025-05, with the coverage-rate lower-bound decay note |
-| 3 | `charts/03_price_demand_dual.png` | `tables/chart03_price_demand_dual.csv` | dual-axis Cat A price vs CORRECTED Cat A bids received; 2022+ EV era shaded |
-| 4 | `charts/04_scatter_fit_ci.png` | `tables/chart04_scatter_fit_ci.csv` | price-vs-demand scatter with bivariate fitted line + 95% CI band (association only) |
-| 5 | `charts/05_event_study.png` | `tables/chart05_event_study.csv` | event-study coefficients with CIs for the 4 verified-policy events; pre-trend contamination annotated |
+| 1 | `charts/01_price_regime.png` | `tables/chart01_price_regime.csv` | Cat A clearing price (nominal + real) with the REAL policy markers (2018/2021/2024) + the 2022-01 confounder marker |
+| 2 | `charts/02_negative_controls.png` | `tables/chart02_negative_controls.csv` | negative-control check: % price jump by category, per scope (2022-01 full window + 2024-01 EV era), with verdict rows |
+| 3 | `charts/03_ev_demand.png` | `tables/chart03_ev_demand.csv` | EV registrations + EV share 2022-07..2025-05, with the coverage-rate lower-bound decay note |
+| 4 | `charts/04_price_demand_dual.png` | `tables/chart04_price_demand_dual.csv` | dual-axis Cat A price vs CORRECTED Cat A bids received; 2022+ EV era shaded |
+| 5 | `charts/05_scatter_fit_ci.png` | `tables/chart05_scatter_fit_ci.csv` | price-vs-demand scatter with bivariate fitted line + 95% CI band (association only) |
 | 6 | `charts/06_mediation_diagram.png` | `tables/chart06_mediation_effects.csv` | mediation path (rebate → demand → price) with effect sizes for BOTH scopes |
+| 7 | `charts/07_event_study.png` | `tables/chart07_event_study.csv` | event-study coefficients with CIs for the 4 verified-policy events; pre-trend contamination annotated |
 
 ---
 ## 7. Verification
