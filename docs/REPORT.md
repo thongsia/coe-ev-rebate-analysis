@@ -192,7 +192,7 @@ Observed BEV window 2022-07..2025-05 (35 months): mean 854 registrations/month (
 | **indirect (rebate → demand → price)** | -9.0 | [-52.8, +28.6] | -331.8 | [-1034.7, +436.9] | 109 / 41 |
 | **mediated share (indirect / total)** | -0.016 | [-0.099, +0.059] | -0.115 | [-0.374, +0.197] | 109 / 41 |
 
-**Honest read (full window):** mediated share = **-0.016** with a CI spanning 0 (-0.099, +0.059) — the price effect is **NOT routed through Cat A bidding demand** (indirect -9.0, CI spans 0). 2-stage bootstrap (N=2000), full-window primary. **2022+ EV era:** mediated share **-0.115** (CI -0.374, +0.197), indirect -331.8 (CI spans 0) — again NOT routed through bidding; 41 obs → low power. Simultaneity flagged (rebate set in response to EV demand). Grade: not detectable (both scopes). → **charts/06_mediation_diagram.png**
+**Honest read (full window):** mediated share = **-0.016** with a CI spanning 0 (-0.099, +0.059) — the price effect is **NOT routed through Cat A bidding demand** (indirect -9.0, CI spans 0). 2-stage bootstrap (N=2000), full-window primary. **2022+ EV era:** mediated share **-0.115** (CI -0.374, +0.197), indirect -331.8 (CI spans 0) — again NOT routed through bidding; 41 obs → low power. Simultaneity flagged (rebate set in response to EV demand). Grade: not detectable (both scopes). → **charts/07_mediation_diagram.png**
 
 ### 3.5 Event study (4 verified-policy events) — `tables/event_study_coefficients.csv`, `tables/event_study_prechecks.csv`
 
@@ -206,7 +206,7 @@ Observed BEV window 2022-07..2025-05 (35 months): mean 854 registrations/month (
 **Honest read:** all four onsets have **contaminated pre-trends** (significant non-zero leads —
 a secular COE trend is present), so every onset is a **bound** relative to a moving pre-trend, not
 a clean causal jump. The 2022-01 event is explicitly bounded (ARF floor + threshold combined,
-co-timed). The 2026-01 cap cut is descriptive-only (COE-only extension). → **charts/07_event_study.png**
+co-timed). The 2026-01 cap cut is descriptive-only (COE-only extension). → **charts/08_event_study.png**
 
 ### 3.6 Negative controls (the decisive test) — `tables/negative_controls.csv`
 
@@ -233,7 +233,7 @@ co-timed). The 2026-01 cap cut is descriptive-only (COE-only extension). → **c
 
 > **VERDICT (2022+ EV era**
 
-**Honest read (per scope, from the verdict rows):** full window — the 2022-01 ARF-floor/threshold dummy is positive in A but the clean controls do NOT show the same % jump, so the test does NOT falsify an EV-rebate reading; however the effect is not robust (p=0.064) and is a TAX provision co-timed with the threshold change, so it is not credited to the rebate. 2022+ EV era — the 2024-01 step (the pure EV-rebate variation) is largest in A and not matched by C/D (E moves comparably but is a single category); the same-effect test is False, so the 2024-01 EV-era step is **NOT falsified** — consistent with an EV-rebate channel (magnitude not identifiable at this power). → **charts/02_negative_controls.png**
+**Honest read (per scope, from the verdict rows):** full window — the 2022-01 ARF-floor/threshold dummy is positive in A but the clean controls do NOT show the same % jump, so the test does NOT falsify an EV-rebate reading; however the effect is not robust (p=0.064) and is a TAX provision co-timed with the threshold change, so it is not credited to the rebate. 2022+ EV era — the 2024-01 step (the pure EV-rebate variation) is largest in A and not matched by C/D (E moves comparably but is a single category); the same-effect test is False, so the 2024-01 EV-era step is **NOT falsified** — consistent with an EV-rebate channel (magnitude not identifiable at this power). → **charts/02_negative_control_2022.png** (2022-01, full window) and **charts/03_negative_control_2024.png** (2024-01, 2022+ EV era)
 
 ### 3.7 Diagnostics — `tables/diagnostics_stationarity_autocorr.csv`
 
@@ -315,12 +315,13 @@ not falsified on the 2022+ EV era, not isolating a clean EV effect on the full w
 | Chart | File | Data table | What it shows |
 |---|---|---|---|
 | 1 | `charts/01_price_regime.png` | `tables/chart01_price_regime.csv` | Cat A clearing price (nominal + real) with the REAL policy markers (2018/2021/2024) + the 2022-01 confounder marker |
-| 2 | `charts/02_negative_controls.png` | `tables/chart02_negative_controls.csv` | negative-control check: % price jump by category, per scope (2022-01 full window + 2024-01 EV era), with verdict rows |
-| 3 | `charts/03_ev_demand.png` | `tables/chart03_ev_demand.csv` | EV registrations + EV share 2022-07..2025-05, with the coverage-rate lower-bound decay note |
-| 4 | `charts/04_price_demand_dual.png` | `tables/chart04_price_demand_dual.csv` | dual-axis Cat A price vs CORRECTED Cat A bids received; 2022+ EV era shaded |
-| 5 | `charts/05_scatter_fit_ci.png` | `tables/chart05_scatter_fit_ci.csv` | price-vs-demand scatter with bivariate fitted line + 95% CI band (association only) |
-| 6 | `charts/06_mediation_diagram.png` | `tables/chart06_mediation_effects.csv` | mediation path (rebate → demand → price) with effect sizes for BOTH scopes |
-| 7 | `charts/07_event_study.png` | `tables/chart07_event_study.csv` | event-study coefficients with CIs for the 4 verified-policy events; pre-trend contamination annotated |
+| 2 | `charts/02_negative_control_2022.png` | `tables/chart02_negative_control_2022.csv` | negative-control check: 2022-01 % price jump by category (full window) |
+| 3 | `charts/03_negative_control_2024.png` | `tables/chart03_negative_control_2024.csv` | negative-control check: 2024-01 EEAI cap-cut step by category (2022+ EV era) |
+| 4 | `charts/04_ev_demand.png` | `tables/chart04_ev_demand.csv` | EV registrations + EV share 2022-07..2025-05, with the coverage-rate lower-bound decay note |
+| 5 | `charts/05_price_demand_dual.png` | `tables/chart05_price_demand_dual.csv` | dual-axis Cat A price vs CORRECTED Cat A bids received; 2022+ EV era shaded |
+| 6 | `charts/06_scatter_fit_ci.png` | `tables/chart06_scatter_fit_ci.csv` | price-vs-demand scatter with bivariate fitted line + 95% CI band (association only) |
+| 7 | `charts/07_mediation_diagram.png` | `tables/chart07_mediation_effects.csv` | mediation path (rebate → demand → price) with effect sizes for BOTH scopes |
+| 8 | `charts/08_event_study.png` | `tables/chart08_event_study.csv` | event-study coefficients with CIs for the 4 verified-policy events; pre-trend contamination annotated |
 
 ---
 ## 7. Verification

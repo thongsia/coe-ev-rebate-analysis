@@ -631,7 +631,7 @@ def build_report(v: dict) -> str:
       f"2-stage bootstrap (N=2000), full-window primary. **2022+ EV era:** mediated share "
       f"**{v['med_ev']['mediated_share']['estimate']:+.3f}** (CI {v['med_ev']['mediated_share']['ci_lo']:+.3f}, {v['med_ev']['mediated_share']['ci_hi']:+.3f}), "
       f"indirect {v['med_ev']['indirect']['estimate']:+.1f} (CI spans 0) — again NOT routed through bidding; 41 obs → low power. "
-      f"Simultaneity flagged (rebate set in response to EV demand). Grade: not detectable (both scopes). → **charts/06_mediation_diagram.png**")
+      f"Simultaneity flagged (rebate set in response to EV demand). Grade: not detectable (both scopes). → **charts/07_mediation_diagram.png**")
     A("")
     A("### 3.5 Event study (4 verified-policy events) — `tables/event_study_coefficients.csv`, `tables/event_study_prechecks.csv`")
     A("")
@@ -652,7 +652,7 @@ def build_report(v: dict) -> str:
     A("**Honest read:** all four onsets have **contaminated pre-trends** (significant non-zero leads —")
     A("a secular COE trend is present), so every onset is a **bound** relative to a moving pre-trend, not")
     A("a clean causal jump. The 2022-01 event is explicitly bounded (ARF floor + threshold combined,")
-    A("co-timed). The 2026-01 cap cut is descriptive-only (COE-only extension). → **charts/07_event_study.png**")
+    A("co-timed). The 2026-01 cap cut is descriptive-only (COE-only extension). → **charts/08_event_study.png**")
     A("")
     A("### 3.6 Negative controls (the decisive test) — `tables/negative_controls.csv`")
     A("")
@@ -693,7 +693,8 @@ def build_report(v: dict) -> str:
       "2024-01 step (the pure EV-rebate variation) is largest in A and not matched by C/D (E moves "
       "comparably but is a single category); the same-effect test is False, so the 2024-01 EV-era step "
       "is **NOT falsified** — consistent with an EV-rebate channel (magnitude not identifiable at this "
-      "power). → **charts/02_negative_controls.png**")
+      "power). → **charts/02_negative_control_2022.png** (2022-01, full "
+      "window) and **charts/03_negative_control_2024.png** (2024-01, 2022+ EV era)")
     A("")
     A("### 3.7 Diagnostics — `tables/diagnostics_stationarity_autocorr.csv`")
     A("")
@@ -787,12 +788,13 @@ def build_report(v: dict) -> str:
     A("| Chart | File | Data table | What it shows |")
     A("|---|---|---|---|")
     A("| 1 | `charts/01_price_regime.png` | `tables/chart01_price_regime.csv` | Cat A clearing price (nominal + real) with the REAL policy markers (2018/2021/2024) + the 2022-01 confounder marker |")
-    A("| 2 | `charts/02_negative_controls.png` | `tables/chart02_negative_controls.csv` | negative-control check: % price jump by category, per scope (2022-01 full window + 2024-01 EV era), with verdict rows |")
-    A("| 3 | `charts/03_ev_demand.png` | `tables/chart03_ev_demand.csv` | EV registrations + EV share 2022-07..2025-05, with the coverage-rate lower-bound decay note |")
-    A("| 4 | `charts/04_price_demand_dual.png` | `tables/chart04_price_demand_dual.csv` | dual-axis Cat A price vs CORRECTED Cat A bids received; 2022+ EV era shaded |")
-    A("| 5 | `charts/05_scatter_fit_ci.png` | `tables/chart05_scatter_fit_ci.csv` | price-vs-demand scatter with bivariate fitted line + 95% CI band (association only) |")
-    A("| 6 | `charts/06_mediation_diagram.png` | `tables/chart06_mediation_effects.csv` | mediation path (rebate → demand → price) with effect sizes for BOTH scopes |")
-    A("| 7 | `charts/07_event_study.png` | `tables/chart07_event_study.csv` | event-study coefficients with CIs for the 4 verified-policy events; pre-trend contamination annotated |")
+    A("| 2 | `charts/02_negative_control_2022.png` | `tables/chart02_negative_control_2022.csv` | negative-control check: 2022-01 % price jump by category (full window) |")
+    A("| 3 | `charts/03_negative_control_2024.png` | `tables/chart03_negative_control_2024.csv` | negative-control check: 2024-01 EEAI cap-cut step by category (2022+ EV era) |")
+    A("| 4 | `charts/04_ev_demand.png` | `tables/chart04_ev_demand.csv` | EV registrations + EV share 2022-07..2025-05, with the coverage-rate lower-bound decay note |")
+    A("| 5 | `charts/05_price_demand_dual.png` | `tables/chart05_price_demand_dual.csv` | dual-axis Cat A price vs CORRECTED Cat A bids received; 2022+ EV era shaded |")
+    A("| 6 | `charts/06_scatter_fit_ci.png` | `tables/chart06_scatter_fit_ci.csv` | price-vs-demand scatter with bivariate fitted line + 95% CI band (association only) |")
+    A("| 7 | `charts/07_mediation_diagram.png` | `tables/chart07_mediation_effects.csv` | mediation path (rebate → demand → price) with effect sizes for BOTH scopes |")
+    A("| 8 | `charts/08_event_study.png` | `tables/chart08_event_study.csv` | event-study coefficients with CIs for the 4 verified-policy events; pre-trend contamination annotated |")
     A("")
     A("---")
     A("## 7. Verification")

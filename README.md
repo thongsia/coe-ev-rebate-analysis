@@ -95,14 +95,13 @@ The proof: **car categories where no EV rebate ever applies rose at a
 similar pace** (Figure 2). If rebates had caused the price rise, we
 wouldn't see it in cars that can't get a rebate.
 
-**Figure 2.** The negative-control test: % price jump by car category —
-2022-01 (top) and 2024-01 (bottom).
+**Figure 2.** The negative-control test for the 2022 jump: % price jump by
+car category, 2022-01 (full window).
 
-![Negative-control check: % price jump by category, 2022-01 and 2024-01](charts/02_negative_controls.png)
+![Negative-control check: 2022-01 % price jump by car category (full window)](charts/02_negative_control_2022.png)
 
-*Top: the Jan 2022 jump shows up in the rebate-free categories C, D and E as
-well — a market-wide event, not a rebate effect. Bottom: the 2024 cap cut
-moves Category A more than C/D do (E comparably — a single category).*
+*The Jan 2022 jump shows up in the rebate-free categories C, D and E as
+well — a market-wide event, not a rebate effect.*
 
 *The price rise was also reported in the media. [The Straits Times](https://www.straitstimes.com/singapore/transport/coe-premiums-at-all-time-highs-in-2022-buyers-could-get-slight-reprieve-in-later-half-of-2023)
 noted on 29 Dec 2022 that COE premiums went on "a relentless upward march
@@ -123,12 +122,20 @@ within it, so the statistics have something to work with. In that window:
 - For every extra S$1,000 of maximum rebate, the average Category A price was
   about **S$4,100 higher** — a statistically clear association (p < 0.001 by
   several measures, nominal and inflation-adjusted alike).
-- Rebate-free categories did **not** show the same 2024 move (Figure 2,
-  bottom panel), so this is plausibly EV-relevant.
+- Rebate-free categories did **not** show the same 2024 move (Figure 3),
+  so this is plausibly EV-relevant.
 - But the window has only 41 months and two rebate levels, so this is a
   **low-power association, not a measured causal effect**. It's evidence the
   price system responded to the rebate cut — not a number to quote as "how
   much rebates raise prices".
+
+**Figure 3.** The negative-control test for the 2024 rebate cut: % price
+step by car category, 2024-01 (2022+ EV era).
+
+![Negative-control check: 2024-01 EEAI cap-cut step by car category (2022+ EV era)](charts/03_negative_control_2024.png)
+
+*The 2024 cap cut moves Category A more than C/D do (E comparably — a single
+category).*
 
 ### 3. Rebates did not make more people bid
 
@@ -136,22 +143,22 @@ If the rebate story were true, we'd expect bidding demand in Category A to
 rise with rebate generosity. It didn't: the bidding numbers show no
 consistent, same-direction link to the rebate changes (in the EV era the
 statistical sign is even backwards, which is most consistent with noise and
-mixing in non-EV demand — Category A is still mostly non-EV cars). Figures 3
-and 4 show the EV uptake and the price-vs-bids relationship directly.
+mixing in non-EV demand — Category A is still mostly non-EV cars). Figures 4
+and 5 show the EV uptake and the price-vs-bids relationship directly.
 
-**Figure 3.** Electric car registrations and their share of new-car sales,
+**Figure 4.** Electric car registrations and their share of new-car sales,
 with the data-coverage lower bound.
 
-![EV registrations and their share of new cars, with the data-coverage lower bound](charts/03_ev_demand.png)
+![EV registrations and their share of new cars, with the data-coverage lower bound](charts/04_ev_demand.png)
 
 *Electric car registrations and their share of new-car sales from 2022
 (when the official EV label first appeared). The dashed line is a lower bound
 due to missing counts.*
 
-**Figure 4.** Category A COE price (left axis) vs number of bids received
+**Figure 5.** Category A COE price (left axis) vs number of bids received
 (right axis), over the same period.
 
-![Category A COE price (left axis) vs number of bids received (right axis)](charts/04_price_demand_dual.png)
+![Category A COE price (left axis) vs number of bids received (right axis)](charts/05_price_demand_dual.png)
 
 *Price and bidding demand over the same period — note how weakly connected
 the two are.*
@@ -159,12 +166,12 @@ the two are.*
 ### 4. Prices and bidding demand barely track each other
 
 A basic requirement for "more bidding → higher prices" is that price and
-bids actually move together. Across the decade they mostly don't (Figure 5).
+bids actually move together. Across the decade they mostly don't (Figure 6).
 
-**Figure 5.** Each dot is a month: Category A price vs bids received, with
+**Figure 6.** Each dot is a month: Category A price vs bids received, with
 the best-fit line and its uncertainty band.
 
-![Each dot is a month: Category A price vs bids received, with the best-fit line and uncertainty band](charts/05_scatter_fit_ci.png)
+![Each dot is a month: Category A price vs bids received, with the best-fit line and uncertainty band](charts/06_scatter_fit_ci.png)
 
 *The fit line is nearly flat — more bids did not reliably mean higher prices.*
 
@@ -173,12 +180,12 @@ the best-fit line and its uncertainty band.
 We also decomposed the effect the way the hypothesis describes: rebate →
 bidding demand → price. The middle link (rebate affecting bidding) is null,
 so the whole chain is null — **whatever small price movement exists is not
-routed through more bidding** (Figure 6).
+routed through more bidding** (Figure 7).
 
-**Figure 6.** The hypothesized chain — rebate → bidding demand → price —
+**Figure 7.** The hypothesized chain — rebate → bidding demand → price —
 with the estimated size of each step for both time windows.
 
-![The hypothesized chain: rebate → bidding demand → price, with the estimated size of each step for both time windows](charts/06_mediation_diagram.png)
+![The hypothesized chain: rebate → bidding demand → price, with the estimated size of each step for both time windows](charts/07_mediation_diagram.png)
 
 *The indirect (via-bidding) path is statistically indistinguishable from
 zero in both time windows.*
@@ -187,14 +194,14 @@ zero in both time windows.*
 
 An "event study" examines prices around each of the four policy changes.
 Every single one shows the price was already drifting in that direction
-*before* the policy started (Figure 7) — the signature of the long-run COE
+*before* the policy started (Figure 8) — the signature of the long-run COE
 price trend (plus the pandemic-era dip in 2020), not of the policy itself.
 The estimated effects are therefore reported as bounds, not point estimates.
 
-**Figure 7.** Estimated price changes around each of the four policy
+**Figure 8.** Estimated price changes around each of the four policy
 changes, with uncertainty bars.
 
-![Estimated price changes around each of the four policy changes, with uncertainty bars; the pre-change "leads" should be zero if the policy caused the move](charts/07_event_study.png)
+![Estimated price changes around each of the four policy changes, with uncertainty bars; the pre-change "leads" should be zero if the policy caused the move](charts/08_event_study.png)
 
 *One panel per policy change (2018 VES, 2021 EEAI, 2022 tax floor, 2024 cap
 cut). The left side of each panel (months *before* the change) already shows
@@ -224,7 +231,7 @@ produced (`src/05_scope_guard.py`).
 **Reproducibility.** Every number in the report traces to a file: raw data in
 `data/raw/` (with a provenance record tying each download to its source),
 processed panels in `data/processed/`, one CSV per table in `tables/`
-(26 CSVs), seven charts in `charts/` (Figures 1–7), and the reports in `docs/`. A
+(27 CSVs), eight charts in `charts/` (Figures 1–8), and the reports in `docs/`. A
 verification module re-checks row counts, citations, and that all 112 report
 figures match the tables (the current run passes 9/9 checks).
 
@@ -249,7 +256,7 @@ docs/STATS_SUMMARY.md      ← one-page statistics summary
 data/raw/                  ← source CSVs + provenance.csv
 data/processed/            ← monthly panels
 tables/                    ← one CSV per reported table
-charts/                    ← the seven charts shown above (Figures 1–7)
+charts/                    ← the eight charts shown above (Figures 1–8)
 src/                       ← 18 ordered Python modules (fetch → panel → exhibits → verify → report)
 ```
 
