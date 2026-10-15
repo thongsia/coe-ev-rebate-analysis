@@ -52,6 +52,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 from matplotlib.patches import FancyArrowPatch
+from matplotlib.transforms import blended_transform_factory
 from statsmodels.stats.api import anova_lm  # noqa: F401  (band via OLS below)
 
 SRC = Path(__file__).resolve().parent
@@ -78,12 +79,9 @@ plt.rcParams.update(
 )
 
 MONTH = lambda s: pd.Period(s, freq="M").to_timestamp()  # noqa: E731
-# Policy markers (verified real Singapore policy)
-POLICY_MARKS = [
-    ("2018-01", "CEVS lapse / VES onset\n(dose 20000 est. -> 25000)"),
-    ("2021-01", "Enhanced VES + EEAI 45% ARF\ncap $20k (dose -> 45000)"),
-    ("2024-01", "EEAI cap 20k -> 15k\n(dose 45000 -> 40000)"),
-]
+# Policy marker months (verified real Singapore policy); the 2022-01
+# confounder is added separately in chart01.
+POLICY_MARKS = ["2018-01", "2021-01", "2024-01"]
 
 
 def _p(s: str) -> pd.Timestamp:
@@ -113,34 +111,48 @@ def chart01() -> None:
     ax1.set_ylabel("Nominal S$")
     ax1.set_title(
         "Chart 1 — Category A COE clearing price, 2016-01..2025-05 (verified policy)\n"
-        "Real policy markers (CEVS->VES 2018, EEAI stack 2021, EEAI cap cut 2024); "
-        "2022-01 = $0 ARF floor (tax) + 97->110kW threshold (market-wide confounder)",
+        "Dotted lines: EV-rebate changes.   Dashed red line: Jan 2022 tax + "
+        "threshold change (not a rebate)",
+        pad=12,
     )
     ax2.plot(df["ts"], df["real"], color="#b23b3b", lw=1.6,
              label="Cat A clearing price — real S$ (2024 base; CPI All Items)")
     ax2.set_ylabel("Real S$")
     ax2.set_xlabel("Month")
 
-    for ax in (ax1, ax2):
-        for m, lab in POLICY_MARKS:
-            x = _p(m)
-            ax.axvline(x, color="gray", ls=":", lw=1, alpha=0.8)
-            ax.annotate(lab, xy=(x, ax.get_ylim()[1] * 0.985),
-                        xytext=(0, 0), textcoords="offset points",
-                        fontsize=7.2, color="#444444", ha="left")
+    # Headroom above the data line so the marker labels have their own band
+    # and never touch (or get hidden behind) the price line.
+    for ax, ycol in ((ax1, "nominal"), (ax2, "real")):
+        ymin, ymax = df[ycol].min(), df[ycol].max()
+        ax.set_ylim(ymin - 0.05 * (ymax - ymin), ymax * 1.18)
+        for m in POLICY_MARKS:
+            ax.axvline(_p(m), color="gray", ls=":", lw=1, alpha=0.8)
         # confounder marker (2022-01), emphasised
-        x = _p("2022-01")
-        ax.axvline(x, color="#b23b3b", ls="--", lw=1.4, alpha=0.9)
-        ax.annotate(
-            "2022-01: $0 ARF floor for EVs (tax)\n+ 97->110kW Cat A threshold "
-            "(market-wide confounder)",
-            xy=(x, ax.get_ylim()[1] * 0.97), xytext=(x, ax.get_ylim()[1] * 0.88),
-            fontsize=8, color="#b23b3b",
-            arrowprops=dict(arrowstyle="->", color="#b23b3b", lw=1),
-            ha="left",
-        )
-    ax1.legend(loc="upper left")
-    ax2.legend(loc="upper left")
+        ax.axvline(_p("2022-01"), color="#b23b3b", ls="--", lw=1.4, alpha=0.9)
+
+    # Marker labels — top panel only (the lines continue on the bottom
+    # panel). x in data units, y in axes fraction, staggered so no two
+    # labels share a row.
+    blend = blended_transform_factory(ax1.transData, ax1.transAxes)
+    ax1.text(_p("2018-01"), 0.95, "Jan 2018 — VES starts (rebate ~S$25k)",
+             transform=blend, fontsize=7.5, color="#444444", ha="left")
+    ax1.text(_p("2024-01"), 0.95, "Jan 2024 — EEAI cap cut (rebate → S$40k)",
+             transform=blend, fontsize=7.5, color="#444444", ha="right")
+    ax1.text(_p("2021-01"), 0.87,
+             "Jan 2021 — Enhanced VES + EEAI (rebate → S$45k)",
+             transform=blend, fontsize=7.5, color="#444444", ha="left")
+    ax1.annotate(
+        "Jan 2022 — EV tax cut + engine-threshold change (not a rebate)",
+        xy=(_p("2022-01"), 0.30 * ax1.get_ylim()[1]),
+        xytext=(_p("2022-01"), 0.22),
+        xycoords="data", textcoords=blend,
+        fontsize=8, color="#b23b3b", ha="left",
+        bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="none", alpha=0.9),
+        arrowprops=dict(arrowstyle="->", color="#b23b3b", lw=1,
+                        shrinkA=3, shrinkB=1),
+    )
+    ax1.legend(loc="lower left")
+    ax2.legend(loc="lower right")
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
     ax1.xaxis.set_major_locator(mdates.YearLocator())
     ax2.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
