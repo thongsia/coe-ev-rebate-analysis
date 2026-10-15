@@ -48,8 +48,9 @@ Two data caveats worth knowing:
 - **EV registration counts are lower bounds.** About half of the monthly
   registration rows don't carry a car-count number (the field went blank more
   often over time), so EV totals are reported with a monthly coverage rate.
-- **Category A is not an "EV category".** It's the large-engine car
-  category; EVs simply land in it. That's why the study looks at the whole
+- **Category A is not an "EV category".** It's the small-engine car
+  category (engines up to 1600cc / 130kW); most EVs fall under 130kW and so
+  land in it. That's why the study looks at the whole
   decade, not just "EV months".
 
 ## What the rebate policy actually did
