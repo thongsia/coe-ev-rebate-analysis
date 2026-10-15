@@ -178,18 +178,24 @@ def chart02() -> None:
     nc = pd.read_csv(TABLES / "negative_controls.csv")
     colours = ["#1f4e79", "#8a8a8a", "#b23b3b", "#b23b3b", "#b23b3b"]
     labels = [
-        "A (EV-eligible, MAIN)", "B (contaminated upper bound)",
-        "C — CLEAN control (no EV rebate)", "D — CLEAN control (no EV rebate)",
-        "E — CLEAN control (no EV rebate)",
+        "A (EV-eligible,\nMAIN)", "B (contaminated\nupper bound)",
+        "C — CLEAN control\n(no EV rebate)", "D — CLEAN control\n(no EV rebate)",
+        "E — CLEAN control\n(no EV rebate)",
     ]
 
     def nc_panel(ax, term, title):
-        rows = [r for r in nc.itertuples()
-                if str(r.term) == term and str(r.scope) == "full_window"
-                and str(r.spec) == "dummy"]
-        if not rows and term == "reg_eeai_cap15k_202401":
+        # The 2024-01 EEAI cap cut only bites in the 2022+ EV era, and the
+        # verdict caption below the chart cites the ev_era_2022plus scope —
+        # plot THAT scope for this term. (full_window rows exist too, but they
+        # cover the whole 2016-2025 window and would contradict both the panel
+        # title and the verdict; vision QA caught this mismatch.)
+        if term == "reg_eeai_cap15k_202401":
             rows = [r for r in nc.itertuples()
                     if str(r.term) == term and str(r.scope) == "ev_era_2022plus"
+                    and str(r.spec) == "dummy"]
+        else:
+            rows = [r for r in nc.itertuples()
+                    if str(r.term) == term and str(r.scope) == "full_window"
                     and str(r.spec) == "dummy"]
         cats = [r.category for r in rows]
         pcts = [r.coef_pct_of_mean for r in rows]
@@ -197,23 +203,38 @@ def chart02() -> None:
         ax.set_xticks(range(len(cats)), labels)
         ax.set_ylabel("% jump")
         ax.set_title(title, fontsize=10)
+        # explicit headroom so value labels stay inside the frame
+        # (auto ylim left the +16.3% label 7px past the top spine)
+        lo, hi = min(0, min(pcts)), max(0, max(pcts))
+        ax.set_ylim(lo * 1.15 if lo < 0 else -2, hi * 1.15 if hi > 0 else 2)
         for i, v in enumerate(pcts):
-            ax.annotate(
-                f"{v:+.1f}%", xy=(i, v),
-                xytext=(0, 6 if v >= 0 else -14), textcoords="offset points",
-                ha="center", fontsize=8.5,
-            )
+            if v >= 0:
+                ax.annotate(
+                    f"{v:+.1f}%", xy=(i, v),
+                    xytext=(0, 6), textcoords="offset points",
+                    ha="center", fontsize=8.5,
+                )
+            else:
+                # inside the bar: a label below a negative bar would cross
+                # the axis frame and collide with the x-tick labels
+                ax.annotate(
+                    f"{v:+.1f}%", xy=(i, v),
+                    xytext=(0, 12), textcoords="offset points",
+                    ha="center", fontsize=8.5, color="white",
+                    fontweight="bold",
+                )
 
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(11, 8.0))
+    nc_panel(ax1, "reg_arffloor_zero_202201",
+             "2022-01 price jump by category (full window)")
+    nc_panel(ax2, "reg_eeai_cap15k_202401",
+             "2024-01 EEAI cap-cut step by category (2022+ EV era)")
+    # overall title set AFTER nc_panel, which overwrites ax1's panel title
     ax1.set_title(
         "Chart 2 — Negative-control check: % price jump by category\n"
         "2022-01 (full window) and 2024-01 (EV era)",
         pad=12,
     )
-    nc_panel(ax1, "reg_arffloor_zero_202201",
-             "2022-01 price jump by category (full window)")
-    nc_panel(ax2, "reg_eeai_cap15k_202401",
-             "2024-01 EEAI cap-cut step by category (2022+ EV era)")
     verdicts = []
     for line in (TABLES / "negative_controls.csv").read_text().splitlines():
         if line.startswith("# VERDICT"):
@@ -221,13 +242,15 @@ def chart02() -> None:
     verdict_txt = "   ".join(v[len("# VERDICT "):] for v in verdicts)
     # verdict caption below the chart (wrapped; full text in the CSV)
     fig.text(
-        0.01, 0.14, textwrap.fill(verdict_txt, width=105),
+        0.01, 0.135, textwrap.fill(verdict_txt, width=105),
         ha="left", va="top", fontsize=7.5, color="#222222",
         bbox=dict(boxstyle="round,pad=0.4", fc="white", ec="#888888",
                   alpha=0.95),
     )
     fig.tight_layout()
-    fig.subplots_adjust(hspace=0.5, bottom=0.18)
+    # band below the bottom panel: 2-line x-tick labels need clearance
+    # (measured: bottom=0.18 + y=0.14 put the box 10px into line 2)
+    fig.subplots_adjust(hspace=0.5, bottom=0.20)
     fig.savefig(CHARTS / "02_negative_controls.png")
     plt.close(fig)
     print("[chart02] wrote charts/02_negative_controls.png + tables/chart02_negative_controls.csv")
@@ -250,7 +273,8 @@ def chart03() -> None:
     ax1.set_title(
         "Chart 3 — EV registrations & EV share of registrations, 2022-07..2025-05\n"
         "DESCRIPTIVE ONLY — observed window: combined dose flat 45000 (2022-01..2023-12) "
-        "then 40000 (2024-01+); series too short/censored for a coefficient; ev_reg is a lower bound",
+        "then 40000 (2024-01+)\n"
+        "series too short/censored for a coefficient; ev_reg is a lower bound",
     )
     ax2 = ax1.twinx()
     ax2.plot(ev["ts"], ev["ev_share"] * 100, color="#1f4e79", lw=1.8,
@@ -263,21 +287,26 @@ def chart03() -> None:
                  color="#b26a00")
     ax1.legend(loc="upper left")
     ax2.legend(loc="center left")
-    # coverage lower-bound note
-    cov = ev["coverage_rate"]
-    ax1.annotate(
-        f"coverage_rate (share of raw rows with an observed count) decays "
-        f"{cov.min()*100:.0f}% → {cov.max()*100:.0f}% over the window "
-        f"(mean {cov.mean()*100:.0f}%) ⇒ ev_reg is a LOWER BOUND that weakens over time.\n"
-        "First BEV label appears 2022-07; the series is right-truncated at 2025-05 "
-        "(joint window end).",
-        xy=(0.99, 0.98), xycoords="axes fraction", ha="right", va="top", fontsize=8,
-        bbox=dict(boxstyle="round", fc="#f5f5f5", ec="gray", alpha=0.95),
-    )
+    # coverage lower-bound note — bottom caption band (like chart 02's verdict):
+    # as an in-axis top-right box it was hidden behind the upper-left legend
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
     ax1.xaxis.set_major_locator(mdates.MonthLocator(bymonth=(1, 7)))
     fig.autofmt_xdate()
     fig.tight_layout()
+    cov = ev["coverage_rate"]
+    note = (
+        f"coverage_rate (share of raw rows with an observed count) decays "
+        f"{cov.min()*100:.0f}% → {cov.max()*100:.0f}% over the window "
+        f"(mean {cov.mean()*100:.0f}%) ⇒ ev_reg is a LOWER BOUND that weakens over time. "
+        "First BEV label appears 2022-07; the series is right-truncated at 2025-05 "
+        "(joint window end)."
+    )
+    fig.text(
+        0.01, 0.015, textwrap.fill(note, width=165),
+        ha="left", va="bottom", fontsize=7.5, color="#222222",
+        bbox=dict(boxstyle="round,pad=0.4", fc="#f5f5f5", ec="gray", alpha=0.95),
+    )
+    fig.subplots_adjust(bottom=0.17)
     fig.savefig(CHARTS / "03_ev_demand.png")
     plt.close(fig)
     print("[chart03] wrote charts/03_ev_demand.png + tables/chart03_ev_demand.csv")
@@ -406,8 +435,8 @@ def chart05() -> None:
     ax.set_ylabel("Cat A clearing price (nominal S$)")
     ax.set_title(
         "Chart 5 — Cat A price vs demand: scatter + fitted line + 95% CI\n"
-        "BIVARIATE association only (no controls); see the price equation for the "
-        "demand term's own (lags, controls) significance",
+        "BIVARIATE association only (no controls); see the price equation\n"
+        "for the demand term's own (lags, controls) significance",
     )
     ax.legend(loc="upper left", fontsize=8)
     fig.tight_layout()
@@ -615,6 +644,7 @@ def chart07() -> None:
         sub = es[es["episode"] == ep].copy()
         sub["x"] = sub["term"].map(xpos)
         sub = sub.sort_values("x")
+        xmax = sub["x"].max()
         for r in sub.itertuples():
             if r.role == "lead":
                 c = "#b23b3b"   # contaminated pre-trend
@@ -627,11 +657,20 @@ def chart07() -> None:
                 yerr=[[r.coef / 1000 - r.ci_lo / 1000], [r.ci_hi / 1000 - r.coef / 1000]],
                 fmt="o", color=c, ecolor=c, elinewidth=1.2, capsize=4, ms=5,
             )
-            ax.annotate(
-                f"{r.term}\np={r.p:.1e}", xy=(r.x, r.coef / 1000),
-                xytext=(0, 12 if r.coef >= 0 else -18), textcoords="offset points",
-                ha="center", fontsize=6.4, color=c,
-            )
+            # label sits to the SIDE of the point: never crosses the marker
+            # dot or the CI bar; rightmost point labels left (inside panel)
+            if r.x >= xmax:
+                ax.annotate(
+                    f"{r.term}\np={r.p:.1e}", xy=(r.x, r.coef / 1000),
+                    xytext=(-10, 0), textcoords="offset points",
+                    ha="right", va="center", fontsize=6.4, color=c,
+                )
+            else:
+                ax.annotate(
+                    f"{r.term}\np={r.p:.1e}", xy=(r.x, r.coef / 1000),
+                    xytext=(10, 0), textcoords="offset points",
+                    ha="left", va="center", fontsize=6.4, color=c,
+                )
         ax.axhline(0, color="black", lw=0.8)
         ax.axvline(0, color="gray", ls="--", lw=1)
         ax.set_title(title, fontsize=9.5)
