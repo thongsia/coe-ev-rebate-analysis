@@ -45,6 +45,7 @@ import importlib.util
 from pathlib import Path
 
 import numpy as np
+import textwrap
 import pandas as pd
 import matplotlib
 
@@ -203,28 +204,30 @@ def chart02() -> None:
                 ha="center", fontsize=8.5,
             )
 
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(11, 6.5))
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(11, 8.0))
     ax1.set_title(
         "Chart 2 — Negative-control check: % price jump by category\n"
-        "2022-01 (full window; $0 ARF floor + 97->110kW threshold, market-wide) "
-        "and 2024-01 (EV era; the pure EV-rebate variation)",
+        "2022-01 (full window) and 2024-01 (EV era)",
+        pad=12,
     )
     nc_panel(ax1, "reg_arffloor_zero_202201",
              "2022-01 price jump by category (full window)")
     nc_panel(ax2, "reg_eeai_cap15k_202401",
-             "2024-01 EEAI cap-cut step by category (2022+ EV era, dose 45000->40000)")
+             "2024-01 EEAI cap-cut step by category (2022+ EV era)")
     verdicts = []
     for line in (TABLES / "negative_controls.csv").read_text().splitlines():
         if line.startswith("# VERDICT"):
             verdicts.append(line)
-    verdict_txt = "  ".join(v[len("# VERDICT "):] for v in verdicts)
-    ax2.annotate(
-        verdict_txt[:380],
-        xy=(0.01, 0.02), xycoords="axes fraction", ha="left", va="bottom",
-        fontsize=7.0, color="#222222",
-        bbox=dict(boxstyle="round", fc="white", ec="#888888", alpha=0.95),
+    verdict_txt = "   ".join(v[len("# VERDICT "):] for v in verdicts)
+    # verdict caption below the chart (wrapped; full text in the CSV)
+    fig.text(
+        0.01, 0.14, textwrap.fill(verdict_txt, width=105),
+        ha="left", va="top", fontsize=7.5, color="#222222",
+        bbox=dict(boxstyle="round,pad=0.4", fc="white", ec="#888888",
+                  alpha=0.95),
     )
     fig.tight_layout()
+    fig.subplots_adjust(hspace=0.5, bottom=0.18)
     fig.savefig(CHARTS / "02_negative_controls.png")
     plt.close(fig)
     print("[chart02] wrote charts/02_negative_controls.png + tables/chart02_negative_controls.csv")
@@ -581,7 +584,9 @@ def chart07() -> None:
     # term -> integer x position (lead -k at -k, onset at 0, lag groups ordered)
     def xpos(term: str) -> int:
         if term.startswith("lead_-"):
-            return -int(term.split("_")[-1])
+            # the trailing token already carries the minus sign ("lead_-6"
+            # -> -6), so no extra negation
+            return int(term.split("_")[-1])
         if term == "onset_0":
             return 0
         m = {
@@ -593,16 +598,16 @@ def chart07() -> None:
 
     episodes = [
         ("2018-01_cevs_lapse_VES_onset",
-         "Event 1 — CEVS lapse / VES onset (2018-01): dose 20000 (CEVS est.) "
-         "-> 25000 (VES A1, verified)"),
+         "Event 1 — CEVS lapse / VES onset (2018-01): rebate ~S$20k (estimate) "
+         "-> S$25k (verified)"),
         ("2021-01_enhanced_VES_EEAI_stack",
-         "Event 2 — Enhanced VES + EEAI (2021-01): dose 25000 -> 45000 "
-         "(verified stack); EV-relevant from here on"),
+         "Event 2 — Enhanced VES + EEAI (2021-01): rebate S$25k -> S$45k "
+         "(verified); EV-relevant from here on"),
         ("2022-01_ARF_floor_zero_PLUS_threshold_bounded",
-         "Event 3 — $0 ARF floor (TAX; dose unchanged) + 97->110kW threshold "
+         "Event 3 — $0 ARF floor (TAX; rebate unchanged) + 97->110kW threshold "
          "(confounder) (2022-01) [COMBINED / BOUNDED]"),
         ("2024-01_eeai_cap15k_step",
-         "Event 4 — EEAI cap cut 20k -> 15k (2024-01): dose 45000 -> 40000 "
+         "Event 4 — EEAI cap cut S$20k -> S$15k (2024-01): rebate S$45k -> S$40k "
          "(verified; the EV-era step)"),
     ]
     fig, axes = plt.subplots(4, 1, figsize=(11, 13), sharex=True)
@@ -632,7 +637,15 @@ def chart07() -> None:
         ax.set_title(title, fontsize=9.5)
         ax.set_ylabel("coef (S$ thousands)")
 
-    # pre-trend verdicts (from prechecks, verbatim) — annotate each panel
+    # pre-trend verdicts (from prechecks, verbatim) — annotate each panel.
+    # Top corners: bottom-right is where the most negative right-side points
+    # (and their labels) sit, so keep the box in the free top corner per panel.
+    corner = {
+        "2018-01_cevs_lapse_VES_onset": (0.99, "right"),
+        "2021-01_enhanced_VES_EEAI_stack": (0.01, "left"),
+        "2022-01_ARF_floor_zero_PLUS_threshold_bounded": (0.01, "left"),
+        "2024-01_eeai_cap15k_step": (0.99, "right"),
+    }
     for ax, (ep, _title) in zip(axes, episodes):
         p = pre[pre["episode"] == ep]
         if not len(p):
@@ -644,17 +657,25 @@ def chart07() -> None:
             o = onset.iloc[0]
             onset_txt = (f" onset {o['coef']/1000:+.1f}k S$ "
                          f"[{o['ci_lo']/1000:+.1f}k, {o['ci_hi']/1000:+.1f}k]")
+        x_frac, ha = corner[ep]
         ax.annotate(
-            f"pre_trend_clean={p['pre_trend_clean']}{onset_txt}; "
-            + p["pre_trend_interpretation"][:120],
-            xy=(0.99, 0.03), xycoords="axes fraction", ha="right", va="bottom",
-            fontsize=7.4,
+            textwrap.fill(
+                f"pre_trend_clean={p['pre_trend_clean']}{onset_txt}; "
+                + p["pre_trend_interpretation"][:120], width=62),
+            xy=(x_frac, 0.985), xycoords="axes fraction", ha=ha, va="top",
+            fontsize=7.0,
             color="#b23b3b" if not p["pre_trend_clean"] else "#2e7d32",
             bbox=dict(boxstyle="round", fc="white",
                       ec="#b23b3b" if not p["pre_trend_clean"] else "#2e7d32",
                       alpha=0.95),
         )
     axes[-1].set_xlabel("Relative month to onset (leads < 0 = before, 0 = onset, lags > 0 = after)")
+    # overall figure title on the top panel (consistent with the other charts)
+    axes[0].set_title(
+        "Chart 7 — Event study: Category A price response around each policy change\n"
+        + episodes[0][1],
+        pad=8,
+    )
     fig.tight_layout()
     fig.savefig(CHARTS / "07_event_study.png")
     plt.close(fig)
