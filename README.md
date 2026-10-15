@@ -75,10 +75,12 @@ with sources is in `tables/rebate_timeline.csv`.
 
 ### 1. The big 2022 price jump was not caused by the rebates
 
-Category A prices jumped sharply in Jan 2022 (Figure 1) — the same month
-electric cars stopped paying a minimum registration tax and the category's
-engine-power threshold was raised. The obvious suspects are those two rules,
-not the rebates.
+Category A prices rose about **20%** in early 2022 — roughly S$12,000
+above the late-2021 level by Mar 2022, and still ~18% after adjusting for
+inflation (Figure 1). The timing lines up with two rules that changed in
+Jan 2022: electric cars stopped paying a minimum registration tax, and the
+category's engine-power threshold was raised. The jump itself arrived in
+Feb–Mar, rather than in the month of the changes.
 
 **Figure 1.** Category A COE clearing price, 2016–2025, with the verified
 policy changes marked.
@@ -89,9 +91,9 @@ policy changes marked.
 mark the verified policy changes; the dashed red line marks the Jan 2022
 tax/threshold change.*
 
-The proof: **car categories where no EV rebate ever applies showed the same
-jump** (Figure 2). If rebates had caused the price rise, we wouldn't see it
-in cars that can't get a rebate.
+The proof: **car categories where no EV rebate ever applies rose at a
+similar pace** (Figure 2). If rebates had caused the price rise, we
+wouldn't see it in cars that can't get a rebate.
 
 **Figure 2.** The negative-control test: % price jump by car category —
 2022-01 (top) and 2024-01 (bottom).
@@ -101,6 +103,16 @@ in cars that can't get a rebate.
 *Top: the Jan 2022 jump shows up in the rebate-free categories C, D and E as
 well — a market-wide event, not a rebate effect. Bottom: the 2024 cap cut
 moves Category A more than C/D do (E comparably — a single category).*
+
+*The price rise was also reported in the media. [The Straits Times](https://www.straitstimes.com/singapore/transport/coe-premiums-at-all-time-highs-in-2022-buyers-could-get-slight-reprieve-in-later-half-of-2023)
+noted on 29 Dec 2022 that COE premiums went on "a relentless upward march
+for much of 2022", setting all-time highs in four of the five categories,
+driven by tight supply and strong demand. The
+[LTA's official bidding results](https://www.lta.gov.sg/content/dam/ltagov/who_we_are/statistics_and_publications/statistics/pdf/M11-COE_Results_2020_2022.pdf)
+show the same climb for Category A: the quota premium rose from S$57,898 in
+Jan 2022 to S$71,556 in Mar 2022. Notably, the Straits Times piece also
+speculated that the rebates and the new engine-power threshold rule may have
+pushed up Category A prices — the very question this study tests.*
 
 ### 2. In the EV era, prices did respond to the 2024 rebate cut
 
