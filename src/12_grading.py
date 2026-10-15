@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Step 13 — evidence grading. VERIFIED-POLICY RE-RUN (dual scope).
+Step 13 — evidence grading (verified real policy; dual scope).
 
 Grade each causal link PER SCOPE — the full window (2016-01..2025-05, primary)
-AND the 2022+ EV era (2022-01..2025-05, now a valid estimation scope because
+AND the 2022+ EV era (2022-01..2025-05, a valid estimation scope because
 the verified dose varies 45000 -> 40000 at 2024-01) — as:
   supported / directionally consistent / not detectable,
 with the negative-control verdict stated per scope. Re-state the low-power
@@ -371,7 +371,7 @@ def main():
             f"dose [{float(e1p['ci_lo']):+.1f}, {float(e1p['ci_hi']):+.1f}]",
             p, int(e1p["nobs"]), g,
             "2022+ EV era (2022-01..2025-05; 41 obs; dose 45000->40000 at "
-            "2024-01; NOW ESTIMABLE)",
+            "2024-01; estimable: 2 dose levels in window)",
             nc_chk,
             f"EV-era dose step sig={sig}, predicted dir (coef>0)={pred}. 41 "
             f"obs, 2 dose levels -> LOW POWER, wide CIs; magnitude claims "
@@ -386,11 +386,11 @@ def main():
     with open(OUT, "a") as fh:
         fh.write("# ---- grading rubric & caveats ----\n")
         fh.write("# grades: supported / directionally consistent / not detectable\n")
-        fh.write("# DUAL-SCOPE RE-RUN: each link graded per scope — full window "
+        fh.write("# DUAL-SCOPE: each link graded per scope — full window "
                  "(2016-01..2025-05, primary; 3 dose steps, 110 monthly obs, 3 "
                  "pandemic NA dropped) AND 2022+ EV era (2022-01..2025-05, 41 "
-                 "obs, 2 dose levels — now estimable because the verified dose "
-                 "varies 45000->40000 at 2024-01; old flat-tail rule removed).\n")
+                 "obs, 2 dose levels — the verified dose varies 45000->40000 at "
+                 "2024-01, so the 2022+ window is estimable).\n")
         fh.write("# low-power caveat: wide CIs expected in BOTH scopes "
                  "(2022+ scope has only 41 obs / 2 dose levels).\n")
         fh.write("# precise magnitude claims are FORBIDDEN. All estimates are "

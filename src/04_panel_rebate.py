@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Step 5 — Joint panel + rebate encoding (VERIFIED-POLICY re-run).
+Step 5 — Joint panel + rebate encoding (verified real Singapore policy).
 
 Reads:
   data/processed/coe_monthly.csv        (Step 3)
@@ -20,11 +20,9 @@ Writes:
   tables/data_audit.csv                          (rows fetched, totals, reconciliation, panel size,
                                                   exercises-per-month, distinct doses, adaptations)
 
-DUAL-SCOPE RULE (VERIFIED-POLICY RE-RUN — replaces the old flat-tail rule)
---------------------------------------------------------------------------
-The pipeline was originally built on a STYLIZED case-study rebate schedule
-(4000/6000/2000/3000/7500 with plan events Nov 2016, Jan 2018, Sep 2018, Jan
-2022). It is now RE-RUN against the VERIFIED REAL SINGAPORE POLICY TIMELINE:
+DUAL-SCOPE RULE (verified policy)
+---------------------------------
+The rebate dose is encoded from the VERIFIED REAL SINGAPORE POLICY TIMELINE:
 
   * CEVS (revised) in force 1 Jul 2015 .. 31 Dec 2017 (original CEVS 2013-2015).
   * CEVS LAPSES 1 Jan 2018; VES (Vehicular Emissions Scheme) begins 1 Jan 2018
@@ -41,10 +39,10 @@ The pipeline was originally built on a STYLIZED case-study rebate schedule
 The dose is FLAT 2016-01..2017-12 (CEVS), flat 2018-01..2020-12 (VES A1),
 flat 2021-01..2023-12 (stacked 45000), and flat 2024-01..2025-05 (stacked
 40000). Two distinct dose values exist inside 2022-01..2025-05 (45000,
-40000), so the 2022+ window is NOW ALSO A VALID ESTIMATION scope (41 obs).
-The OLD flat-tail rule (2022+ rank-deficient) is REMOVED; its assertion is
-replaced by ``n_distinct_doses_2022plus == 2``. Both scopes are estimated for
-the headline exhibits; full window (2016-01..2025-05) remains primary.
+40000), so the 2022+ window is ALSO A VALID ESTIMATION scope (41 obs).
+Both scopes are estimated for the headline exhibits; the full window
+(2016-01..2025-05) remains primary, and the 2022+ scope is asserted by
+``n_distinct_doses_2022plus == 2``.
 
 REBATE ENCODING
 ---------------
@@ -63,7 +61,7 @@ COE-only extension); 2026-01..2026-10 = 27500 (VES 22500 + EEAI 7500).
 
 DUMMIES
 -------
-NEW verified-policy dummies (the key regime columns for the new exhibits):
+Verified-policy dummies (the key regime columns for the headline exhibits):
   reg_real_ves_201801      = 1 from 2018-01 (VES onset, CEVS lapse)
   reg_real_evstack_202101  = 1 from 2021-01 (enhanced VES + EEAI introduction)
   reg_arffloor_zero_202201 = 1 from 2022-01 (zero ARF floor for EVs — TAX
@@ -71,13 +69,6 @@ NEW verified-policy dummies (the key regime columns for the new exhibits):
   reg_eeai_cap15k_202401   = 1 from 2024-01 (EEAI cap 20k -> 15k; dose 45000 -> 40000)
   ves_program (0/1)        = 1 from 2018-01 (VES/Enhanced-VES era vs CEVS era)
   eeai_active (0/1)        = 1 from 2021-01
-DEPRECATED plan dummies (kept at 0/1 with the OLD plan-event dates so no
-downstream reference breaks; NOT used in the new key exhibits):
-  reg_cevs_uplift_201611 (plan: Nov 2016), reg_cevs_lapse_201801 (plan: Jan
-  2018), reg_ves_revival_201809 (plan: Sep 2018), reg_eeai_202201 (plan: Jan
-  2022 "EEAI" — the old 'key regime dummy' name; real Jan-2022 change was the
-  $0 ARF floor).
-
 COLLINEARITY NOTE (carried into downstream exhibits):
   dose ≈ 20000 + 5000*reg_real_ves_201801 + 20000*reg_real_evstack_202101
            - 5000*reg_eeai_cap15k_202401
@@ -122,7 +113,7 @@ REGIMES = [
     ("2021-01", 2, 45000, True),   # VES A1 25000 + EEAI cap 20000 (verified; ARF floor 5000)
     ("2024-01", 3, 40000, True),   # VES A1 25000 + EEAI cap 15000 (verified)
 ]
-# NEW verified-policy dummies: (effective_month, column_name)
+# Verified-policy dummies: (effective_month, column_name)
 REAL_DUMMY_NAMES = {
     "2018-01": "reg_real_ves_201801",
     "2021-01": "reg_real_evstack_202101",
@@ -134,15 +125,6 @@ ERA_DUMMY_NAMES = {
     "2018-01": "ves_program",
     "2021-01": "eeai_active",
 }
-# DEPRECATED plan dummies (kept for backward compatibility; old plan-event dates;
-# NOT used in the new key exhibits — marked deprecated in tables/rebate_timeline.csv)
-DEPRECATED_DUMMY_NAMES = {
-    "2016-11": "reg_cevs_uplift_201611",
-    "2018-01": "reg_cevs_lapse_201801",
-    "2018-09": "reg_ves_revival_201809",
-    "2022-01": "reg_eeai_202201",
-}
-
 # Out-of-window (extension) dose: EEAI cap 2026 = 7500, VES 2026 A1 = 22500
 EXT_DOSE_2025 = 40000   # 2025-06..2025-12 (VES 25000 + EEAI 15000)
 EXT_DOSE_2026 = 27500   # 2026-01..2026-10 (VES 22500 + EEAI 7500)
@@ -204,8 +186,6 @@ def main():
             row[name] = 1 if mth >= eff else 0
         for eff, name in ERA_DUMMY_NAMES.items():
             row[name] = 1 if mth >= eff else 0
-        for eff, name in DEPRECATED_DUMMY_NAMES.items():
-            row[name] = 1 if mth >= eff else 0
         enc[mth] = row
     enc_df = pd.DataFrame(list(enc.values()))
 
@@ -227,14 +207,14 @@ def main():
         columns={"rows_total": "ev_rows_total"})
     enc_df = enc_df.merge(ev_cols, on="month", how="left")
 
-    # interpretation-window flag (2022+ = EV era; NOW ALSO an estimation scope)
+    # interpretation-window flag (2022+ = EV era; also an estimation scope)
     enc_df["in_interpretation_window"] = (enc_df["month"] >= INTERP_START).astype(int)
     enc_df = enc_df.sort_values("month").reset_index(drop=True)
 
     assert len(enc_df) == 113, f"panel must be 113 months, got {len(enc_df)}"
     assert enc_df["month"].min() == WINDOW_START and enc_df["month"].max() == WINDOW_END
 
-    # ---- DUAL-SCOPE DOSE ASSERTIONS (verified policy; old flat-tail rule removed) ----
+    # ---- DUAL-SCOPE DOSE ASSERTIONS (verified policy) ----
     full_doses = sorted(enc_df["dose_nominal_sgd"].unique().astype(int).tolist())
     assert full_doses == [20000, 25000, 40000, 45000], (
         f"HARD-FAIL: expected 4 distinct in-window doses "
@@ -341,31 +321,12 @@ def main():
          "in_joint_window": "No (before 2016-01)", "in_extension": "No",
          "source_url": NCCS + " | " + LTA_EM + " | " + MOTORIST,
          "verification": "CORROBORATED: CEVS in force from 1 Jan 2013 (NCCS); revised CEVS 1 Jul 2015 .. 31 Dec 2017 (LTA emissions-charges page; motorist.sg ask-motorists/591). OUTSIDE the 2016-01 window -> contributes nothing to identification; the in-window CEVS dose (20000) is a CONSERVATIVE ESTIMATE."},
-        # ---- DEPRECATED plan rows (kept so downstream references to the old
-        # plan-event dates still resolve; NOT the identification design) ----
-        {"effective_month": "2016-11", "programme": "DEPRECATED (plan): 'CEVS uplift' — NOT a real policy step",
-         "direction": "up (plan)", "size": "n/a (no real policy change; no dose step here in the verified schedule)",
-         "in_joint_window": "Yes (deprecated)", "in_extension": "No",
-         "source_url": LTA_EM,
-         "verification": "DEPRECATED: the analysis plan's stylized Nov-2016 uplift does not exist in verified LTA/NEA policy (revised CEVS in force 1 Jul 2015 .. 31 Dec 2017 with no Nov-2016 step). The old dummy reg_cevs_uplift_201611 is kept in the panel for backward compatibility only."},
-        {"effective_month": "2018-09", "programme": "DEPRECATED (plan): 'VES revival' — NOT a real policy step",
-         "direction": "up (plan)", "size": "n/a (no real policy change; VES in fact started 2018-01)",
-         "in_joint_window": "Yes (deprecated)", "in_extension": "No",
-         "source_url": NEA_VES,
-         "verification": "DEPRECATED: VES came into effect 1 Jan 2018 (NEA), not Sep 2018; the plan's 'revival' framing is not corroborated. The old dummy reg_ves_revival_201809 is kept in the panel for backward compatibility only."},
-        {"effective_month": "2013-01", "programme": "DEPRECATED (plan): CEVS introduction year 2012 in the plan",
-         "direction": "n/a", "size": "n/a",
-         "in_joint_window": "No (deprecated)", "in_extension": "No",
-         "source_url": NCCS,
-         "verification": "DEPRECATED: plan said 2012; verified 1 Jan 2013 (NCCS). OUTSIDE the window either way."},
     ]
     pd.DataFrame(timeline).to_csv(TT / "rebate_timeline.csv", index=False)
-    n_inwin = sum(1 for r in timeline if r["in_joint_window"].startswith("Yes")
-                  and "deprecated" not in r["in_joint_window"])
-    n_dep = sum(1 for r in timeline if "deprecated" in str(r["in_joint_window"]))
+    n_inwin = sum(1 for r in timeline if r["in_joint_window"].startswith("Yes"))
     n_oow = sum(1 for r in timeline if r["in_joint_window"] == "No")
     print(f"[panel] rebate_timeline rows={len(timeline)} "
-          f"({n_inwin} in-window verified steps + out-of-window + {n_dep} deprecated plan rows)")
+          f"({n_inwin} in-window verified steps + {n_oow} out-of-window notes)")
 
     # ---------------- dose summary ----------------
     in_win = enc_df
@@ -386,8 +347,9 @@ def main():
         {"item": "n_distinct_dose_values_2022plus",
          "value": len(tail_doses),
          "note": "ASSERTED: 2022-01..2025-05 has 2 distinct doses (45000, 40000) "
-                 "-> the 2022+ window is a VALID ESTIMATION scope (41 obs); "
-                 "the old flat-tail/rank-deficiency rule is removed"},
+                 "-> the 2022+ window is a VALID ESTIMATION scope (41 obs). "
+                 "Estimable because the dose varies within the window (2024-01 "
+                 "cap cut)."},
         {"item": "estimation_windows",
          "value": f"FULL {WINDOW_START}..{WINDOW_END} (primary); "
                   f"2022+ {INTERP_START}..{WINDOW_END} (also valid for headline "
@@ -435,11 +397,11 @@ def main():
                   "note": "nominal S$ combined max EV rebate (verified policy; "
                           "2016-01..2017-12 CEVS dose is an estimate)"})
     audit.append({"metric": "adaptation", "value": "coverage_rate defined as rows_nonnull/rows_total",
-                  "note": "fraction of raw rows with an observed (non-null) count; decays 1.0->0.23 over the window. The plan's literal nonnull_total/(total rows) mixes count-sum/row-count and is not a rate; ev_reg remains a lower bound under either definition."})
+                  "note": "fraction of raw rows with an observed (non-null) count; decays 1.0->0.23 over the window. A literal nonnull_total/(total rows) mixes count-sum/row-count and is not a rate; ev_reg remains a lower bound under either definition."})
     audit.append({"metric": "adaptation", "value": "category parse: last token of vehicle_class",
                   "note": "'Category A' must be parsed by its trailing letter; a substring match on 'A' would mis-assign every row to Category A (caught by reconciliation)."})
-    audit.append({"metric": "adaptation", "value": "re-run against verified real Singapore policy",
-                  "note": "The pipeline was re-run on the VERIFIED policy timeline (this replaces the stylized 4-event plan schedule). Verified: CEVS revised in force 2015-07..2017-12 (dose 20000 = ESTIMATE); CEVS lapse + VES A1 $25,000 from 2018-01; enhanced VES + EEAI (45% ARF, cap $20,000) from 2021-01 (dose 45000); $0 ARF floor for EVs from 2022-01 (TAX provision, not a rebate — full caps usable); EEAI cap $15,000 from 2024-01 (dose 40000); EEAI cap $7,500 + VES A1 $22,500 from 2026-01; EEAI ceases 2027-01. See tables/rebate_timeline.csv (source_url + verification per row). The 4 old plan dummies are kept at their old dates and marked deprecated."})
+    audit.append({"metric": "adaptation", "value": "rebate dose encoded from verified real Singapore policy",
+                  "note": "The dose is encoded from the VERIFIED policy timeline: CEVS revised in force 2015-07..2017-12 (dose 20000 = ESTIMATE); CEVS lapse + VES A1 $25,000 from 2018-01; enhanced VES + EEAI (45% ARF, cap $20,000) from 2021-01 (dose 45000); $0 ARF floor for EVs from 2022-01 (TAX provision, not a rebate — full caps usable); EEAI cap $15,000 from 2024-01 (dose 40000); EEAI cap $7,500 + VES A1 $22,500 from 2026-01; EEAI ceases 2027-01. See tables/rebate_timeline.csv (source_url + verification per row)."})
     audit.append({"metric": "adaptation", "value": "CEVS dose 2016-01..2017-12 is an ESTIMATE",
                   "note": "Conservative dose of 20000 for the pre-VES window: direction certain (CEVS in force, rebate for the cleanest band), magnitude approximate (revised CEVS Band A1 ~$30,000 vs original ~$20,000; 20000 chosen as the conservative baseline). Flagged as an estimate in every deliverable; all 2018+ dose levels are verified."})
     audit.append({"metric": "adaptation", "value": "combined-dose stacking assumption",

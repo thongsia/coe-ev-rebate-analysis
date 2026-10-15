@@ -56,8 +56,8 @@ Two data caveats worth knowing:
 
 ## What the rebate policy actually did
 
-The analysis was re-run against the **verified real policy timeline** (LTA/NEA
-announcements and published rate sets), not a hypothetical schedule:
+The analysis uses the **verified real policy timeline** (LTA/NEA
+announcements and published rate sets):
 
 | When | What happened | Max rebate available |
 |---|---|---|
@@ -104,10 +104,9 @@ moves Category A more than C/D do (E comparably — a single category).*
 
 ### 2. In the EV era, prices did respond to the 2024 rebate cut
 
-Because the rebate changed *again* in Jan 2024 (S$45k → S$40k), we can look
-at the 2022–2025 window on its own — which earlier versions of this study
-couldn't do, because the hypothetical schedule assumed rebates were flat from
-2022 onwards. In that window:
+Because the rebate changed *again* in Jan 2024 (S$45k → S$40k), the
+2022–2025 window can be estimated on its own — the rebate amount varies
+within it, so the statistics have something to work with. In that window:
 
 - For every extra S$1,000 of maximum rebate, the average Category A price was
   about **S$4,100 higher** — a statistically clear association (p < 0.001 by
@@ -204,10 +203,10 @@ large non-zero moves — the pre-trend problem.*
 
 **How the study works.** The design's core trick: rebates changed level four
 times over 2016–2025, so months can be compared across rebate levels.
-Everything is estimated on the full decade (110 months with auctions), and —
-unlike earlier versions — the 2022–2025 "EV era" is estimated separately too,
-because the real policy actually changes *within* that window (the 2024 cap
-cut). A guard module checks this programmatically before any result is
+Everything is estimated on the full decade (110 months with auctions), and
+the 2022–2025 "EV era" is estimated separately too, because the rebate amount
+changes *within* that window (the 2024 cap cut). A guard module checks this
+programmatically before any result is
 produced (`src/05_scope_guard.py`).
 
 **Reproducibility.** Every number in the report traces to a file: raw data in

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Step 12 — diagnostics: negative controls, stationarity, residual
-autocorrelation, and sensitivity. VERIFIED-POLICY RE-RUN (dual scope).
+autocorrelation, and sensitivity. VERIFIED REAL POLICY; dual scope.
 
 Outputs:
     tables/negative_controls.csv                 (price equation re-run on the

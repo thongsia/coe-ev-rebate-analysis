@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Step 14 (Batch C) — Charts + per-chart data tables. VERIFIED-POLICY RE-RUN.
+Step 14 (Batch C) — Charts + per-chart data tables (verified real policy).
 
 Produces 7 PNGs under charts/ and the matching underlying data table under
 tables/ for each. Every chart plots ONLY data that already exists upstream
@@ -14,8 +14,7 @@ Honest-findings rule: the charts VISUALLY show the negative-control verdicts
 bounded / associational nature of the headline estimates (charts 6, 7).
 Nothing here is presented as a clean causal effect.
 
-Layout (7 charts; the former 4-panel chart 01 is split into the price time
-series and the negative-control comparison):
+Layout (7 charts):
   01  Cat A price (nominal + real) with the REAL policy markers (2018-01,
       2021-01, 2024-01) + the 2022-01 97->110kW confounder marker.
   02  negative-control check: % price jump by category, per scope
@@ -79,7 +78,7 @@ plt.rcParams.update(
 )
 
 MONTH = lambda s: pd.Period(s, freq="M").to_timestamp()  # noqa: E731
-# VERIFIED-POLICY markers (real Singapore policy — replaces the old plan marks)
+# Policy markers (verified real Singapore policy)
 POLICY_MARKS = [
     ("2018-01", "CEVS lapse / VES onset\n(dose 20000 est. -> 25000)"),
     ("2021-01", "Enhanced VES + EEAI 45% ARF\ncap $20k (dose -> 45000)"),
@@ -113,7 +112,7 @@ def chart01() -> None:
              label="Cat A clearing price — nominal S$")
     ax1.set_ylabel("Nominal S$")
     ax1.set_title(
-        "Chart 1 — Category A COE clearing price, 2016-01..2025-05 (VERIFIED-POLICY re-run)\n"
+        "Chart 1 — Category A COE clearing price, 2016-01..2025-05 (verified policy)\n"
         "Real policy markers (CEVS->VES 2018, EEAI stack 2021, EEAI cap cut 2024); "
         "2022-01 = $0 ARF floor (tax) + 97->110kW threshold (market-wide confounder)",
     )
@@ -299,7 +298,7 @@ def chart04() -> None:
     ax2.plot(df["ts"], df["catA_bids_received_clean"], color="#b23b3b", lw=1.4,
              label="Cat A bids received (corrected, right)")
     ax2.set_ylabel("Cat A bids received")
-    # shade the 2022+ EV era (now also an ESTIMATION scope)
+    # shade the 2022+ EV era (also an ESTIMATION scope)
     ax1.axvspan(_p("2022-01"), df["ts"].max(), color="orange", alpha=0.07, zorder=0)
     ax1.axvline(_p("2024-01"), color="#b26a00", ls="--", lw=1.0, alpha=0.7)
     ax1.annotate(
@@ -511,7 +510,7 @@ def chart06() -> None:
 
     # --- EV-ERA block (bottom) ---
     ax.text(5.0, 5.6, "2022+ EV ERA — 2022-01..2025-05, 41 obs, dose 45000 -> 40000 "
-            "at 2024-01 (NOW ESTIMABLE; old flat-tail rule removed)",
+            "at 2024-01 (estimable: 2 dose levels in window)",
             ha="center", fontsize=9, fontweight="bold", color="#b26a00")
     node(1.3, 3.7, 2.2, 1.8,
          "EV rebate\n(dose, S$)\n2 levels:\n45000 (2022-23),\n40000 (2024+)")

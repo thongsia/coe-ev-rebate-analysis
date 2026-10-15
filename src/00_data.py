@@ -144,7 +144,7 @@ def load_estimation_frame() -> pd.DataFrame:
     Columns (all per-category *_clearing_price / *_quota taken from the panel
     -- clean; *_bids_received_clean / *_bids_success_clean reconstructed from
     raw -- corrected):
-      month, <rebate dummies: 4 DEPRECATED plan dummies + 4 real-policy dummies
+      month, <rebate dummies: 4 real-policy dummies
       (reg_real_ves_201801, reg_real_evstack_202101, reg_arffloor_zero_202201,
       reg_eeai_cap15k_202401) + era dummies (ves_program, eeai_active)>,
       dose_nominal_sgd, in_interpretation_window,
@@ -171,11 +171,7 @@ def load_estimation_frame() -> pd.DataFrame:
 
     # --- rebate encoding (verbatim from panel; clean) ---
     frame["dose_nominal_sgd"] = panel["dose_nominal_sgd"].to_numpy()
-    frame["reg_cevs_uplift_201611"] = panel["reg_cevs_uplift_201611"].to_numpy()
-    frame["reg_cevs_lapse_201801"] = panel["reg_cevs_lapse_201801"].to_numpy()
-    frame["reg_ves_revival_201809"] = panel["reg_ves_revival_201809"].to_numpy()
-    frame["reg_eeai_202201"] = panel["reg_eeai_202201"].to_numpy()
-    # --- verified-policy dummies (the new key regime columns) ---
+    # --- verified-policy dummies (the key regime columns) ---
     frame["reg_real_ves_201801"] = panel["reg_real_ves_201801"].to_numpy()
     frame["reg_real_evstack_202101"] = panel["reg_real_evstack_202101"].to_numpy()
     frame["reg_arffloor_zero_202201"] = panel["reg_arffloor_zero_202201"].to_numpy()

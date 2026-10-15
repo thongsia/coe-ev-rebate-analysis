@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Step 8 — demand / bidding channel: does the rebate move Cat A bidding demand?
-VERIFIED-POLICY RE-RUN (dual scope).
+VERIFIED REAL POLICY; dual scope.
 
 FULL WINDOW (primary; 2016-01..2025-05, listwise N=110):
 

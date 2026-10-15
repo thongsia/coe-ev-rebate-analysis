@@ -1,18 +1,18 @@
-# STATS SUMMARY — one page (VERIFIED-POLICY RE-RUN)
+# STATS SUMMARY — one page (verified real policy)
 
 **Question:** does the EV-rebate offer cause COE bidders to bid more?  
 **Answer (honest, dual-scope):** full window (primary) = **not detectable** as a robust EV-specific
 effect (the 2022-01 ARF-floor effect is not robust, p=0.064, and is a tax/threshold confounder; the
 2022-01 negative-control test does not falsify it but the effect is not credited to the rebate). 2022+ EV
-era (now estimable, 41 obs, dose 45000→40000) = **supported** for rebate→price (2024-01 dose step
+era (estimable, 41 obs, dose 45000→40000) = **supported** for rebate→price (2024-01 dose step
 significant; 2024-01 negative control not falsified) — but LOW POWER and associational, not a causal
 magnitude. All other links: rebate→demand (bidding) not detectable / directionally consistent;
 demand→price not detectable; mediation not detectable (both scopes).
 
 **Scopes.** Primary estimation = **full window 2016-01..2025-05** (listwise N=110; 3 pandemic
-months dropped; nobs≈108). **2022+ EV era 2022-01..2025-05 (41 obs, 2 dose levels) is NOW ALSO a
-valid estimation scope** for the headline price + bidding + mediation exhibits — the old
-flat-tail/rank-deficiency rule is removed (the verified dose varies 45000→40000 at 2024-01).
+months dropped; nobs≈108). **2022+ EV era 2022-01..2025-05 (41 obs, 2 dose levels) is ALSO a
+valid estimation scope** for the headline price + bidding + mediation exhibits — the verified
+dose varies 45000→40000 at 2024-01, so the window is estimable.
 
 | Quantity | Value | Source |
 |---|---|---|

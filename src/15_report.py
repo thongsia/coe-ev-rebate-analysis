@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Step 16 (Batch C) — Final report generator. VERIFIED-POLICY RE-RUN.
+Step 16 (Batch C) — Final report generator (verified real policy).
 
 Writes docs/REPORT.md + docs/STATS_SUMMARY.md (inside the repo's docs/ dir).
 
@@ -9,7 +9,7 @@ HARD RULE: every number quoted in the report is READ from a saved table
 a template that pulls each value through ``G(table, {filter}, col)``; if a
 value cannot be located in a table, the script FAILS (no silent fabrication).
 
-DESIGN (verified real Singapore policy, replacing the stylized plan schedule):
+DESIGN (verified real Singapore policy):
   * dose_nominal_sgd = combined max EV rebate available that month (S$,
     nominal): 20000 (2016-01..2017-12, CEVS ESTIMATE) / 25000 (VES A1,
     2018-01..2020-12) / 45000 (VES A1 + EEAI cap 20k, 2021-01..2023-12) /
@@ -20,10 +20,9 @@ DESIGN (verified real Singapore policy, replacing the stylized plan schedule):
     TAX provision, not a rebate), reg_eeai_cap15k_202401 (EEAI cap cut 20k->15k).
   * DUAL SCOPE: the full window (2016-01..2025-05) is the PRIMARY estimation
     scope for the CEVS->VES transition + overall level effects; the 2022+ EV
-    era (2022-01..2025-05, 41 obs, dose 45000 -> 40000 at 2024-01) is NOW ALSO
-    a VALID ESTIMATION scope for the headline price + bidding + mediation
-    exhibits (the verified dose varies within it — the old flat-tail rule is
-    removed). Both scopes are reported for every causal exhibit, with the
+    era (2022-01..2025-05, 41 obs, dose 45000 -> 40000 at 2024-01) is ALSO a
+    VALID ESTIMATION scope for the headline price + bidding + mediation
+    exhibits (the verified dose varies within it). Both scopes are reported for every causal exhibit, with the
     negative-control verdict per scope.
   * Collinearity: the continuous dose and the binary dummies are near-exact
     linear transforms of one another; no spec mixes both (dose-only OR
@@ -353,9 +352,9 @@ def build_report(v: dict) -> str:
 
     A("# Do EV rebates make COE bidders bid more? — Final report")
     A("")
-    A("> **VERIFIED-POLICY RE-RUN.** This analysis was re-run against the VERIFIED real")
-    A("> Singapore rebate timeline (CEVS → VES 2018 → enhanced VES + EEAI 2021 → $0 ARF floor")
-    A("> 2022 → EEAI cap cut 2024), replacing the original stylized case-study schedule. All")
+    A("> **Scope and policy basis.** The analysis covers 2016-01..2025-05 and uses the verified")
+    A("> real Singapore rebate timeline (CEVS -> VES 2018 -> enhanced VES + EEAI 2021 -> $0 ARF floor")
+    A("> 2022 -> EEAI cap cut 2024). All")
     A("> numbers below are copied verbatim from `tables/*.csv`; none are recomputed in this")
     A(f"> document. Figure-traceability: {v['chk_ok']}/{v['chk_n']} report figures verified against")
     A("> their source tables (see `tables/report_figures_checklist.csv` and")
@@ -367,7 +366,7 @@ def build_report(v: dict) -> str:
     A("---")
     A("## 1. Executive summary")
     A("")
-    A("### Bottom line (honest, decided by the NEW verified-policy evidence)")
+    A("### Bottom line (honest, decided by the verified-policy evidence)")
     A("")
     nc22 = v["nc_2022"]
     nc24 = v["nc_2024"]
@@ -457,7 +456,7 @@ def build_report(v: dict) -> str:
       "`reg_eeai_cap15k_202401`) + era dummies (`ves_program`, `eeai_active`) + continuous "
       "`dose_nominal_sgd` + `in_interpretation_window`.")
     A("")
-    A("### 2.2 VERIFIED-POLICY rebate timeline (from `tables/rebate_timeline.csv`)")
+    A("### 2.2 Verified policy timeline (from `tables/rebate_timeline.csv`)")
     A("")
     A("| Effective month | Programme (verified real policy) | Size / dose | In joint window | In extension | Verification (cited) |")
     A("|---|---|---|---|---|---|")
@@ -473,10 +472,8 @@ def build_report(v: dict) -> str:
       "$20,000, 2021-01..2023-12). $0 ARF floor for electric cars 1 Jan 2022..31 Dec 2023 (extended "
       "to 2027) — a **TAX PROVISION, not a rebate** (2022-01). EEAI cap cut to $15,000 2024-01, "
       "$7,500 2026-01, ceases 2027-01. The 97→110 kW Cat A threshold change 1 Jan 2022 is a kept "
-      "confounder marker. 2026: VES A1 $22,500. The old plan's 4-event schedule "
-      "(2016-11 / 2018-01 / 2018-09 / 2022-01, flat 7500 from 2022) is **DEPRECATED** and shown in "
-      "the timeline for audit only — its old dummy columns are retained at 0/1 for downstream "
-      "compatibility but are not used in the new exhibits.")
+      "confounder marker. 2026: VES A1 $22,500; 2027: VES A1 $20,000 (extension "
+      "window only). Every row in the table carries its cited policy source.")
     A("")
     A("### 2.3 The combined EV-rebate dose (column `dose_nominal_sgd`)")
     A("")
@@ -495,9 +492,9 @@ def build_report(v: dict) -> str:
     A("")
     A("(a) The **full window 2016-01..2025-05** remains the PRIMARY estimation scope for the")
     A("CEVS→VES transition and overall level effects (110 monthly obs, 3 pandemic months dropped).")
-    A("(b) The **2022+ EV era 2022-01..2025-05** is NOW ALSO a VALID ESTIMATION scope (41 obs,")
-    A("2 distinct dose levels 45000→40000 at 2024-01) — the OLD flat-tail rule that made 2022+")
-    A("rank-deficient is REMOVED. The headline price + bidding + mediation exhibits are estimated")
+    A("(b) The **2022+ EV era 2022-01..2025-05** is ALSO a VALID ESTIMATION scope (41 obs,")
+    A("2 distinct dose levels 45000→40000 at 2024-01), because the dose varies within the window.")
+    A("The headline price + bidding + mediation exhibits are estimated")
     A("on BOTH scopes and both are reported. (c) Collinearity: the continuous dose and the 4")
     A("real-policy dummies are near-exact linear transforms of one another — no spec mixes both;")
     A("each exhibit uses a dose-only OR dummy-only spec (documented per exhibit). Audited by")
@@ -557,7 +554,7 @@ def build_report(v: dict) -> str:
       f"p={fp(v['dose']['p_hac'])}; real +{f0(v['dose_real']['coef'])} S$/1000 S$ (p={fp(v['dose_real']['p'])}).** "
       f"No nominal↔real reversal.")
     A("")
-    A("**2022+ EV era (2022-01..2025-05, 41 obs, dose 45000→40000 at 2024-01 — NOW ESTIMABLE), DOSE spec E1** "
+    A(f"**2022+ EV era (2022-01..2025-05, 41 obs, dose 45000→40000 at 2024-01 — estimable, 2 dose levels in window), DOSE spec E1** "
       "(dose + local trend + quota, nominal):")
     A("")
     A(f"| Term | Coef (S$/1000 S$) | CI95 | p (HC1) | p (HAC) |")
@@ -807,7 +804,7 @@ def build_report(v: dict) -> str:
     A(f"**{v['chk_ok']}/{v['chk_n']} report figures trace to saved tables** (d,")
     A(f"`tables/report_figures_checklist.csv`); dose state = {v['dose_changes']} verified changes, {v['dose_n']} distinct")
     A(f"doses [{v['dose_vals']}], and the 2022+ window has {v['dose_2022plus_n']} distinct doses ({v['dose_2022plus_vals']}) → a")
-    A("valid estimation scope, old flat-tail rule removed (e); headline exhibits estimated on the full")
+    A("valid estimation scope — the dose varies within the window (e); headline exhibits estimated on the full")
     A("window AND the 2022+ EV era (f); price-equation demand regressor = corrected")
     A("catA_bids_received, never ev_reg (g); mediated share on the full-window sample with the 2022+ EV")
     A("era reported alongside (h); data-flow/layering contract held (i).")
@@ -828,21 +825,21 @@ def build_stats(v: dict) -> str:
     ge = v["grade_head_ev"]
     nc22 = v["nc_2022"]
     nc24 = v["nc_2024"]
-    A("# STATS SUMMARY — one page (VERIFIED-POLICY RE-RUN)")
+    A("# STATS SUMMARY — one page (verified real policy)")
     A("")
     A("**Question:** does the EV-rebate offer cause COE bidders to bid more?  ")
     A("**Answer (honest, dual-scope):** full window (primary) = **not detectable** as a robust EV-specific")
     A("effect (the 2022-01 ARF-floor effect is not robust, p=0.064, and is a tax/threshold confounder; the")
     A("2022-01 negative-control test does not falsify it but the effect is not credited to the rebate). 2022+ EV")
-    A("era (now estimable, 41 obs, dose 45000→40000) = **supported** for rebate→price (2024-01 dose step")
+    A("era (estimable, 41 obs, dose 45000→40000) = **supported** for rebate→price (2024-01 dose step")
     A("significant; 2024-01 negative control not falsified) — but LOW POWER and associational, not a causal")
     A("magnitude. All other links: rebate→demand (bidding) not detectable / directionally consistent;")
     A("demand→price not detectable; mediation not detectable (both scopes).")
     A("")
     A("**Scopes.** Primary estimation = **full window 2016-01..2025-05** (listwise N=110; 3 pandemic")
-    A("months dropped; nobs≈108). **2022+ EV era 2022-01..2025-05 (41 obs, 2 dose levels) is NOW ALSO a")
-    A("valid estimation scope** for the headline price + bidding + mediation exhibits — the old")
-    A("flat-tail/rank-deficiency rule is removed (the verified dose varies 45000→40000 at 2024-01).")
+    A("months dropped; nobs≈108). **2022+ EV era 2022-01..2025-05 (41 obs, 2 dose levels) is ALSO a")
+    A("valid estimation scope** for the headline price + bidding + mediation exhibits — the verified")
+    A("dose varies 45000→40000 at 2024-01, so the window is estimable.")
     A("")
     A("| Quantity | Value | Source |")
     A("|---|---|---|")

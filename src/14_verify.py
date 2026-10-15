@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Step 15 (Batch C) — Independent verification pass. VERIFIED-POLICY RE-RUN.
+Step 15 (Batch C) — Independent verification pass (verified real policy).
 
 Re-confirms, from the files on disk (never from memory), that the pipeline's
 claims hold, and builds the report-figures checklist that Step 16's report
@@ -14,14 +14,12 @@ Checks:
       registration rows (per-month rows_total == raw rows; EV totals reconcile)
   (c) every VERIFIED rebate-step date has a cited policy source in
       rebate_timeline.csv (2018-01, 2021-01, 2022-01, 2024-01; out-of-window
-      rows 2013-01 / 2026-01 / 2027-01 present and cited; deprecated plan rows
-      marked)
+      rows 2013-01 / 2026-01 / 2027-01 present and cited)
   (d) every report figure traces to a saved table (checklist below; written to
       tables/report_figures_checklist.csv)
   (e) dose state: 3 effective verified-policy changes + distinct dose values
-      {20000, 25000, 40000, 45000}; NEW: 2022-01..2025-05 has >=2 (exactly 2)
-      distinct dose values -> 2022+ IS a valid estimation scope (old flat-tail
-      assertion REMOVED)
+      {20000, 25000, 40000, 45000}; 2022-01..2025-05 has >=2 (exactly 2)
+      distinct dose values -> 2022+ IS a valid estimation scope
   (f) rebate exhibits are estimated on the full window AND the headline
       exhibits (price + bidding demand + mediation) are ALSO estimated on the
       2022+ EV-era window (dual-scope, both scopes present in the tables; no
@@ -166,9 +164,7 @@ OUT_OF_WINDOW_MONTHS = ["2013-01", "2026-01", "2027-01"]
 
 
 def check_c() -> None:
-    rt_all = pd.read_csv(TABLES / "rebate_timeline.csv")
-    dep = rt_all[rt_all["programme"].astype(str).str.startswith("DEPRECATED")]
-    rt = rt_all[~rt_all["programme"].astype(str).str.startswith("DEPRECATED")]
+    rt = pd.read_csv(TABLES / "rebate_timeline.csv")
     ok_all, details = True, []
     for m in REAL_STEP_MONTHS:
         row = rt[rt["effective_month"] == m]
@@ -188,12 +184,9 @@ def check_c() -> None:
         ok = len(row) >= 1 and all(str(u).startswith("http") for u in row["source_url"])
         oow_ok &= ok
         oow_detail.append(f"{m}: rows={len(row)} cited={ok}")
-    # deprecated plan rows must be marked deprecated (captured from rt_all above)
-    dep_ok = len(dep) >= 2
-    ok_all &= oow_ok and dep_ok
+    ok_all &= oow_ok
     add("c", "every verified rebate-step date has a cited policy source (rebate_timeline.csv)",
-        ok_all, "; ".join(details) + " | out-of-window: " + "; ".join(oow_detail)
-        + f" | deprecated plan rows marked={dep_ok} (n={len(dep)})")
+        ok_all, "; ".join(details) + " | out-of-window: " + "; ".join(oow_detail))
 
 
 # ---------------------------------------------------------------------------
@@ -530,7 +523,7 @@ def check_e() -> None:
     changes = int(ds.loc["effective_in_window_changes", "value"])
     tail = panel[panel["month"] >= "2022-01"]
     tail_doses = sorted(tail["dose_nominal_sgd"].unique().tolist())
-    # NEW: 2022+ must have >=2 distinct doses (old flat-tail assertion REMOVED)
+    # 2022+ must have >=2 distinct doses (the dose varies within the window)
     tail_estimable = len(tail_doses) >= 2
     ok = (
         distinct == len(doses) == 4
@@ -542,8 +535,7 @@ def check_e() -> None:
     )
     add("e", "dose state (verified policy): 4 distinct doses {20000,25000,40000,45000}; "
              "3 effective changes (2018-01, 2021-01, 2024-01); 2022+ window has 2 distinct "
-             "doses {40000,45000} over 41 obs -> 2022+ IS a valid estimation scope "
-             "(old flat-tail rule REMOVED)",
+             "doses {40000,45000} over 41 obs -> 2022+ IS a valid estimation scope",
         ok, f"panel distinct={doses} (n={len(doses)}); dose_summary: distinct={distinct}, "
             f"changes={changes}; 2022-01..2025-05 distinct={tail_doses} (n_obs={len(tail)}) "
             f"estimable={tail_estimable}")

@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 """
-Step 11 — event study (per the verified-policy re-run; 4 in-window events).
+Step 11 — event study (4 in-window verified-policy events).
 
-VERIFIED-POLICY EVENTS (all four are real, cited policy changes — the old
-stylized '2016-2018 episode' construct is replaced by the two real early
-events):
+EVENTS (all four are real, cited policy changes):
   * 2018-01 : CEVS lapse + VES onset (dose 20000 (CEVS est.) -> 25000 (VES A1,
     verified)). TOTAL / low-emission + early-clean demand era — NOT yet EV-
     specific at scale.

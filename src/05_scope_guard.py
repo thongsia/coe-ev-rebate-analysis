@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
-Step 6 — scope guard (programmatic assertion layer; VERIFIED-POLICY RE-RUN).
+Step 6 — scope guard (programmatic assertion layer; verified policy).
 
-SCOPE RULE (dual-scope — replaces the old flat-tail rule)
----------------------------------------------------------
+SCOPE RULE (dual-scope)
+-----------------------
 The verified real dose is NOT flat over the 2022+ window: it steps
 45000 -> 40000 at 2024-01 (EEAI cap cut), so the 2022-01..2025-05 window has
-TWO distinct dose values (41 obs) and is NOW ALSO A VALID ESTIMATION scope.
+TWO distinct dose values (41 obs) and is ALSO A VALID ESTIMATION scope.
 
   (a) full-window (2016-01..2025-05) estimation remains PRIMARY for the
       CEVS->VES transition and overall level effects;
@@ -21,7 +21,7 @@ TWO distinct dose values (41 obs) and is NOW ALSO A VALID ESTIMATION scope.
 Assertions enforced:
   (a) no rebate-intensity exhibit estimated on a 2022+-only sample; headline
       exhibits (price_equation, demand_bidding, mediation) must ALSO carry the
-      2022+ estimation scope (dual scope) since it is now estimable;
+      2022+ estimation scope (dual scope) since the dose varies within it;
   (b) the price-equation demand regressor is catA_bids_received (corrected),
       never ev_reg;
   (c) the mediated (indirect/total) share is computed on the full-window
@@ -31,9 +31,8 @@ Assertions enforced:
   (f) data-flow / layering contract: no forward reads (a module may not read a
       file written by a LATER module);
   (g) dose state: 4 distinct in-window doses {20000,25000,45000,40000} and 2
-      distinct doses in 2022-01..2025-05 {45000,40000} (the OLD flat-tail
-      assertion — 'dose constant 2022-01..2025-05' — is REMOVED; it would now
-      hard-fail against the verified dose).
+      distinct doses in 2022-01..2025-05 {45000,40000} -> the 2022+ window
+      is a valid estimation scope.
 
 A SEPARATE data-integrity assertion is also logged: the panel's
 catA_bids_received is corrupted (0) for the last 19 months, and this batch
@@ -288,7 +287,7 @@ def run_audit() -> pd.DataFrame:
     REBATE_KINDS = {"price_equation", "demand_bidding", "mediation",
                     "event_study", "demand_registration"}
     # Headline exhibits that, under the verified-policy dual-scope rule, must
-    # ALSO be estimated on the 2022+ EV-era window (now estimable: the dose
+    # ALSO be estimated on the 2022+ EV-era window (estimable: the dose
     # varies inside it, 45000 -> 40000 at 2024-01).
     DUAL_SCOPE_KINDS = {"price_equation", "demand_bidding", "mediation"}
 
@@ -395,7 +394,7 @@ def run_audit() -> pd.DataFrame:
     )
 
     # ---- (g) dose state under the verified policy (replaces the old
-    # flat-tail assertion, which is REMOVED: it would now hard-fail) ----
+    # dose-state assertion (verified policy; 2 distinct doses inside 2022+) ----
     panel = pd.read_csv(D.PANEL)
     full_doses = sorted(panel["dose_nominal_sgd"].unique().astype(int).tolist())
     tail = panel[panel["month"] >= "2022-01"]["dose_nominal_sgd"]
@@ -406,13 +405,11 @@ def run_audit() -> pd.DataFrame:
     add(
         "(g) dose state (verified policy): 4 distinct in-window doses "
         "{20000,25000,40000,45000}; 2022+ window has 2 distinct doses "
-        "{40000,45000} over 41 obs -> 2022+ IS a valid estimation scope "
-        "(old flat-tail rule REMOVED)",
+        "{40000,45000} over 41 obs -> 2022+ IS a valid estimation scope",
         "PASS" if ok_g else "FAIL",
         f"full-window distinct={full_doses}; 2022-01..2025-05 distinct="
-        f"{tail_doses} (n={len(tail)}). Old flat-tail assertion "
-        f"('dose constant 2022-01..2025-05') removed per the verified-policy "
-        f"re-run.",
+        f"{tail_doses} (n={len(tail)}). The dose varies within the 2022+ "
+        f"window (45000 -> 40000 at 2024-01), so it is estimable.",
     )
 
     add(

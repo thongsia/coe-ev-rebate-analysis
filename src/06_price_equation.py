@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Step 7 — price equation (Cat A clearing price ~ demand + rebate intensity).
-VERIFIED-POLICY RE-RUN (dual scope).
+Verified real policy; dual scope.
 
 FULL WINDOW (primary; 2016-01..2025-05, listwise N=110 after dropping the 3
 pandemic NA months 2020-04/05/06):
@@ -163,8 +163,7 @@ def fit_full_specs(df, price_col, label):
 def fit_ev_era_specs(sub, price_col, label):
     """2022+ EV-era specifications (41 obs). The dose varies inside this window
     (45000 -> 40000 at 2024-01) so the rebate coefficient is IDENTIFIABLE here
-    (valid estimation scope under the verified policy; old flat-tail rule
-    removed)."""
+    (valid estimation scope under the verified policy)."""
     sub = sub.copy().reset_index(drop=True)
     # local time trend (0-based within the EV era)
     sub["trend22"] = np.arange(len(sub))

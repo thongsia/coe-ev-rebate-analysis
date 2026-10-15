@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Step 10 — mediation: rebate -> (bidding channel) -> price.
-VERIFIED-POLICY RE-RUN (dual scope).
+VERIFIED REAL POLICY; dual scope.
 
 Decompose the rebate -> Cat A clearing-price effect into:
     * INDIRECT (mediated) path : rebate -> catA_bids_received_clean -> price
@@ -22,7 +22,7 @@ METHOD (2-stage, consistent with the primary mediator lag):
     Direct (residual) = c'
     Mediated share   = (a * b) / (c' + a * b)
 
-SCOPES (dual — verified-policy re-run):
+SCOPES (dual):
     * FULL WINDOW (primary; 2016-01..2025-05, listwise N=110, edge months
       dropped for the mediator lag): the dose varies across 4 levels
       (20000/25000/45000/40000) so it IS identifiable. The mediated share

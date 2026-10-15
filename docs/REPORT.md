@@ -1,8 +1,8 @@
 # Do EV rebates make COE bidders bid more? — Final report
 
-> **VERIFIED-POLICY RE-RUN.** This analysis was re-run against the VERIFIED real
-> Singapore rebate timeline (CEVS → VES 2018 → enhanced VES + EEAI 2021 → $0 ARF floor
-> 2022 → EEAI cap cut 2024), replacing the original stylized case-study schedule. All
+> **Scope and policy basis.** The analysis covers 2016-01..2025-05 and uses the verified
+> real Singapore rebate timeline (CEVS -> VES 2018 -> enhanced VES + EEAI 2021 -> $0 ARF floor
+> 2022 -> EEAI cap cut 2024). All
 > numbers below are copied verbatim from `tables/*.csv`; none are recomputed in this
 > document. Figure-traceability: 112/112 report figures verified against
 > their source tables (see `tables/report_figures_checklist.csv` and
@@ -14,7 +14,7 @@
 ---
 ## 1. Executive summary
 
-### Bottom line (honest, decided by the NEW verified-policy evidence)
+### Bottom line (honest, decided by the verified-policy evidence)
 
 > **Full window (primary, 2016-01..2025-05):** the headline *rebate → price* link grades 
 **not detectable**. The 2022-01 ARF-floor/threshold dummy is positive but not robust
@@ -69,7 +69,7 @@ causal magnitude.
 
 Joint panel: `panel_joint.csv`, **113 rows** (one per month, 2016-01..2025-05): per-category COE columns (A–E) + EV columns + REAL-POLICY dummies (`reg_real_ves_201801`, `reg_real_evstack_202101`, `reg_arffloor_zero_202201`, `reg_eeai_cap15k_202401`) + era dummies (`ves_program`, `eeai_active`) + continuous `dose_nominal_sgd` + `in_interpretation_window`.
 
-### 2.2 VERIFIED-POLICY rebate timeline (from `tables/rebate_timeline.csv`)
+### 2.2 Verified policy timeline (from `tables/rebate_timeline.csv`)
 
 | Effective month | Programme (verified real policy) | Size / dose | In joint window | In extension | Verification (cited) |
 |---|---|---|---|---|---|
@@ -80,11 +80,8 @@ Joint panel: `panel_joint.csv`, **113 rows** (one per month, 2016-01..2025-05): 
 | 2026-01 | EEAI cap cut to $7,500 + VES A1 cut to $22,500 (real policy) | dose 40000 -> 27500 (verified) | No | Yes (2025-06..2026-10, COE-only) | CORROBORATED: 'From 1 Jan 2026 to 31 Dec 2026, the rebate will be capped at $7,500' (LTA); VES 2026 A1 $22,500 (LTA); 2027: $20,000 (LTA, extension window only). Outside the joint window; lives in the COE-only extension. |
 | 2027-01 | EEAI cessation (real policy) | EEAI rebate ceases; dose reverts to VES A1 $20,000 (2027, extension window) | No | No (beyond extension end 2026-10) | CORROBORATED: EEAI ceases 1 Jan 2027 (coewatch.sg glossary; LTA transitioning-to-EVs page). Documented for completeness; no data beyond 2026-10 in this pipeline. |
 | 2013-01 | CEVS introduction (original scheme; revised CEVS from 1 Jul 2015) | original CEVS 2013-2015 Band A ~$20,000; revised CEVS 2015-2017 Band A1 (0-95 g/km, incl. electric) ~$30,000 | No (before 2016-01) | No | CORROBORATED: CEVS in force from 1 Jan 2013 (NCCS); revised CEVS 1 Jul 2015 .. 31 Dec 2017 (LTA emissions-charges page; motorist.sg ask-motorists/591). OUTSIDE the 2016-01 window -> contributes nothing to identification; the in-window CEVS dose (20000) is a CONSERVATIVE ESTIMATE. |
-| 2016-11 | DEPRECATED (plan): 'CEVS uplift' — NOT a real policy step | n/a (no real policy change; no dose step here in the verified schedule) | Yes (deprecated) | No | DEPRECATED: the analysis plan's stylized Nov-2016 uplift does not exist in verified LTA/NEA policy (revised CEVS in force 1 Jul 2015 .. 31 Dec 2017 with no Nov-2016 step). The old dummy reg_cevs_uplift_201611 is kept in the panel for backward compatibility only. |
-| 2018-09 | DEPRECATED (plan): 'VES revival' — NOT a real policy step | n/a (no real policy change; VES in fact started 2018-01) | Yes (deprecated) | No | DEPRECATED: VES came into effect 1 Jan 2018 (NEA), not Sep 2018; the plan's 'revival' framing is not corroborated. The old dummy reg_ves_revival_201809 is kept in the panel for backward compatibility only. |
-| 2013-01 | DEPRECATED (plan): CEVS introduction year 2012 in the plan | — | No (deprecated) | No | DEPRECATED: plan said 2012; verified 1 Jan 2013 (NCCS). OUTSIDE the window either way. |
 
-**Verified facts (all cited in the table):** CEVS in force 1 Jul 2015..31 Dec 2017 (revised Band A1 ~$30k; we use a CONSERVATIVE CEVS dose of $20,000 for 2016-01..2017-12 — an **ESTIMATE**: direction certain, magnitude approximate — as the pre-VES baseline). CEVS LAPSES 1 Jan 2018; VES (Band A1 $25,000 off ARF, $5,000 ARF floor until 31 Dec 2021) begins 1 Jan 2018. Enhanced VES 1 Jan 2021 (A1 $25,000 maintained) + EEAI (45% off ARF, capped $20,000, 2021-01..2023-12). $0 ARF floor for electric cars 1 Jan 2022..31 Dec 2023 (extended to 2027) — a **TAX PROVISION, not a rebate** (2022-01). EEAI cap cut to $15,000 2024-01, $7,500 2026-01, ceases 2027-01. The 97→110 kW Cat A threshold change 1 Jan 2022 is a kept confounder marker. 2026: VES A1 $22,500. The old plan's 4-event schedule (2016-11 / 2018-01 / 2018-09 / 2022-01, flat 7500 from 2022) is **DEPRECATED** and shown in the timeline for audit only — its old dummy columns are retained at 0/1 for downstream compatibility but are not used in the new exhibits.
+**Verified facts (all cited in the table):** CEVS in force 1 Jul 2015..31 Dec 2017 (revised Band A1 ~$30k; we use a CONSERVATIVE CEVS dose of $20,000 for 2016-01..2017-12 — an **ESTIMATE**: direction certain, magnitude approximate — as the pre-VES baseline). CEVS LAPSES 1 Jan 2018; VES (Band A1 $25,000 off ARF, $5,000 ARF floor until 31 Dec 2021) begins 1 Jan 2018. Enhanced VES 1 Jan 2021 (A1 $25,000 maintained) + EEAI (45% off ARF, capped $20,000, 2021-01..2023-12). $0 ARF floor for electric cars 1 Jan 2022..31 Dec 2023 (extended to 2027) — a **TAX PROVISION, not a rebate** (2022-01). EEAI cap cut to $15,000 2024-01, $7,500 2026-01, ceases 2027-01. The 97→110 kW Cat A threshold change 1 Jan 2022 is a kept confounder marker. 2026: VES A1 $22,500; 2027: VES A1 $20,000 (extension window only). Every row in the table carries its cited policy source.
 
 ### 2.3 The combined EV-rebate dose (column `dose_nominal_sgd`)
 
@@ -101,9 +98,9 @@ Joint panel: `panel_joint.csv`, **113 rows** (one per month, 2016-01..2025-05): 
 
 (a) The **full window 2016-01..2025-05** remains the PRIMARY estimation scope for the
 CEVS→VES transition and overall level effects (110 monthly obs, 3 pandemic months dropped).
-(b) The **2022+ EV era 2022-01..2025-05** is NOW ALSO a VALID ESTIMATION scope (41 obs,
-2 distinct dose levels 45000→40000 at 2024-01) — the OLD flat-tail rule that made 2022+
-rank-deficient is REMOVED. The headline price + bidding + mediation exhibits are estimated
+(b) The **2022+ EV era 2022-01..2025-05** is ALSO a VALID ESTIMATION scope (41 obs,
+2 distinct dose levels 45000→40000 at 2024-01), because the dose varies within the window.
+The headline price + bidding + mediation exhibits are estimated
 on BOTH scopes and both are reported. (c) Collinearity: the continuous dose and the 4
 real-policy dummies are near-exact linear transforms of one another — no spec mixes both;
 each exhibit uses a dose-only OR dummy-only spec (documented per exhibit). Audited by
@@ -150,7 +147,7 @@ trend, CPI; nominal, nobs=108):
 
 **Full window, DOSE spec M3** (continuous, per 1000 S$): **nominal +599 S$/1000 S$ (CI95 [361, 837], p=7.94e-07); HAC p=0.00065; real +730 S$/1000 S$ (p=1.24e-07).** No nominal↔real reversal.
 
-**2022+ EV era (2022-01..2025-05, 41 obs, dose 45000→40000 at 2024-01 — NOW ESTIMABLE), DOSE spec E1** (dose + local trend + quota, nominal):
+**2022+ EV era (2022-01..2025-05, 41 obs, dose 45000→40000 at 2024-01 — estimable, 2 dose levels in window), DOSE spec E1** (dose + local trend + quota, nominal):
 
 | Term | Coef (S$/1000 S$) | CI95 | p (HC1) | p (HAC) |
 |---|---|---|---|---|
@@ -335,7 +332,7 @@ the 3 pandemic NA months documented (b); every VERIFIED rebate-step date (2018-0
 **112/112 report figures trace to saved tables** (d,
 `tables/report_figures_checklist.csv`); dose state = 3 verified changes, 4 distinct
 doses [20000; 25000; 40000; 45000], and the 2022+ window has 2 distinct doses (40000; 45000) → a
-valid estimation scope, old flat-tail rule removed (e); headline exhibits estimated on the full
+valid estimation scope — the dose varies within the window (e); headline exhibits estimated on the full
 window AND the 2022+ EV era (f); price-equation demand regressor = corrected
 catA_bids_received, never ev_reg (g); mediated share on the full-window sample with the 2022+ EV
 era reported alongside (h); data-flow/layering contract held (i).
