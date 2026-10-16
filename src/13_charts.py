@@ -10,9 +10,9 @@ reconstructed from data/raw/coe_results_raw.csv by src/00_data.py) is used
 everywhere the corrupted panel column would otherwise appear.
 
 Honest-findings rule: the charts VISUALLY show the negative-control verdicts
-(charts 2+3: 2022-01 and 2024-01 market-wide shock checks, Cat C/D/E vs A,
-per scope) and the bounded / associational nature of the headline estimates
-(charts 7, 8).
+(charts 2+3: 2022-01 and 2024-01 negative-control checks, clean C/D vs A,
+contaminated B/E reported, per scope) and the bounded / associational nature
+of the headline estimates (charts 7, 8).
 Nothing here is presented as a clean causal effect.
 
 Layout (8 charts):
@@ -187,12 +187,13 @@ def _nc_panel(ax, nc: pd.DataFrame, term: str) -> None:
     colours = ["#1f4e79", "#8a8a8a", "#b23b3b", "#b23b3b", "#b23b3b"]
     labels = [
         "A (EV-eligible,\nMAIN)", "B (contaminated\nupper bound)",
-        "C — CLEAN control\n(no EV rebate)", "D — CLEAN control\n(no EV rebate)",
-        "E — CLEAN control\n(no EV rebate)",
+        "C — CLEAN control\n(goods & buses; no EV rebate)",
+        "D — CLEAN control\n(motorcycles; no EV rebate)",
+        "E — CONTAMINATED\n(open category; EVs can bid)",
     ]
     ax.bar(cats, pcts, width=0.6, color=colours, alpha=0.85, zorder=3)
     ax.set_xticks(range(len(cats)), labels)
-    ax.set_ylabel("% jump")
+    ax.set_ylabel("% price jump")
     # explicit headroom so value labels stay inside the frame
     # (auto ylim left the +16.3% label 7px past the top spine)
     lo, hi = min(0, min(pcts)), max(0, max(pcts))
@@ -225,8 +226,9 @@ def chart02() -> None:
     _nc_panel(ax, pd.read_csv(TABLES / "negative_controls.csv"),
               "reg_arffloor_zero_202201")
     ax.set_title(
-        "Chart 2 — Negative-control check: 2022-01 % price jump by category "
-        "(full window)",
+        "Chart 2 — Negative-control check: 2022-01 % price jump by category\n"
+        "(full 2016-01..2025-05 window; each bar = estimated step, % of that "
+        "category's 2016-25 mean price)",
         pad=12,
     )
     fig.tight_layout()
@@ -251,7 +253,8 @@ def chart03() -> None:
               "reg_eeai_cap15k_202401")
     ax.set_title(
         "Chart 3 — Negative-control check: 2024-01 EEAI cap-cut step by "
-        "category (2022+ EV era)",
+        "category\n(2022-01..2025-05 EV-era window; each bar = estimated step, "
+        "% of that category's 2022-25 mean price)",
         pad=12,
     )
     fig.tight_layout()

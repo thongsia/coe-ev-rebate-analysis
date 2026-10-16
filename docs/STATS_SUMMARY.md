@@ -3,7 +3,7 @@
 **Question:** does the EV-rebate offer cause COE bidders to bid more?  
 **Answer (honest, dual-scope):** full window (primary) = **not detectable** as a robust EV-specific
 effect (the 2022-01 ARF-floor effect is not robust, p=0.064, and is a tax/threshold confounder; the
-2022-01 negative-control test does not falsify it but the effect is not credited to the rebate). 2022+ EV
+2022-01 negative-control test is MIXED — clean controls C/D split — and the effect is not credited to the rebate). 2022+ EV
 era (estimable, 41 obs, dose 45000→40000) = **supported** for rebate→price (2024-01 dose step
 significant; 2024-01 negative control not falsified) — but LOW POWER and associational, not a causal
 magnitude. All other links: rebate→demand (bidding) not detectable / directionally consistent;
@@ -26,7 +26,7 @@ dose varies 45000→40000 at 2024-01, so the window is estimable.
 | demand→price (lag-1, nominal, full / EV) | -0.027 (p=0.976) / -2.710 (p=0.508) → n.s. both | price_equation*.csv |
 | mediation (mediated share, full / EV) | -0.016 / -0.115 (both CI span 0) → NOT routed through bidding | mediation_effects.csv |
 | event-study onsets (bounded; pre-trend contaminated) | 2018 -17,068 / 2021 +11,145 / 2022 +26,922 / 2024 -39,017 S$ | event_study_coefficients.csv |
-| **NEGATIVE CONTROL 2022-01 % (full window)** | A -20.6% (EV-eligible) vs C -32.6% / D -24.1% / E -44.7% (no EV rebate) → **not falsified** (tax/threshold confounder) | negative_controls.csv |
+| **NEGATIVE CONTROL 2022-01 % (full window)** | A +6.6% (EV-eligible) vs C -10.2% / D +16.3% / E +10.3% (no EV rebate) → **not falsified** (tax/threshold confounder) | negative_controls.csv |
 | **NEGATIVE CONTROL 2024-01 % (2022+ EV era)** | A -23.0% (EV-eligible) vs C -7.9% / D -7.4% / E -36.1% → **not falsified** | negative_controls.csv |
 | diagnostics | prices/demand I(1); DW 0.7886; LB Q(1) p=5.35e-10 → HAC SEs; low power (110 obs full / 41 obs EV) | diagnostics_stationarity_autocorr.csv |
 

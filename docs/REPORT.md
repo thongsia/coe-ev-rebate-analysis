@@ -18,14 +18,14 @@
 
 > **Full window (primary, 2016-01..2025-05):** the headline *rebate → price* link grades 
 **not detectable**. The 2022-01 ARF-floor/threshold dummy is positive but not robust
-(3,826 S$, p=0.0643 HC1). The 2022-01 negative-control test **does NOT falsify an EV-rebate reading** — clean control categories C/D/E (no EV rebate) do NOT reproduce the same 2022-01 % jump as A (A -20.6% vs C -32.6%, D -24.1%, E -44.7%). **But** the 2022-01 effect is (i) not statistically robust (p=0.0643) and (ii) a TAX provision ($0 ARF floor) co-timed with the 97→110kW threshold change, not a rebate dose step — so it cannot be credited to the EV rebate.
+(3,826 S$, p=0.0643 HC1). The 2022-01 negative-control test is **MIXED**: the two clean controls (C goods & buses, D motorcycles — the only categories with NO EV rebate) split (A +6.6% vs C -10.2%, D +16.3%; contaminated open category E +10.3% moves with the car channels) — so the jump is neither a clean market-wide signal nor a clean EV-specific one. **And** the 2022-01 effect is (i) not statistically robust (p=0.0643) and (ii) a TAX provision ($0 ARF floor) co-timed with the 97→110kW threshold change, not a rebate dose step — so it cannot be credited to the EV rebate.
 
 > **2022+ EV era (2022-01..2025-05; NOW an estimation scope — 41 obs, dose 45000→40000 at 2024-01):**
 the headline *rebate → price* link grades **supported** — the dose step
 (+4,113 S$/1000 S$, p=4.52e-05; the 45000→40000 step dummy
 -20,564 S$, p=4.52e-05) is statistically significant, and the
-**2024-01 negative-control test does NOT falsify it** (clean controls C/D show a smaller 2024-01
-step: A -23.0% vs C -7.9%, D -7.4%; E moves -36.1%, so it is *not falsified* but not cleanly isolated either). **But** this is a 41-observation, two-dose-level estimate: it has LOW POWER,
+**2024-01 negative-control test does NOT falsify it** (clean controls C/D show a much smaller 2024-01
+step: A -23.0% vs C -7.9%, D -7.4%; the contaminated channels B -36.8% and open E -36.1% move with the EV channels, as expected). **But** this is a 41-observation, two-dose-level estimate: it has LOW POWER,
 wide CIs, is associational (not causal) given endogeneity, and the 2024-01 step coincides with
 other EV-market activity. We report it as the one scope that *does* detect an EV-era
 rebate→price association — with every caveat — NOT as proof of a causal magnitude.
@@ -49,7 +49,8 @@ rebate→price association — with every caveat — NOT as proof of a causal ma
 | rebate → demand → price (mediation) | indirect -9.0 (CI spans 0); mediated share -0.016 | **not detectable** | indirect -331.8 (CI spans 0); mediated share -0.115 | **not detectable** |
 
 **Read:** the full-window headline 2022-01 effect is not robust (p=0.064) and is a tax/threshold
-confounder, not a rebate step — the negative-control test does not falsify it but the effect cannot
+confounder, not a rebate step — the negative-control test is MIXED (clean controls split: D jumps
+more, C the other way) but the effect cannot
 be credited to the rebate. The bidding channel is directionally consistent at best (full window) and
 null/opposite-sign (2022+); the demand→price mechanism and the mediated path are not detectable in
 either scope. The 2022+ EV era is the one scope that *does* grade the headline rebate→price link as
@@ -63,7 +64,7 @@ causal magnitude.
 
 | Store | Raw rows (stated total) | Contents | Processed artifact(s) |
 |---|---|---|---|
-| **COE results** | 1,985 | one row per (month, bidding_no, vehicle_class); categories A (low-power), B (high-power), C (goods), D (large goods), E (motorcycles); 2010-01..2026-10 | `coe_monthly.csv`, `coe_extension_2025_06_2026_10.csv` (COE-only) |
+| **COE results** | 1,985 | one row per (month, bidding_no, vehicle_class); categories A (small cars), B (large cars + high-power EVs), C (goods vehicles & buses), D (motorcycles), E (open — all vehicles except motorcycles); 2010-01..2026-10 | `coe_monthly.csv`, `coe_extension_2025_06_2026_10.csv` (COE-only) |
 | **Registrations** | 51,669 | one row per (month, make, importer, fuel_type, vehicle_type, number); `number` null on a rising share ⇒ counts are LOWER BOUNDS; `Electric` (BEV) label first appears **2022-07** | `ev_registrations.csv` |
 | **CPI All Items** | 207 series | monthly CPI, 2024 base, 2016-01..2026-08 | `cpi_deflated.csv` (real Cat A price = nominal ÷ (CPI/100)) |
 
@@ -210,30 +211,31 @@ co-timed). The 2026-01 cap cut is descriptive-only (COE-only extension). → **c
 
 ### 3.6 Negative controls (the decisive test) — `tables/negative_controls.csv`
 
-**Full window, 2022-01 ARF-floor/threshold dummy** (clean controls C/D/E have NO EV rebate):
+**Full window, 2022-01 ARF-floor/threshold dummy** (clean controls C/D have NO EV rebate; B and E are EV-contaminated):
 
 | Category | Role | coef (S$) | CI95 | p | 2022-01 % jump (coef/mean) |
 |---|---|---|---|---|---|
-| A | MAIN (low-power cars; EV-eligible) | -11,972 | [-21,800, -2,145] | 0.017 | **-20.58%** |
-| B | CONTAMINATED upper bound (high-power EVs fall here) | -31,895 | [-41,688, -22,103] | 1.73e-10 | **-45.49%** |
-| C | **CLEAN negative control** (goods; no EV rebate) | -15,912 | [-21,190, -10,634] | 3.45e-09 | **-32.60%** |
-| D | **CLEAN negative control** (large goods; no EV rebate) | -1,843 | [-2,787, -900] | 0.000128 | **-24.10%** |
-| E | **CLEAN negative control** (motorcycles; no EV rebate) | -31,923 | [-40,055, -23,791] | 1.43e-14 | **-44.73%** |
+| A | MAIN (low-power cars; EV-eligible) | +3,826 | [-228, +7,879] | 0.0643 | **+6.58%** |
+| B | CONTAMINATED upper bound (high-power EVs fall here) | +10,926 | [+2,196, +19,656] | 0.0142 | **+15.58%** |
+| C | **CLEAN negative control** (goods vehicles & buses; no EV rebate) | -4,957 | [-10,993, +1,079] | 0.107 | **-10.16%** |
+| D | **CLEAN negative control** (motorcycles; no EV rebate) | +1,247 | [+201, +2,293] | 0.0195 | **+16.30%** |
+| E | CONTAMINATED (open category — cars incl. EVs can bid) | +7,324 | [-1,783, +16,430] | 0.115 | **+10.26%** |
 
-> **VERDICT (full window**
+> **VERDICT (full window, 2022-01): FULL-WINDOW NEGATIVE-CONTROL MIXED: clean controls C (goods & buses) / D (motorcycles) 2022-01 % jumps = -10.2/16.3% vs A (EV-eligible) 6.6% (contaminated open category E: 10.3%, reported for reference). Clean controls SPLIT at 2022-01 (one shows a same-direction jump at least half of A's size, the other does not) -> the test is inconclusive on market-wideness, and it does NOT establish an EV-specific channel either: the 2022-01 change was the $0 ARF floor (a TAX provision) co-timed with the 97->110kW car threshold, the verified dose does NOT step at 2022-01, and A's own 2022-01 dummy is not statistically robust (p=0.064) -> the 2022-01 jump is not credited to the EV rebate.**
 
 **2022+ EV era, 2024-01 EEAI cap-cut step** (the EV-rebate-specific variation):
 
 | Category | 2024-01 % step (coef/mean) | coef (S$) | p |
 |---|---|---|---|
 | A (MAIN (EV-eligible)) | **-22.96%** | -20,204 | 6.3e-05 |
-| C (CLEAN (no EV rebate)) | **-7.93%** | -5,505 | 0.211 |
-| D (CLEAN (no EV rebate)) | **-7.42%** | -754 | 0.117 |
-| E (CLEAN (no EV rebate)) | **-36.07%** | -40,225 | 1.32e-07 |
+| B (CONTAMINATED (high-power EVs)) | **-36.84%** | -40,418 | 7e-07 |
+| C (CLEAN (goods & buses; no EV rebate)) | **-7.93%** | -5,505 | 0.211 |
+| D (CLEAN (motorcycles; no EV rebate)) | **-7.42%** | -754 | 0.117 |
+| E (CONTAMINATED (open category; EVs can bid)) | **-36.07%** | -40,225 | 1.32e-07 |
 
-> **VERDICT (2022+ EV era**
+> **VERDICT (2022+ EV era, 2024-01): 2022+ EV-ERA NEGATIVE-CONTROL PASS: clean controls C (goods & buses) / D (motorcycles) 2024-01 % steps = -7.9/-7.4% vs A (EV-eligible) -23.0% (EEAI cap 20k->15k; dose 45000->40000; contaminated open category E: -36.1%, reported for reference). Clean controls show a smaller/absent 2024-01 step -> the 2024-01 EV-era dose step is NOT falsified by the clean controls (an EV-rebate channel is consistent with the data; magnitude not identifiable at this power). The contaminated car channels (B, open E) move with the step, as expected.**
 
-**Honest read (per scope, from the verdict rows):** full window — the 2022-01 ARF-floor/threshold dummy is positive in A but the clean controls do NOT show the same % jump, so the test does NOT falsify an EV-rebate reading; however the effect is not robust (p=0.064) and is a TAX provision co-timed with the threshold change, so it is not credited to the rebate. 2022+ EV era — the 2024-01 step (the pure EV-rebate variation) is largest in A and not matched by C/D (E moves comparably but is a single category); the same-effect test is False, so the 2024-01 EV-era step is **NOT falsified** — consistent with an EV-rebate channel (magnitude not identifiable at this power). → **charts/02_negative_control_2022.png** (2022-01, full window) and **charts/03_negative_control_2024.png** (2024-01, 2022+ EV era)
+**Honest read (per scope, from the verdict rows):** full window — the 2022-01 ARF-floor/threshold dummy is positive in A, but the two CLEAN controls (C goods & buses, D motorcycles — the only two categories with no EV rebate) **split**: D shows a larger same-direction jump, C moves the other way (contaminated B and open E move with the car channels) — so the test is MIXED: the 2022-01 jump is neither a clean market-wide signal nor a clean EV-specific one, and (with p=0.064, not robust; a TAX provision co-timed with the threshold change) it is not credited to the rebate. 2022+ EV era — the 2024-01 step (the pure EV-rebate variation) is large across the EV-eligible car channels (A, B, open E) while the clean controls C/D move far less, so the 2024-01 EV-era step is **NOT falsified** — consistent with an EV-rebate channel (magnitude not identifiable at this power). → **charts/02_negative_control_2022.png** (2022-01, full window) and **charts/03_negative_control_2024.png** (2024-01, 2022+ EV era)
 
 ### 3.7 Diagnostics — `tables/diagnostics_stationarity_autocorr.csv`
 
@@ -263,7 +265,7 @@ not falsified on the 2022+ EV era, not isolating a clean EV effect on the full w
 ## 4. Confounder discussion
 
 - **Jan 2022 97→110kW Cat A threshold change (dominant confounder).** Co-timed with the $0 ARF
-  floor; shifts clearing prices across categories (2022-01 % moves, from §3.6: A -20.6%, D -24.1%, E -44.7%, C -32.6%). It is a kept confounder marker,
+  floor; shifts clearing prices across categories (2022-01 % moves, from §3.6: A +6.6%, D +16.3%, E +10.3%, C -10.2%). It is a kept confounder marker,
   not a rebate dose; it complicates attributing the 2022-01 price move to the EV rebate alone.
 - **Secular COE price trend.** Prices are I(1) and trending; event-study leads are significant
   and non-zero (contaminated pre-trends), so onsets are bounds, not clean jumps.

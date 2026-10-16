@@ -15,11 +15,14 @@ verified real rebate policy timeline.
 
 The honest result has two parts:
 
-- **Over the whole decade (2016–2025): no detectable effect.** When EV rebate
-  rules changed, car prices jumped — but so did prices in categories where
-  *no EV rebate exists at all* (Figure 2). That's a market-wide event (a tax
-  rule and a car-category threshold changed in Jan 2022), not evidence that
-  the rebates did anything.
+- **Over the whole decade (2016–2025): no detectable effect.** When the Jan
+  2022 tax/threshold rules changed, car prices jumped — and the two
+  categories where *no EV rebate exists at all* (C: goods vehicles & buses;
+  D: motorcycles) did not confirm a rebate-specific cause: D jumped even
+  more, C moved the other way (Figure 2). What changed in Jan 2022 was a tax
+  rule (electric cars' minimum registration tax dropped to zero) plus a
+  car-category power threshold — not a rebate step — so the jump can't be
+  credited to the rebates.
 - **In the EV era (2022–2025): a price reaction to the 2024 rebate cut.**
   When the government cut the maximum rebate from S$45k to S$40k in Jan 2024,
   the average EV-category COE price moved in the same direction as the
@@ -48,11 +51,17 @@ Two data caveats worth knowing:
 - **EV registration counts are lower bounds.** About half of the monthly
   registration rows don't carry a car-count number (the field went blank more
   often over time), so EV totals are reported with a monthly coverage rate.
-- **Category A is not an "EV category".** It's the small-engine car
+- **Category A is not an "EV category."** It's the small-engine car
   category (engines up to 1600cc and power output up to 97kW / 130bhp;
   fully electric cars up to 110kW) — most EVs fit, which is why EVs land
   in it. That's why the study looks at the whole decade, not just
   "EV months".
+- **The five categories (per LTA):** A: small cars (≤1600cc, ≤97kW; EVs
+  ≤110kW). B: large cars (>1600cc or >97kW — i.e. high-power EVs land
+  here). C: goods vehicles & buses. D: motorcycles. E: open — any vehicle
+  except a motorcycle, so EV cars *can* bid here. Only C and D are truly
+  free of EV rebates; B and E are "contaminated" (EVs can be in them),
+  which is why the negative-control test (Figure 2) relies on C and D.
 
 ## What the rebate policy actually did
 
@@ -91,17 +100,27 @@ policy changes marked.
 mark the verified policy changes; the dashed red line marks the Jan 2022
 tax/threshold change.*
 
-The proof: **car categories where no EV rebate ever applies rose at a
-similar pace** (Figure 2). If rebates had caused the price rise, we
-wouldn't see it in cars that can't get a rebate.
+What the categories say: **of the two categories where no EV rebate ever
+applies (C: goods vehicles & buses; D: motorcycles), only D moved like A —
+in fact more — while C moved the other way** (Figure 2). That split means
+the test can't cleanly rule out a market-wide shock, and it can't establish
+an EV-specific cause either; the decisive facts are that the Jan 2022
+change was a *tax rule* (the $0 ARF floor) co-timed with the 97→110kW
+threshold, not a rebate dose step, and the estimated 2022-01 effect is not
+statistically robust (p=0.064). (The "open" category E, where EV cars may
+also bid, moved with the car categories — as expected.)
 
-**Figure 2.** The negative-control test for the 2022 jump: % price jump by
-car category, 2022-01 (full window).
+**Figure 2.** The negative-control test for the 2022 jump: estimated 2022-01
+% price jump by car category, each measured over the full 2016–2025 window.
 
 ![Negative-control check: 2022-01 % price jump by car category (full window)](charts/02_negative_control_2022.png)
 
-*The Jan 2022 jump shows up in the rebate-free categories C, D and E as
-well — a market-wide event, not a rebate effect.*
+*The two rebate-free categories (C goods & buses, D motorcycles) split: D
+(motorcycles) jumped more than A, C (goods) moved the other way — so the
+jump is not a clean market-wide signal, but with the Jan 2022 change being a
+tax rule, not a rebate step, it isn't credited to the EV rebate. B
+(high-power EVs) and E (open; EV cars can bid) moved with the car
+categories, as expected.*
 
 *The price rise was also reported in the media. [The Straits Times](https://www.straitstimes.com/singapore/transport/coe-premiums-at-all-time-highs-in-2022-buyers-could-get-slight-reprieve-in-later-half-of-2023)
 noted on 29 Dec 2022 that COE premiums went on "a relentless upward march
@@ -122,20 +141,23 @@ within it, so the statistics have something to work with. In that window:
 - For every extra S$1,000 of maximum rebate, the average Category A price was
   about **S$4,100 higher** — a statistically clear association (p < 0.001 by
   several measures, nominal and inflation-adjusted alike).
-- Rebate-free categories did **not** show the same 2024 move (Figure 3),
-  so this is plausibly EV-relevant.
+- The rebate-free categories (C goods & buses, D motorcycles) did **not**
+  show the same 2024 move (Figure 3), so this is plausibly EV-relevant
+  (B and E are contaminated — EVs can bid in them — and moved with A).
 - But the window has only 41 months and two rebate levels, so this is a
   **low-power association, not a measured causal effect**. It's evidence the
   price system responded to the rebate cut — not a number to quote as "how
   much rebates raise prices".
 
-**Figure 3.** The negative-control test for the 2024 rebate cut: % price
-step by car category, 2024-01 (2022+ EV era).
+**Figure 3.** The negative-control test for the 2024 rebate cut: estimated
+2024-01 % price step by car category, each measured over the 2022–2025
+window.
 
 ![Negative-control check: 2024-01 EEAI cap-cut step by car category (2022+ EV era)](charts/03_negative_control_2024.png)
 
-*The 2024 cap cut moves Category A more than C/D do (E comparably — a single
-category).*
+*The 2024 cap cut moves the EV-eligible car channels (A, B, and the open
+category E, where EV cars can bid) by ~23–37%, while the two rebate-free
+categories (C goods, D motorcycles) move only ~7–8%.*
 
 ### 3. Rebates did not make more people bid
 
@@ -210,7 +232,8 @@ large non-zero moves — the pre-trend problem.*
 ### 7. What we can and can't claim
 
 - **Can claim:** no detectable EV-specific effect of the rebates on COE
-  prices or bidding across the decade; the 2022 price jump was market-wide;
+  prices or bidding across the decade; the 2022 price jump showed up in
+  categories without EV rebates too (market-wide);
   prices and bidding demand are weakly related; the via-bidding chain is
   broken.
 - **Can't claim:** a precise "rebates raise prices by X" number. The rebate

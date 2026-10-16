@@ -5,10 +5,13 @@ autocorrelation, and sensitivity. VERIFIED REAL POLICY; dual scope.
 
 Outputs:
     tables/negative_controls.csv                 (price equation re-run on the
-                                                 clean controls C, D, E --
-                                                 expect ~zero rebate effect --
-                                                 and B, the contaminated upper
-                                                 bound where high-power EVs sit;
+                                                 clean controls C (goods &
+                                                 buses) and D (motorcycles)
+                                                 -- expect ~zero rebate effect
+                                                 -- and on B and E, both
+                                                 EV-contaminated (high-power
+                                                 EVs in B; EV cars can bid the
+                                                 open category E);
                                                  BOTH scopes: full window and
                                                  2022+ EV era, with per-scope
                                                  verdicts)
@@ -23,14 +26,21 @@ Outputs:
                                                  bids_received vs bids_success;
                                                  lag-order variants)
 
-Negative-control taxonomy (per the saturated Dory spec):
-    * C, D, E = CLEAN negative controls (goods, large-goods, motorcycles).
-      The EV rebate does not apply to these, so a well-specified model must
-      show a ~ZERO rebate coefficient here. A non-zero rebate effect on a
-      clean control would indicate the "effect" is a data artifact (the trend,
-      the quota, the market-wide shock) rather than a genuine rebate channel.
+Negative-control taxonomy (verified against LTA's published category table):
+    * C (goods vehicles & buses) and D (motorcycles) = CLEAN negative
+      controls. The EV rebate does not apply to these, so a well-specified
+      model must show a ~ZERO rebate coefficient here. A non-zero rebate
+      effect on a clean control would indicate the "effect" is a data
+      artifact (the trend, the quota, the market-wide shock) rather than a
+      genuine rebate channel.
     * B = CONTAMINATED upper bound: high-power EVs fall in Cat B, so B is
       allowed to show a (bounded, upper) rebate effect.
+    * E = CONTAMINATED open category ("all except motorcycles"): cars,
+      including EVs, can bid here, so E may legitimately move with the EV
+      channels; it is reported for reference, not as a clean control.
+      (NOTE: an earlier draft mislabelled D as "large goods" and E as
+      "motorcycles"; the price scales in the data (D ~ $8-11k, E car-scale
+      ~ $100k) and LTA's category table confirm D = motorcycles, E = open.)
     * A = the main effect category (low-power cars; the EV-relevant one).
 
 TWO SCOPE-CONDITIONED VERDICTS (the KEY diagnostic for the causal claim):
@@ -38,16 +48,18 @@ TWO SCOPE-CONDITIONED VERDICTS (the KEY diagnostic for the causal claim):
     dose does NOT step at 2022-01 (the 2022-01 change was the $0 ARF floor,
     a TAX provision; the co-timed 97->110kW threshold change is market-wide).
     The 2022-01 level shift in the full-window dummy spec is carried by
-    reg_arffloor_zero_202201. If clean controls C/D/E show the same/larger
+    reg_arffloor_zero_202201. If BOTH clean controls C/D show the same/larger
     2022-01 % jump as A, the 2022-01 price jump is a MARKET-WIDE COMMON
-    SHOCK, not an EV-rebate channel (the documented key fact, re-estimated
-    under the new labels).
+    SHOCK, not an EV-rebate channel; if they split (one same-direction with
+    at least half of A's size, the other not), the verdict is MIXED and the
+    test is inconclusive on market-wideness.
   * 2022+ EV-ERA scope — the 2024-01 dose step (45000 -> 40000, the EEAI cap
     cut): inside this window the only rebate variation is that step
-    (reg_eeai_cap15k_202401). If clean controls C/D/E respond to the 2024-01
-    EV-rebate cap cut with the same/larger % jump as A, the 2022+ scope
-    verdict is ALSO a market-wide common shock. If clean controls do NOT
-    respond at 2024-01, the 2022+ scope does not falsify an EV-rebate channel.
+    (reg_eeai_cap15k_202401). If BOTH clean controls C/D respond to the
+    2024-01 EV-rebate cap cut with the same/larger % jump as A, the 2022+
+    scope verdict is ALSO a market-wide common shock. If clean controls do
+    NOT respond at 2024-01, the 2022+ scope does not falsify an EV-rebate
+    channel (the contaminated car channels B/E may move; that is expected).
 
 All controls use the CORRECTED per-category bid counts (see 00_data.py).
 Dose/dummy collinearity: the per-category specs use the DUMMY spec (4
@@ -94,9 +106,9 @@ CONTROLS = ["catA_quota", "trend", "cpi_all_items"]
 NC_TAXONOMY = {
     "A": "MAIN effect (low-power cars; EV-relevant)",
     "B": "CONTAMINATED upper bound (high-power EVs fall here)",
-    "C": "CLEAN negative control (goods vehicles; no EV rebate)",
-    "D": "CLEAN negative control (large goods; no EV rebate)",
-    "E": "CLEAN negative control (motorcycles; no EV rebate)",
+    "C": "CLEAN negative control (goods vehicles & buses; no EV rebate)",
+    "D": "CLEAN negative control (motorcycles; no EV rebate)",
+    "E": "CONTAMINATED open category (cars incl. EVs can bid; no separate EV-rebate channel)",
 }
 
 
@@ -155,20 +167,29 @@ def _price_spec_for_cat(df, K, price_def="nominal", scope="full",
     return out, price, res_dum, res_dose
 
 
+def _clean_move(x, a):
+    """True if clean control x moves the same direction as A with at least
+    half of A's % size."""
+    return ((x > 0 and a > 0 and x > 0.5 * a)
+            or (x < 0 and a < 0 and x < 0.5 * a))
+
+
 def _pct_verdict(nc, term, scope):
-    """Same-effect test on one dummy term within one scope: clean controls
-    C/D/E show the same direction and at least half the % size of A ->
-    market-wide common shock."""
+    """Same-effect test on one dummy term within one scope. CLEAN controls
+    are C (goods & buses) and D (motorcycles); E (open category) is
+    EV-contaminated and is reported but excluded from the test.
+    ALL clean controls show the same direction and at least half the % size
+    of A -> market-wide common shock (same_effect). Exactly one of the two
+    does (the other doesn't) -> MIXED (inconclusive on market-wideness)."""
     ee = nc[(nc.term == term) & (nc.spec == "dummy") & (nc.scope == scope)]
     a = ee[ee.category == "A"]["coef_pct_of_mean"].iloc[0]
     c = ee[ee.category == "C"]["coef_pct_of_mean"].iloc[0]
     d = ee[ee.category == "D"]["coef_pct_of_mean"].iloc[0]
     e = ee[ee.category == "E"]["coef_pct_of_mean"].iloc[0]
-    same_effect = all(
-        (x > 0 and a > 0 and x > 0.5 * a) or
-        (x < 0 and a < 0 and x < 0.5 * a) for x in (c, d, e)
-    )
-    return a, c, d, e, same_effect
+    moves = [_clean_move(x, a) for x in (c, d)]
+    same_effect = all(moves)
+    mixed = (not same_effect) and any(moves)
+    return a, c, d, e, same_effect, mixed
 
 
 def main():
@@ -193,18 +214,19 @@ def main():
                 r = D.coef_of(res_dum, t)
                 r.update(category=K, spec="dummy", term=t,
                          classification=tax, scope=scope,
-                         expect=("zero" if K in "CDE" else "n/a"))
+                         expect=("zero" if K in "CD" else "n/a"))
                 nc_rows.append(r)
             rd = D.coef_of(res_dose, "dose_1000")
             rd.update(category=K, spec="dose", term="dose_1000",
                       classification=tax, scope=scope,
-                      expect=("zero" if K in "CDE" else "n/a"))
+                      expect=("zero" if K in "CD" else "n/a"))
             nc_rows.append(rd)
     nc = pd.DataFrame(nc_rows)
     # Cross-category COMPARABLE view: the raw S$ rebate coefficients are on
-    # different price scales (Cat D is a large-goods COE ~10k, Cat B/E ~100k+),
-    # so a verdict on "does a clean control show the same jump?" needs the
-    # jump as a FRACTION of that category's mean price (per scope window).
+    # different price scales (Cat D motorcycles ~ $8-11k; Cat B/E car-scale
+    # ~ $100k+), so a verdict on "does a clean control show the same jump?"
+    # needs the jump as a FRACTION of that category's mean price (per scope
+    # window).
     mean_price_full = {K: df[f"cat{K}_clearing_price"].mean() for K in "ABCDE"}
     mean_price_ev = {K: ev[f"cat{K}_clearing_price"].mean() for K in "ABCDE"}
     nc["cat_mean_price"] = nc.apply(
@@ -213,52 +235,95 @@ def main():
     nc["coef_pct_of_mean"] = nc["coef"] / nc["cat_mean_price"] * 100.0
 
     # Explicit negative-control verdicts (the KEY diagnostics), per scope:
-    a22, c22, d22, e22, same_2022 = _pct_verdict(nc, DUMMY_2022, "full_window")
-    a24, c24, d24, e24, same_2024 = _pct_verdict(nc, DUMMY_2024, "ev_era_2022plus")
+    a22, c22, d22, e22, same_2022, mixed_2022 = _pct_verdict(
+        nc, DUMMY_2022, "full_window")
+    a24, c24, d24, e24, same_2024, mixed_2024 = _pct_verdict(
+        nc, DUMMY_2024, "ev_era_2022plus")
+
+    # A's own 2022-01 dummy p-value (primary nominal spec), quoted in the
+    # MIXED verdict text:
+    p22 = None
+    try:
+        pe = pd.read_csv(OUT_DIR / "price_equation.csv")
+        r22 = pe[(pe["term"] == "reg_arffloor_zero_202201")
+                 & (pe["spec"] == "M1_primary_lagged_dum")
+                 & (pe["price_def"] == "nominal")]
+        if len(r22):
+            p22 = float(r22["p"].iloc[0])
+    except Exception:
+        pass
+    p22_txt = f" (p={p22:.3f})" if p22 is not None else ""
 
     verdict_full = (
-        f"FULL-WINDOW NEGATIVE-CONTROL {'FAIL' if same_2022 else 'PASS'}: clean "
-        f"controls C/D/E 2022-01 % jumps = {c22:.1f}/{d22:.1f}/{e22:.1f}% vs A "
-        f"(EV-eligible) {a22:.1f}%. "
+        f"FULL-WINDOW NEGATIVE-CONTROL "
+        f"{'FAIL' if same_2022 else ('MIXED' if mixed_2022 else 'PASS')}: "
+        f"clean controls C (goods & buses) / D (motorcycles) 2022-01 % jumps "
+        f"= {c22:.1f}/{d22:.1f}% vs A (EV-eligible) {a22:.1f}% (contaminated "
+        f"open category E: {e22:.1f}%, reported for reference). "
         + (
-            "Clean controls show the SAME 2022-01 price jump despite NO EV "
-            "rebate applying to them (and the verified dose does NOT step at "
-            "2022-01 — it was the $0 ARF floor, a tax provision, + the "
+            "Both clean controls show the SAME 2022-01 price jump despite NO "
+            "EV rebate applying to them (and the verified dose does NOT step "
+            "at 2022-01 — it was the $0 ARF floor, a tax provision, + the "
             "market-wide 97->110kW threshold) -> the 2022-01 jump is a "
             "MARKET-WIDE COMMON SHOCK, NOT an EV-rebate-specific channel."
             if same_2022 else
-            "Clean controls show a smaller/absent 2022-01 jump -> the 2022-01 "
-            "price effect is consistent with (but not proven to be) an "
-            "EV-rebate/ARF-floor channel."
+            (
+                "Clean controls SPLIT at 2022-01 (one shows a same-direction "
+                "jump at least half of A's size, the other does not) -> the "
+                "test is inconclusive on market-wideness, and it does NOT "
+                "establish an EV-specific channel either: the 2022-01 change "
+                "was the $0 ARF floor (a TAX provision) co-timed with the "
+                "97->110kW car threshold, the verified dose does NOT step at "
+                "2022-01, and A's own 2022-01 dummy is not statistically "
+                "robust"
+                + p22_txt
+                + " -> the 2022-01 jump is not credited to the EV rebate."
+                if mixed_2022 else
+                "Clean controls show a smaller/absent 2022-01 jump -> the "
+                "2022-01 price effect is consistent with (but not proven to "
+                "be) an EV-rebate/ARF-floor channel."
+            )
         )
     )
     verdict_ev = (
-        f"2022+ EV-ERA NEGATIVE-CONTROL {'FAIL' if same_2024 else 'PASS'}: clean "
-        f"controls C/D/E 2024-01 % steps = {c24:.1f}/{d24:.1f}/{e24:.1f}% vs A "
-        f"(EV-eligible) {a24:.1f}% (EEAI cap 20k->15k; dose 45000->40000). "
+        f"2022+ EV-ERA NEGATIVE-CONTROL "
+        f"{'FAIL' if same_2024 else ('MIXED' if mixed_2024 else 'PASS')}: "
+        f"clean controls C (goods & buses) / D (motorcycles) 2024-01 % steps "
+        f"= {c24:.1f}/{d24:.1f}% vs A (EV-eligible) {a24:.1f}% (EEAI cap "
+        f"20k->15k; dose 45000->40000; contaminated open category E: "
+        f"{e24:.1f}%, reported for reference). "
         + (
-            "Clean controls show the SAME 2024-01 response to an EV-rebate cap "
-            "cut that does NOT apply to them -> market-wide common shock, not "
-            "an EV-rebate-specific channel, in the 2022+ scope as well."
+            "Both clean controls show the SAME 2024-01 response to an "
+            "EV-rebate cap cut that does NOT apply to them -> market-wide "
+            "common shock, not an EV-rebate-specific channel, in the 2022+ "
+            "scope as well."
             if same_2024 else
-            "Clean controls show a smaller/absent 2024-01 step -> the 2024-01 "
-            "EV-era dose step is NOT falsified by the clean controls (an "
-            "EV-rebate channel is consistent with the data; magnitude not "
-            "identifiable at this power)."
+            (
+                "Clean controls SPLIT at 2024-01 -> the EV-era negative-"
+                "control verdict is inconclusive on market-wideness."
+                if mixed_2024 else
+                "Clean controls show a smaller/absent 2024-01 step -> the "
+                "2024-01 EV-era dose step is NOT falsified by the clean "
+                "controls (an EV-rebate channel is consistent with the data; "
+                "magnitude not identifiable at this power). The contaminated "
+                "car channels (B, open E) move with the step, as expected."
+            )
         )
     )
     verdict_lines = [
         "# ---- negative-control verdicts (per scope) ----",
         f"# same_effect_on_clean_controls_2022 = {same_2022}",
+        f"# mixed_clean_controls_2022 = {mixed_2022}",
         f"# same_effect_on_clean_controls_2024 = {same_2024}",
+        f"# mixed_clean_controls_2024 = {mixed_2024}",
         f"# A(EV-eligible) 2022-01 % jump = {a22:.2f}%",
-        f"# clean control C 2022-01 % jump = {c22:.2f}%",
-        f"# clean control D 2022-01 % jump = {d22:.2f}%",
-        f"# clean control E 2022-01 % jump = {e22:.2f}%",
+        f"# clean control C (goods & buses) 2022-01 % jump = {c22:.2f}%",
+        f"# clean control D (motorcycles) 2022-01 % jump = {d22:.2f}%",
+        f"# contaminated open category E 2022-01 % jump = {e22:.2f}%",
         f"# A(EV-eligible) 2024-01 % step (EV era) = {a24:.2f}%",
-        f"# clean control C 2024-01 % step (EV era) = {c24:.2f}%",
-        f"# clean control D 2024-01 % step (EV era) = {d24:.2f}%",
-        f"# clean control E 2024-01 % step (EV era) = {e24:.2f}%",
+        f"# clean control C (goods & buses) 2024-01 % step (EV era) = {c24:.2f}%",
+        f"# clean control D (motorcycles) 2024-01 % step (EV era) = {d24:.2f}%",
+        f"# contaminated open category E 2024-01 % step (EV era) = {e24:.2f}%",
         f"# VERDICT (full window, 2022-01): {verdict_full}",
         f"# VERDICT (2022+ EV era, 2024-01): {verdict_ev}",
     ]
@@ -414,11 +479,13 @@ def main():
                       "demand for C,D,E,B",
         interpretation_scope="2022-01..2025-05",
         n_obs=len(df.dropna(subset=["catA_clearing_price"])),
-        notes="C,D,E = clean negative controls (expect ~0 rebate effect); "
-              "B = contaminated upper bound; A = main effect. BOTH scopes: "
-              "full window (2022-01 jump via reg_arffloor_zero_202201 = $0 ARF "
-              "floor tax + 97->110kW threshold confounder) and 2022+ EV era "
-              "(2024-01 step via reg_eeai_cap15k_202401); per-scope verdicts. "
+        notes="C (goods & buses) + D (motorcycles) = clean negative controls "
+              "(expect ~0 rebate effect); B (high-power EVs) + E (open "
+              "category; EV cars can bid) = contaminated; A = main effect. "
+              "BOTH scopes: full window (2022-01 jump via "
+              "reg_arffloor_zero_202201 = $0 ARF floor tax + 97->110kW "
+              "threshold confounder) and 2022+ EV era (2024-01 step via "
+              "reg_eeai_cap15k_202401); per-scope verdicts (PASS/FAIL/MIXED). "
               "ADF levels vs diffs; residual DW/Ljung-Box/BG; sensitivity: "
               "drop-one control, demand def, lag order, nominal vs real.",
     )
@@ -428,9 +495,11 @@ def main():
     print(f"[diagnostics] wrote {OUT_SENS}  rows={len(sensdf)}")
     print("\n  --- negative-control verdicts ---")
     print(f"  2022-01 (full window, reg_arffloor_zero_202201): A={a22:+.2f}% "
-          f"C={c22:+.2f}% D={d22:+.2f}% E={e22:+.2f}% same_effect={same_2022}")
+          f"C={c22:+.2f}% D={d22:+.2f}% E={e22:+.2f}% same_effect={same_2022} "
+          f"mixed={mixed_2022}")
     print(f"  2024-01 (EV era, reg_eeai_cap15k_202401): A={a24:+.2f}% "
-          f"C={c24:+.2f}% D={d24:+.2f}% E={e24:+.2f}% same_effect={same_2024}")
+          f"C={c24:+.2f}% D={d24:+.2f}% E={e24:+.2f}% same_effect={same_2024} "
+          f"mixed={mixed_2024}")
     for K in "ABCDE":
         for scope in ("full_window", "ev_era_2022plus"):
             row = nc[(nc.category == K) & (nc.scope == scope)

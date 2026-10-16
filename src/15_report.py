@@ -237,20 +237,30 @@ def pull() -> dict:
 
     # ---- negative controls (per scope) ----
     nc_all = pd.read_csv(TABLES / "negative_controls.csv")
+    # The verdict rows are appended as '# VERDICT ...' comment lines, but
+    # read_csv (pandas 3.x) keeps them as data rows and splits them across
+    # columns, so parse them from the raw lines instead:
     v["nc_verdict"] = {}
-    for _, r in nc_all.iterrows():
-        t = str(r["term"])
-        if t.startswith("# VERDICT"):
-            key = "full" if "full window" in t else "ev"
-            v["nc_verdict"][key] = t[len("# "):]
+    try:
+        with open(TABLES / "negative_controls.csv") as fh:
+            for line in fh:
+                line = line.rstrip("\n")
+                if line.startswith("# VERDICT (full window"):
+                    v["nc_verdict"]["full"] = line[len("# "):]
+                elif line.startswith("# VERDICT (2022+ EV era"):
+                    v["nc_verdict"]["ev"] = line[len("# "):]
+    except Exception:
+        pass
     nc = nc_all[nc_all["term"].astype(str).str.strip().isin(
         ["reg_arffloor_zero_202201", "reg_eeai_cap15k_202401"])].copy()
-    for c in ("coef", "ci_lo", "ci_hi", "coef_pct_of_mean"):
+    for c in ("coef", "se", "t", "p", "ci_lo", "ci_hi", "coef_pct_of_mean"):
         nc[c] = pd.to_numeric(nc[c], errors="coerce")
     v["nc_2022"] = {r["category"]: r for _, r in
-                    nc[nc["scope"] == "full_window"].iterrows()}
+                    nc[(nc["scope"] == "full_window")
+                       & (nc["term"] == "reg_arffloor_zero_202201")].iterrows()}
     v["nc_2024"] = {r["category"]: r for _, r in
-                    nc[nc["scope"] == "ev_era_2022plus"].iterrows()}
+                    nc[(nc["scope"] == "ev_era_2022plus")
+                       & (nc["term"] == "reg_eeai_cap15k_202401")].iterrows()}
     # read the same-effect-on-clean flags directly from the comment rows
     _same = {}
     for _, r in nc_all.iterrows():
@@ -373,21 +383,23 @@ def build_report(v: dict) -> str:
     A(f"> **Full window (primary, 2016-01..2025-05):** the headline *rebate → price* link grades ")
     A(f"**{gh['grade']}**. The 2022-01 ARF-floor/threshold dummy is positive but not robust")
     A(f"({f0(v['arffloor']['coef'])} S$, p={fp(v['arffloor']['p'])} HC1). The 2022-01 negative-control "
-      f"test **does NOT falsify an EV-rebate reading** — clean control categories C/D/E (no EV rebate) "
-      f"do NOT reproduce the same 2022-01 % jump as A (A {nc22['A']['coef_pct_of_mean']:+.1f}% vs C "
-      f"{nc22['C']['coef_pct_of_mean']:+.1f}%, D {nc22['D']['coef_pct_of_mean']:+.1f}%, E "
-      f"{nc22['E']['coef_pct_of_mean']:+.1f}%). **But** the 2022-01 effect is (i) not statistically robust "
-      f"(p={fp(v['arffloor']['p'])}) and (ii) a TAX provision ($0 ARF floor) co-timed with the 97→110kW "
-      f"threshold change, not a rebate dose step — so it cannot be credited to the EV rebate.")
+      f"test is **MIXED**: the two clean controls (C goods & buses, D motorcycles — the only "
+      f"categories with NO EV rebate) split (A {nc22['A']['coef_pct_of_mean']:+.1f}% vs C "
+      f"{nc22['C']['coef_pct_of_mean']:+.1f}%, D {nc22['D']['coef_pct_of_mean']:+.1f}%; contaminated open "
+      f"category E {nc22['E']['coef_pct_of_mean']:+.1f}% moves with the car channels) — so the jump is "
+      f"neither a clean market-wide signal nor a clean EV-specific one. **And** the 2022-01 "
+      f"effect is (i) not statistically robust (p={fp(v['arffloor']['p'])}) and (ii) a TAX provision ($0 "
+      f"ARF floor) co-timed with the 97→110kW threshold change, not a rebate dose step — so "
+      f"it cannot be credited to the EV rebate.")
     A("")
     A(f"> **2022+ EV era (2022-01..2025-05; NOW an estimation scope — 41 obs, dose 45000→40000 at 2024-01):**")
     A(f"the headline *rebate → price* link grades **{ge['grade']}** — the dose step")
     A(f"(+{f0(v['ev_dose']['coef'])} S$/1000 S$, p={fp(v['ev_dose']['p'])}; the 45000→40000 step dummy")
     A(f"{f0(v['ev_step']['coef'])} S$, p={fp(v['ev_step']['p'])}) is statistically significant, and the")
-    A(f"**2024-01 negative-control test does NOT falsify it** (clean controls C/D show a smaller 2024-01")
+    A(f"**2024-01 negative-control test does NOT falsify it** (clean controls C/D show a much smaller 2024-01")
     A(f"step: A {nc24['A']['coef_pct_of_mean']:+.1f}% vs C {nc24['C']['coef_pct_of_mean']:+.1f}%, D "
-      f"{nc24['D']['coef_pct_of_mean']:+.1f}%; E moves {nc24['E']['coef_pct_of_mean']:+.1f}%, so it is *not falsified* "
-      f"but not cleanly isolated either). **But** this is a 41-observation, two-dose-level estimate: it has LOW POWER,")
+      f"{nc24['D']['coef_pct_of_mean']:+.1f}%; the contaminated channels B {nc24['B']['coef_pct_of_mean']:+.1f}% and open E "
+      f"{nc24['E']['coef_pct_of_mean']:+.1f}% move with the EV channels, as expected). **But** this is a 41-observation, two-dose-level estimate: it has LOW POWER,")
     A(f"wide CIs, is associational (not causal) given endogeneity, and the 2024-01 step coincides with")
     A(f"other EV-market activity. We report it as the one scope that *does* detect an EV-era")
     A(f"rebate→price association — with every caveat — NOT as proof of a causal magnitude.")
@@ -427,7 +439,8 @@ def build_report(v: dict) -> str:
       f"**{v['grade_med_ev']['grade']}** |")
     A("")
     A("**Read:** the full-window headline 2022-01 effect is not robust (p=0.064) and is a tax/threshold")
-    A("confounder, not a rebate step — the negative-control test does not falsify it but the effect cannot")
+    A("confounder, not a rebate step — the negative-control test is MIXED (clean controls split: D jumps")
+    A("more, C the other way) but the effect cannot")
     A("be credited to the rebate. The bidding channel is directionally consistent at best (full window) and")
     A("null/opposite-sign (2022+); the demand→price mechanism and the mediated path are not detectable in")
     A("either scope. The 2022+ EV era is the one scope that *does* grade the headline rebate→price link as")
@@ -442,8 +455,9 @@ def build_report(v: dict) -> str:
     A("| Store | Raw rows (stated total) | Contents | Processed artifact(s) |")
     A("|---|---|---|---|")
     A(f"| **COE results** | {v['coe_rows']:,} | one row per (month, bidding_no, vehicle_class); "
-      f"categories A (low-power), B (high-power), C (goods), D (large goods), E (motorcycles); "
-      f"2010-01..2026-10 | `coe_monthly.csv`, `coe_extension_2025_06_2026_10.csv` (COE-only) |")
+      f"categories A (small cars), B (large cars + high-power EVs), C (goods vehicles & buses), "
+      f"D (motorcycles), E (open — all vehicles except motorcycles); 2010-01..2026-10 | "
+      f"`coe_monthly.csv`, `coe_extension_2025_06_2026_10.csv` (COE-only) |")
     A(f"| **Registrations** | {v['reg_rows']:,} | one row per (month, make, importer, fuel_type, "
       f"vehicle_type, number); `number` null on a rising share ⇒ counts are LOWER BOUNDS; `Electric` "
       f"(BEV) label first appears **2022-07** | `ev_registrations.csv` |")
@@ -656,15 +670,15 @@ def build_report(v: dict) -> str:
     A("")
     A("### 3.6 Negative controls (the decisive test) — `tables/negative_controls.csv`")
     A("")
-    A("**Full window, 2022-01 ARF-floor/threshold dummy** (clean controls C/D/E have NO EV rebate):")
+    A("**Full window, 2022-01 ARF-floor/threshold dummy** (clean controls C/D have NO EV rebate; B and E are EV-contaminated):")
     A("")
     A("| Category | Role | coef (S$) | CI95 | p | 2022-01 % jump (coef/mean) |")
     A("|---|---|---|---|---|---|")
     for cat, role in [("A", "MAIN (low-power cars; EV-eligible)"),
                       ("B", "CONTAMINATED upper bound (high-power EVs fall here)"),
-                      ("C", "**CLEAN negative control** (goods; no EV rebate)"),
-                      ("D", "**CLEAN negative control** (large goods; no EV rebate)"),
-                      ("E", "**CLEAN negative control** (motorcycles; no EV rebate)")]:
+                      ("C", "**CLEAN negative control** (goods vehicles & buses; no EV rebate)"),
+                      ("D", "**CLEAN negative control** (motorcycles; no EV rebate)"),
+                      ("E", "CONTAMINATED (open category — cars incl. EVs can bid)")]:
         r = v["nc_2022"].get(cat)
         if r is None:
             continue
@@ -677,8 +691,10 @@ def build_report(v: dict) -> str:
     A("")
     A("| Category | 2024-01 % step (coef/mean) | coef (S$) | p |")
     A("|---|---|---|---|")
-    for cat, role in [("A", "MAIN (EV-eligible)"), ("C", "CLEAN (no EV rebate)"),
-                      ("D", "CLEAN (no EV rebate)"), ("E", "CLEAN (no EV rebate)")]:
+    for cat, role in [("A", "MAIN (EV-eligible)"), ("B", "CONTAMINATED (high-power EVs)"),
+                      ("C", "CLEAN (goods & buses; no EV rebate)"),
+                      ("D", "CLEAN (motorcycles; no EV rebate)"),
+                      ("E", "CONTAMINATED (open category; EVs can bid)")]:
         r = v["nc_2024"].get(cat)
         if r is None:
             continue
@@ -686,14 +702,18 @@ def build_report(v: dict) -> str:
     A("")
     A(f"> **{v['nc_verdict'].get('ev', 'n/a')}**")
     A("")
-    A("**Honest read (per scope, from the verdict rows):** full window — the 2022-01 ARF-floor/threshold "
-      "dummy is positive in A but the clean controls do NOT show the same % jump, so the test does NOT "
-      "falsify an EV-rebate reading; however the effect is not robust (p=0.064) and is a TAX provision "
-      "co-timed with the threshold change, so it is not credited to the rebate. 2022+ EV era — the "
-      "2024-01 step (the pure EV-rebate variation) is largest in A and not matched by C/D (E moves "
-      "comparably but is a single category); the same-effect test is False, so the 2024-01 EV-era step "
-      "is **NOT falsified** — consistent with an EV-rebate channel (magnitude not identifiable at this "
-      "power). → **charts/02_negative_control_2022.png** (2022-01, full "
+    A("**Honest read (per scope, from the verdict rows):** full window — the 2022-01 "
+      "ARF-floor/threshold dummy is positive in A, but the two CLEAN controls (C goods & "
+      "buses, D motorcycles — the only two categories with no EV rebate) **split**: D shows "
+      "a larger same-direction jump, C moves the other way (contaminated B and open E move "
+      "with the car channels) — so the test is MIXED: the 2022-01 jump is neither a clean "
+      "market-wide signal nor a clean EV-specific one, and (with p=0.064, not robust; a TAX "
+      "provision co-timed with the threshold change) it is not credited to the rebate. "
+      "2022+ EV era — the 2024-01 step (the pure EV-rebate variation) is large across the "
+      "EV-eligible car channels (A, B, open E) while the clean controls C/D move far less, "
+      "so the 2024-01 EV-era step is **NOT falsified** — consistent with an EV-rebate "
+      "channel (magnitude not identifiable at this power). → "
+      "**charts/02_negative_control_2022.png** (2022-01, full "
       "window) and **charts/03_negative_control_2024.png** (2024-01, 2022+ EV era)")
     A("")
     A("### 3.7 Diagnostics — `tables/diagnostics_stationarity_autocorr.csv`")
@@ -832,7 +852,7 @@ def build_stats(v: dict) -> str:
     A("**Question:** does the EV-rebate offer cause COE bidders to bid more?  ")
     A("**Answer (honest, dual-scope):** full window (primary) = **not detectable** as a robust EV-specific")
     A("effect (the 2022-01 ARF-floor effect is not robust, p=0.064, and is a tax/threshold confounder; the")
-    A("2022-01 negative-control test does not falsify it but the effect is not credited to the rebate). 2022+ EV")
+    A("2022-01 negative-control test is MIXED — clean controls C/D split — and the effect is not credited to the rebate). 2022+ EV")
     A("era (estimable, 41 obs, dose 45000→40000) = **supported** for rebate→price (2024-01 dose step")
     A("significant; 2024-01 negative control not falsified) — but LOW POWER and associational, not a causal")
     A("magnitude. All other links: rebate→demand (bidding) not detectable / directionally consistent;")

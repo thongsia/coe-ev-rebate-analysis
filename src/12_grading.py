@@ -104,6 +104,7 @@ def main():
 
     # ---- negative-control verdicts (read from the commented block) ----
     same_2022, same_2024 = None, None
+    mixed_2022, mixed_2024 = None, None
     try:
         with open(OUT_DIR / "negative_controls.csv") as fh:
             for line in fh:
@@ -111,6 +112,10 @@ def main():
                     same_2022 = "True" in line.split("=")[1].strip()
                 if line.startswith("# same_effect_on_clean_controls_2024"):
                     same_2024 = "True" in line.split("=")[1].strip()
+                if line.startswith("# mixed_clean_controls_2022"):
+                    mixed_2022 = "True" in line.split("=")[1].strip()
+                if line.startswith("# mixed_clean_controls_2024"):
+                    mixed_2024 = "True" in line.split("=")[1].strip()
     except Exception:
         pass
 
@@ -306,10 +311,17 @@ def main():
                   np.sign(float(ee_p["coef"])) == np.sign(float(ee_real["coef"])))
         if same_2022:
             g = "not detectable"
-            nc_chk = ("FAIL (clean controls C/D/E show the same/larger 2022-01 "
+            nc_chk = ("FAIL (clean controls C (goods & buses) / D (motorcycles) "
+                      "show the same/larger 2022-01 "
                       "jump -> market-wide common shock, not EV-rebate-specific; "
                       "note the verified dose does NOT step at 2022-01 — it was "
                       "the $0 ARF floor (tax) + 97->110kW threshold)")
+        elif mixed_2022:
+            g = "directionally consistent" if sig else "not detectable"
+            nc_chk = (f"MIXED (clean controls split at 2022-01: one shows a "
+                      f"same-direction jump at least half of A's size, the "
+                      f"other does not — inconclusive on market-wideness; the "
+                      f"2022-01 dummy itself is not robust, p={p:.3f})")
         elif sig and pred and nonrev:
             g = "supported"
             nc_chk = "PASS"
@@ -330,12 +342,17 @@ def main():
             f"full-window est sig={sig}, predicted dir (coef>0)={pred}, "
             f"nominal<->real non-reversal={nonrev}. "
             + ("CRITICAL: the full-window negative-control check FAILS — clean "
-               "controls with no EV rebate show the same 2022-01 price jump, "
-               "so the increase is a market-wide common shock (co-timed 97->"
-               "110kW threshold + COE market + $0 ARF floor), NOT an "
-               "EV-rebate-specific channel. DOWNGRADED to not detectable."
+               "controls C (goods) / D (motorcycles) with no EV rebate show "
+               "the same 2022-01 price jump, so the increase is a market-wide "
+               "common shock (co-timed 97->110kW threshold + COE market + $0 "
+               "ARF floor), NOT an EV-rebate-specific channel. DOWNGRADED to "
+               "not detectable."
                if same_2022 else
-               "negative-control check does not falsify the effect.")
+               ("negative-control check is MIXED (clean controls C/D split at "
+                "2022-01): the 2022-01 move is not credited to the rebate "
+                "(tax/threshold co-timing; the dummy is not robust)."
+                if mixed_2022 else
+                "negative-control check does not falsify the effect."))
             + " Precise magnitude claims are FORBIDDEN (low power).",
         )
 
@@ -350,19 +367,28 @@ def main():
         pred = float(e1p["coef"]) > 0
         if same_2024:
             g = "not detectable"
-            nc_chk = ("FAIL (clean controls C/D/E show the same/larger 2024-01 "
+            nc_chk = ("FAIL (clean controls C (goods & buses) / D (motorcycles) "
+                      "show the same/larger 2024-01 "
                       "step in response to an EV-rebate cap cut that does NOT "
                       "apply to them -> market-wide common shock in the 2022+ "
                       "scope as well)")
+        elif mixed_2024:
+            g = "directionally consistent" if sig else "not detectable"
+            nc_chk = ("MIXED (clean controls C/D split at 2024-01 — the "
+                      "EV-era negative-control verdict is inconclusive on "
+                      "market-wideness)")
         elif sig and pred:
             g = "supported"
-            nc_chk = "PASS (EV era: clean controls do not respond at 2024-01)"
+            nc_chk = ("PASS (EV era: clean controls C/D do not respond at "
+                      "2024-01)")
         elif sig and not pred:
             g = "directionally consistent"
-            nc_chk = "PASS (EV era; wrong direction)"
+            nc_chk = ("PASS (EV era: clean controls C/D do not respond; "
+                      "wrong direction)")
         else:
             g = "not detectable"
-            nc_chk = "PASS (EV era: clean controls do not respond at 2024-01)"
+            nc_chk = ("PASS (EV era: clean controls C/D do not respond at "
+                      "2024-01)")
         add(
             "rebate->price (HEADLINE core question)", "ev_era_2022plus",
             f"dose/1000 coef={float(e1p['coef']):+.1f} (p={float(e1p['p']):.3f}); "
@@ -400,9 +426,9 @@ def main():
                  "price paid -> associational, not causal, without an "
                  "exogenous shift in the rebate.\n")
         fh.write(f"# negative-control same-effect-on-clean (2022-01, full "
-                 f"window) = {same_2022}\n")
+                 f"window) = {same_2022} (mixed = {mixed_2022})\n")
         fh.write(f"# negative-control same-effect-on-clean (2024-01, 2022+ EV "
-                 f"era) = {same_2024}\n")
+                 f"era) = {same_2024} (mixed = {mixed_2024})\n")
         fh.write("# interpretation scope = 2022-01..2025-05 for every link "
                  "(full-window estimate read on the EV-relevant window).\n")
 
