@@ -184,7 +184,8 @@ def _nc_panel(ax, nc: pd.DataFrame, term: str) -> None:
             and str(r.spec) == "dummy"]
     cats = [r.category for r in rows]
     pcts = [r.coef_pct_of_mean for r in rows]
-    colours = ["#1f4e79", "#8a8a8a", "#b23b3b", "#b23b3b", "#b23b3b"]
+    # role -> colour: A main (blue), C+D clean (red), B+E contaminated (gray)
+    colours = ["#1f4e79", "#8a8a8a", "#b23b3b", "#b23b3b", "#8a8a8a"]
     labels = [
         "A (EV-eligible,\nMAIN)", "B (contaminated\nupper bound)",
         "C — CLEAN control\n(goods & buses; no EV rebate)",
@@ -239,7 +240,7 @@ def chart02() -> None:
 
 
 # ===========================================================================
-# Chart 3 — negative-control check: 2024-01 EEAI cap-cut step by category
+# Chart 3 — negative-control check: 2024-01 % price jump by category
 #            (2022+ EV era scope).
 # ===========================================================================
 def chart03() -> None:
@@ -252,9 +253,10 @@ def chart03() -> None:
     _nc_panel(ax, pd.read_csv(TABLES / "negative_controls.csv"),
               "reg_eeai_cap15k_202401")
     ax.set_title(
-        "Chart 3 — Negative-control check: 2024-01 EEAI cap-cut step by "
-        "category\n(2022-01..2025-05 EV-era window; each bar = estimated step, "
-        "% of that category's 2022-25 mean price)",
+        "Chart 3 — Negative-control check: 2024-01 % price jump by category\n"
+        "(2022-01..2025-05 EV-era window; the 2024-01 rebate cut "
+        "S$45k → S$40k shows up as a price drop)\n"
+        "(each bar = estimated step, % of that category's 2022-25 mean price)",
         pad=12,
     )
     fig.tight_layout()

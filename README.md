@@ -150,13 +150,13 @@ within it, so the statistics have something to work with. In that window:
   much rebates raise prices".
 
 **Figure 3.** The negative-control test for the 2024 rebate cut: estimated
-2024-01 % price step by car category, each measured over the 2022–2025
-window.
+2024-01 % price jump by car category (the rebate cut shows up as a price
+drop), each measured over the 2022–2025 window.
 
-![Negative-control check: 2024-01 EEAI cap-cut step by car category (2022+ EV era)](charts/03_negative_control_2024.png)
+![Negative-control check: 2024-01 % price jump by car category (2022+ EV era; the 2024-01 rebate cut shows up as a price drop)](charts/03_negative_control_2024.png)
 
-*The 2024 cap cut moves the EV-eligible car channels (A, B, and the open
-category E, where EV cars can bid) by ~23–37%, while the two rebate-free
+*The 2024 cap cut drops prices in the EV-eligible car channels (A, B, and the
+open category E, where EV cars can bid) by ~23–37%, while the two rebate-free
 categories (C goods, D motorcycles) move only ~7–8%.*
 
 ### 3. Rebates did not make more people bid
