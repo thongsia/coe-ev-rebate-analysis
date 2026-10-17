@@ -267,21 +267,78 @@ def chart03() -> None:
 
 
 # ===========================================================================
-# Chart 4 — EV registrations + EV share, 2022-07..2025-05 (observed BEV window)
+# Chart 4 — Cat A COE price vs Cat A bids received (corrected bids series)
 # ===========================================================================
 def chart04() -> None:
+    frame = D.load_estimation_frame()
+    panel = pd.read_csv(ROOT / "data/processed/panel_joint.csv")
+    df = frame[frame["n_obs"] == 1].copy()  # 110 COE months
+    df["nominal"] = (
+        panel.set_index("month").reindex(df["month"])["catA_clearing_price"].to_numpy()
+    )
+    df = df[
+        ["month", "catA_bids_received_clean", "nominal", "in_interpretation_window"]
+    ].copy()
+    df["ts"] = df["month"].map(_p)
+    df["series"] = "corrected"
+    df.to_csv(TABLES / "chart04_price_demand_dual.csv", index=False)
+
+    fig, ax1 = plt.subplots(figsize=(11, 5.5))
+    ax1.plot(df["ts"], df["nominal"], color="#1f4e79", lw=1.6,
+             label="Cat A clearing price (nominal S$, left)")
+    ax1.set_ylabel("Cat A clearing price (nominal S$)")
+    ax1.set_title(
+        "Chart 4 — Category A COE price vs number of bids received, "
+        "2016-01..2025-05\n"
+        "(bids are a corrected series — the official column was missing for "
+        "19 months)",
+    )
+    ax2 = ax1.twinx()
+    ax2.plot(df["ts"], df["catA_bids_received_clean"], color="#b23b3b", lw=1.4,
+             label="Cat A bids received (corrected, right)")
+    ax2.set_ylabel("Cat A bids received")
+    # the full S$45k rebate was in force 2022-01..2023-12 (shaded); the
+    # dashed line marks the Jan 2024 cut to S$40k.
+    ax1.axvspan(_p("2022-01"), df["ts"].max(), color="orange", alpha=0.07,
+                zorder=0)
+    ax1.text(_p("2022-10"), ax1.get_ylim()[1] * 0.88, "max rebate S$45k",
+             ha="center", fontsize=8, color="#666666")
+    ax1.text(_p("2024-08"), ax1.get_ylim()[1] * 0.88, "max rebate S$40k",
+             ha="center", fontsize=8, color="#8a4b00")
+    ax1.axvline(_p("2024-01"), color="#b26a00", ls="--", lw=1.2, alpha=0.85,
+                zorder=4)
+    ax1.annotate(
+        "Jan 2024: max rebate cut\nS$45k → S$40k",
+        xy=(_p("2024-01"), ax1.get_ylim()[1] * 0.97), fontsize=8,
+        ha="center", va="top", color="#8a4b00", fontweight="bold",
+    )
+    ax1.legend(loc="upper left")
+    ax2.legend(loc="lower right")
+    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
+    ax1.xaxis.set_major_locator(mdates.YearLocator())
+    fig.autofmt_xdate()
+    fig.tight_layout()
+    fig.savefig(CHARTS / "04_price_demand_dual.png")
+    plt.close(fig)
+    print("[chart04] wrote charts/04_price_demand_dual.png + tables/chart04_price_demand_dual.csv")
+
+
+# ===========================================================================
+# Chart 5 — EV registrations + EV share, 2022-07..2025-05 (observed BEV window)
+# ===========================================================================
+def chart05() -> None:
     ev = pd.read_csv(TABLES / "ev_registrations_descriptive.csv")
     ev = ev[~ev["month"].astype(str).str.startswith("SUMMARY")].copy()
     ev = ev[ev["is_bev_observed"] == 1]
     ev["ts"] = ev["month"].map(_p)
-    ev.to_csv(TABLES / "chart04_ev_demand.csv", index=False)
+    ev.to_csv(TABLES / "chart05_ev_demand.csv", index=False)
 
     fig, ax1 = plt.subplots(figsize=(11, 5))
     ax1.bar(ev["ts"], ev["ev_reg"], width=22, color="#2e7d32", alpha=0.85,
             label="EV registrations per month (lower bound)")
     ax1.set_ylabel("EV registrations (per month)")
     ax1.set_title(
-        "Chart 4 — EV registrations and their share of new-car "
+        "Chart 5 — EV registrations and their share of new-car "
         "registrations, 2022-07..2025-05\n"
         "(descriptive only; counts are a lower bound — some months have no "
         "count)",
@@ -312,58 +369,9 @@ def chart04() -> None:
     ax1.xaxis.set_major_locator(mdates.MonthLocator(bymonth=(1, 7)))
     fig.autofmt_xdate()
     fig.tight_layout()
-    fig.savefig(CHARTS / "04_ev_demand.png")
+    fig.savefig(CHARTS / "05_ev_demand.png")
     plt.close(fig)
-    print("[chart04] wrote charts/04_ev_demand.png + tables/chart04_ev_demand.csv")
-
-
-# ===========================================================================
-# Chart 5 — dual-axis Cat A price vs Cat A bids received (CORRECTED series)
-# ===========================================================================
-def chart05() -> None:
-    frame = D.load_estimation_frame()
-    panel = pd.read_csv(ROOT / "data/processed/panel_joint.csv")
-    df = frame[frame["n_obs"] == 1].copy()  # 110 COE months
-    df["nominal"] = (
-        panel.set_index("month").reindex(df["month"])["catA_clearing_price"].to_numpy()
-    )
-    df = df[
-        ["month", "catA_bids_received_clean", "nominal", "in_interpretation_window"]
-    ].copy()
-    df["ts"] = df["month"].map(_p)
-    df["series"] = "corrected"
-    df.to_csv(TABLES / "chart05_price_demand_dual.csv", index=False)
-
-    fig, ax1 = plt.subplots(figsize=(11, 5.5))
-    ax1.plot(df["ts"], df["nominal"], color="#1f4e79", lw=1.6,
-             label="Cat A clearing price (nominal S$, left)")
-    ax1.set_ylabel("Cat A clearing price (nominal S$)")
-    ax1.set_title(
-        "Chart 5 — Cat A clearing price vs Cat A bids received (CORRECTED bids series)\n"
-        "Bids series = catA_bids_received_clean (reconstructed from raw; panel column "
-        "was corrupted/zero for 19 months incl. all of 2023-10..2025-05)",
-    )
-    ax2 = ax1.twinx()
-    ax2.plot(df["ts"], df["catA_bids_received_clean"], color="#b23b3b", lw=1.4,
-             label="Cat A bids received (corrected, right)")
-    ax2.set_ylabel("Cat A bids received")
-    # shade the 2022+ EV era (also an ESTIMATION scope)
-    ax1.axvspan(_p("2022-01"), df["ts"].max(), color="orange", alpha=0.07, zorder=0)
-    ax1.axvline(_p("2024-01"), color="#b26a00", ls="--", lw=1.0, alpha=0.7)
-    ax1.annotate(
-        "2022-01+ EV era = ALSO an estimation scope\n"
-        "(verified dose varies 45000->40000 at 2024-01)",
-        xy=(_p("2022-05"), ax1.get_ylim()[1] * 0.97), fontsize=8, color="#b26a00",
-    )
-    ax1.legend(loc="upper left")
-    ax2.legend(loc="lower right")
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
-    ax1.xaxis.set_major_locator(mdates.YearLocator())
-    fig.autofmt_xdate()
-    fig.tight_layout()
-    fig.savefig(CHARTS / "05_price_demand_dual.png")
-    plt.close(fig)
-    print("[chart05] wrote charts/05_price_demand_dual.png + tables/chart05_price_demand_dual.csv")
+    print("[chart05] wrote charts/05_ev_demand.png + tables/chart05_ev_demand.csv")
 
 
 # ===========================================================================
@@ -491,9 +499,10 @@ def chart07() -> None:
     ax.set_ylim(0, 10)
     ax.axis("off")
     ax.set_title(
-        "Chart 7 — Mediation path: rebate → Cat A bidding demand → Cat A price (BOTH scopes)\n"
-        "Full window (primary; 2016-01..2025-05) AND 2022+ EV era (2022-01..2025-05; 41 obs; "
-        "dose 45000->40000 at 2024-01 → estimable). Effect sizes copied from tables/.",
+        "Chart 7 — Checking the claimed chain: EV rebate → more Category A "
+        "bidding → higher Category A price\n"
+        "Full window 2016-01..2025-05 and EV era 2022-01..2025-05 (inside the "
+        "window the max rebate falls S$45k → S$40k at 2024-01)",
         fontsize=10,
     )
 
@@ -508,97 +517,109 @@ def chart07() -> None:
                                      lw=2, color=color))
 
     # --- FULL-WINDOW block (top) ---
-    ax.text(5.0, 9.5, "FULL WINDOW (primary) — 2016-01..2025-05, ~109 obs, "
-            "dose 20000/25000/45000/40000", ha="center", fontsize=9,
-            fontweight="bold", color="#1f4e79")
+    ax.text(5.0, 9.5, "FULL WINDOW — 2016-01..2025-05, about 109 months; max "
+            "rebate over the decade: S$20k, S$25k, S$45k, S$40k", ha="center",
+            fontsize=9, fontweight="bold", color="#1f4e79")
     node(1.3, 7.6, 2.2, 1.8,
-         "EV rebate\n(dose, S$)\n4 levels: 20k (CEVS est.),\n25k (VES), 45k (stack),\n40k (cap 15k)")
+         "EV rebate\n(maximum, S$)\n20k 2016-17 (est.)\n25k 2018-20\n45k 2021-23, 40k 2024+")
     node(5.0, 7.6, 2.3, 1.8,
-         "Cat A bidding\ndemand\n(catA_bids_received_clean)\nTOTAL (non-EV-dominated)")
-    node(8.7, 7.6, 2.0, 1.8, "Cat A COE\nclearing\nprice\n(nominal S$)")
+         "Cat A bidding demand\n(bids received, corrected\nseries; includes\nnon-EV cars)")
+    node(8.7, 7.6, 2.0, 1.8, "Cat A COE\nprice\n(nominal S$)")
     # a
     arrow(2.4, 8.0, 3.9, 8.0, "#b23b3b")
     ax.text(3.15, 8.45,
-            f"a = {a['coef']:+.1f} bids/1000S$\n(HAC p={a_hac['p']:.3f}; "
-            f"HC1 p={a['p']:.3f})",
+            f"Step 1 (rebate → bidding):\n"
+            f"{a['coef']:+.1f} bids per extra S$1k of rebate\n"
+            f"(p={a_hac['p']:.3f}; second check p={a['p']:.3f})"
+            + (", not significant" if a_hac['p'] >= 0.05 else ""),
             ha="center", fontsize=7.4, color="#b23b3b",
             bbox=dict(boxstyle="round", fc="white", ec="#b23b3b", alpha=0.9))
     # b
     arrow(6.15, 8.0, 7.7, 8.0, "#1f4e79")
     ax.text(6.95, 8.45,
-            f"b = {b['coef']:+.2f} S$/bid (lag-1)\n[{b['ci_lo']:+.2f}, "
-            f"{b['ci_hi']:+.2f}] p={b['p']:.3f}",
+            f"Step 2 (bidding → price):\n"
+            f"{b['coef']:+.2f} S$ per extra bid, one month later\n"
+            f"[95%: {b['ci_lo']:+.2f}..{b['ci_hi']:+.2f}], p={b['p']:.3f}",
             ha="center", fontsize=7.4, color="#1f4e79",
             bbox=dict(boxstyle="round", fc="white", ec="#1f4e79", alpha=0.9))
     # total (top arrow)
     arrow(2.4, 8.5, 7.7, 8.5, "#2e7d32")
     ax.text(5.0, 8.95,
-            f"TOTAL (full) = {m_full.loc['total','estimate']:+.0f} S$/1000S$ "
-            f"[{m_full.loc['total','ci_lo']:+.0f}, {m_full.loc['total','ci_hi']:+.0f}]",
+            f"Total effect (rebate → price), full window:\n"
+            f"{m_full.loc['total','estimate']:+.0f} S$ per extra S$1k of "
+            f"rebate [95%: {m_full.loc['total','ci_lo']:+.0f}..{m_full.loc['total','ci_hi']:+.0f}]",
             ha="center", fontsize=8, color="#2e7d32",
             bbox=dict(boxstyle="round", fc="white", ec="#2e7d32", alpha=0.95))
     # direct (bottom arrow)
     arrow(2.4, 7.2, 7.7, 7.2, "gray")
     ax.text(5.0, 6.85,
-            f"direct (full) = {m_full.loc['direct','estimate']:+.0f} S$/1000S$ "
-            f"(point est.)",
+            f"Direct path (rebate → price, not via bidding):\n"
+            f"{m_full.loc['direct','estimate']:+.0f} S$ per extra S$1k "
+            f"(point estimate)",
             ha="center", fontsize=7.4, color="gray",
             bbox=dict(boxstyle="round", fc="white", ec="gray", alpha=0.9))
     # verdict full
     ax.text(
         5.0, 6.35,
-        f"MEDIATED SHARE (full) = {m_full.loc['mediated_share','estimate']:+.3f} "
-        f"(CI95 [{m_full.loc['mediated_share','ci_lo']:+.3f}, "
-        f"{m_full.loc['mediated_share','ci_hi']:+.3f}]); "
-        f"indirect = {m_full.loc['indirect','estimate']:+.1f} "
-        f"[{m_full.loc['indirect','ci_lo']:+.1f}, {m_full.loc['indirect','ci_hi']:+.1f}]. "
-        "VERDICT: see report (CI spans 0 ⇒ NOT routed through bidding).",
-        ha="center", fontsize=7.6, color="#b23b3b",
+        f"Share of the effect routed through bidding (full window): "
+        f"{m_full.loc['mediated_share','estimate']:+.3f}\n"
+        f"(95% CI {m_full.loc['mediated_share','ci_lo']:+.3f}..{m_full.loc['mediated_share','ci_hi']:+.3f}); "
+        f"via-bidding path: {m_full.loc['indirect','estimate']:+.1f} S$ per extra S$1k\n"
+        f"(95% CI {m_full.loc['indirect','ci_lo']:+.1f}..{m_full.loc['indirect','ci_hi']:+.1f}). "
+        "The range includes 0, so the chain is not supported — see the report.",
+        ha="center", va="center", fontsize=7.6, color="#b23b3b",
         bbox=dict(boxstyle="round", fc="#fff5f5", ec="#b23b3b", lw=1.5, alpha=0.97),
     )
 
     # --- EV-ERA block (bottom) ---
-    ax.text(5.0, 5.6, "2022+ EV ERA — 2022-01..2025-05, 41 obs, dose 45000 -> 40000 "
-            "at 2024-01 (estimable: 2 dose levels in window)",
+    ax.text(5.0, 5.75, "EV ERA — 2022-01..2025-05, 41 months; max rebate "
+            "S$45k → S$40k at 2024-01 (two rebate levels in the window)",
             ha="center", fontsize=9, fontweight="bold", color="#b26a00")
     node(1.3, 3.7, 2.2, 1.8,
-         "EV rebate\n(dose, S$)\n2 levels:\n45000 (2022-23),\n40000 (2024+)")
+         "EV rebate\n(maximum, S$)\n2 levels:\n45k 2022-23\n40k 2024+")
     node(5.0, 3.7, 2.3, 1.8,
-         "Cat A bidding\ndemand\n(catA_bids_received_clean)\nTOTAL (non-EV-dominated)")
-    node(8.7, 3.7, 2.0, 1.8, "Cat A COE\nclearing\nprice\n(nominal S$)")
+         "Cat A bidding demand\n(bids received, corrected\nseries; includes\nnon-EV cars)")
+    node(8.7, 3.7, 2.0, 1.8, "Cat A COE\nprice\n(nominal S$)")
     arrow(2.4, 4.1, 3.9, 4.1, "#b23b3b")
-    ax.text(3.15, 4.55,
-            f"a = {e1_bid['coef']:+.1f} bids/1000S$\n(p={e1_bid['p']:.3f})",
-            ha="center", fontsize=7.4, color="#b23b3b",
+    ax.text(3.15, 4.62,
+            f"Step 1 (rebate → bidding):\n"
+            f"{e1_bid['coef']:+.1f} bids per extra S$1k of rebate\n"
+            f"(p={e1_bid['p']:.3f})"
+            + (", not significant" if e1_bid['p'] >= 0.05 else ""),
+            ha="center", va="center", fontsize=7.4, color="#b23b3b",
             bbox=dict(boxstyle="round", fc="white", ec="#b23b3b", alpha=0.9))
     arrow(6.15, 4.1, 7.7, 4.1, "#1f4e79")
-    ax.text(6.95, 4.55,
-            f"dose->price (E1) = {e1_price['coef']:+.1f} S$/1000S$\n"
-            f"[{e1_price['ci_lo']:+.1f}, {e1_price['ci_hi']:+.1f}] "
+    ax.text(6.95, 4.62,
+            f"Total effect (rebate → price), EV era:\n"
+            f"{e1_price['coef']:+.1f} S$ per extra S$1k\n"
+            f"[95%: {e1_price['ci_lo']:+.1f}..{e1_price['ci_hi']:+.1f}], "
             f"p={e1_price['p']:.3f}",
-            ha="center", fontsize=7.4, color="#1f4e79",
+            ha="center", va="center", fontsize=7.4, color="#1f4e79",
             bbox=dict(boxstyle="round", fc="white", ec="#1f4e79", alpha=0.9))
     arrow(2.4, 4.6, 7.7, 4.6, "#2e7d32")
-    ax.text(5.0, 5.05,
-            f"TOTAL (EV era) = {m_ev.loc['total','estimate']:+.0f} S$/1000S$ "
-            f"[{m_ev.loc['total','ci_lo']:+.0f}, {m_ev.loc['total','ci_hi']:+.0f}]",
-            ha="center", fontsize=8, color="#2e7d32",
+    ax.text(5.0, 5.3,
+            f"Total effect (rebate → price), EV era:\n"
+            f"{m_ev.loc['total','estimate']:+.0f} S$ per extra S$1k of "
+            f"rebate [95%: {m_ev.loc['total','ci_lo']:+.0f}..{m_ev.loc['total','ci_hi']:+.0f}]",
+            ha="center", va="center", fontsize=8, color="#2e7d32",
             bbox=dict(boxstyle="round", fc="white", ec="#2e7d32", alpha=0.95))
     arrow(2.4, 3.3, 7.7, 3.3, "gray")
     ax.text(5.0, 2.95,
-            f"direct (EV era) = {m_ev.loc['direct','estimate']:+.0f} S$/1000S$ "
-            f"(point est.)",
+            f"Direct path (rebate → price, not via bidding):\n"
+            f"{m_ev.loc['direct','estimate']:+.0f} S$ per extra S$1k "
+            f"(point estimate)",
             ha="center", fontsize=7.4, color="gray",
             bbox=dict(boxstyle="round", fc="white", ec="gray", alpha=0.9))
     ax.text(
-        5.0, 2.45,
-        f"MEDIATED SHARE (EV era) = {m_ev.loc['mediated_share','estimate']:+.3f} "
-        f"(CI95 [{m_ev.loc['mediated_share','ci_lo']:+.3f}, "
-        f"{m_ev.loc['mediated_share','ci_hi']:+.3f}]); "
-        f"indirect = {m_ev.loc['indirect','estimate']:+.1f} "
-        f"[{m_ev.loc['indirect','ci_lo']:+.1f}, {m_ev.loc['indirect','ci_hi']:+.1f}]. "
-        "41 obs, 2 dose levels → LOW POWER: wide CIs; associational, not causal.",
-        ha="center", fontsize=7.6, color="#b26a00",
+        5.0, 2.35,
+        f"Share of the effect routed through bidding (EV era): "
+        f"{m_ev.loc['mediated_share','estimate']:+.3f}\n"
+        f"(95% CI {m_ev.loc['mediated_share','ci_lo']:+.3f}..{m_ev.loc['mediated_share','ci_hi']:+.3f}); "
+        f"via-bidding path: {m_ev.loc['indirect','estimate']:+.1f} S$ per extra S$1k\n"
+        f"(95% CI {m_ev.loc['indirect','ci_lo']:+.1f}..{m_ev.loc['indirect','ci_hi']:+.1f}). "
+        "Only 41 months and two rebate levels, so\n"
+        "the uncertainty is wide — an association, not a causal effect.",
+        ha="center", va="center", fontsize=7.6, color="#b26a00",
         bbox=dict(boxstyle="round", fc="#fffaf0", ec="#b26a00", lw=1.5, alpha=0.97),
     )
     fig.tight_layout()

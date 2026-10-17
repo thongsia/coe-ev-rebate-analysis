@@ -319,8 +319,8 @@ not falsified on the 2022+ EV era, not isolating a clean EV effect on the full w
 | 1 | `charts/01_price_regime.png` | `tables/chart01_price_regime.csv` | Cat A clearing price (nominal + real) with the REAL policy markers (2018/2021/2024) + the 2022-01 confounder marker |
 | 2 | `charts/02_negative_control_2022.png` | `tables/chart02_negative_control_2022.csv` | negative-control check: 2022-01 % price jump by category (full window) |
 | 3 | `charts/03_negative_control_2024.png` | `tables/chart03_negative_control_2024.csv` | negative-control check: 2024-01 EEAI cap-cut step by category (2022+ EV era) |
-| 4 | `charts/04_ev_demand.png` | `tables/chart04_ev_demand.csv` | EV registrations + EV share 2022-07..2025-05, with the coverage-rate lower-bound decay note |
-| 5 | `charts/05_price_demand_dual.png` | `tables/chart05_price_demand_dual.csv` | dual-axis Cat A price vs CORRECTED Cat A bids received; 2022+ EV era shaded |
+| 4 | `charts/04_price_demand_dual.png` | `tables/chart04_price_demand_dual.csv` | Cat A COE price vs corrected Cat A bids, 2016-01..2025-05; 2022-01+ rebate era shaded, Jan 2024 cut marked |
+| 5 | `charts/05_ev_demand.png` | `tables/chart05_ev_demand.csv` | EV registrations + EV share 2022-07..2025-05 (lower bound; some months have no count); Jan 2024 rebate cut marked |
 | 6 | `charts/06_scatter_fit_ci.png` | `tables/chart06_scatter_fit_ci.csv` | price-vs-demand scatter with bivariate fitted line + 95% CI band (association only) |
 | 7 | `charts/07_mediation_diagram.png` | `tables/chart07_mediation_effects.csv` | mediation path (rebate → demand → price) with effect sizes for BOTH scopes |
 | 8 | `charts/08_event_study.png` | `tables/chart08_event_study.csv` | event-study coefficients with CIs for the 4 verified-policy events; pre-trend contamination annotated |

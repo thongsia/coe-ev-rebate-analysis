@@ -166,25 +166,28 @@ rise with rebate generosity. It didn't: the bidding numbers show no
 consistent, same-direction link to the rebate changes (in the EV era the
 statistical sign is even backwards, which is most consistent with noise and
 mixing in non-EV demand — Category A is still mostly non-EV cars). Figures 4
-and 5 show the EV uptake and the price-vs-bids relationship directly.
+and 5 show the price-vs-bids relationship and the EV uptake directly.
 
-**Figure 4.** Electric car registrations and their share of new-car sales,
+**Figure 4.** Category A COE price (left axis) vs number of bids received
+(right axis), over the full 2016-01..2025-05 window.
+
+![Category A COE price (left axis) vs number of bids received (right axis)](charts/04_price_demand_dual.png)
+
+*Price and bidding demand over the full window — note how weakly connected
+the two are. The bids series is a corrected one (the official column was
+missing for 19 months); the shaded area is the 2022-01..2023-12 era when
+the full S$45k rebate was in force, and the dashed line marks the Jan 2024
+cut to S$40k.*
+
+**Figure 5.** Electric car registrations and their share of new-car sales,
 with the data-coverage lower bound.
 
-![EV registrations and their share of new cars, with the data-coverage lower bound](charts/04_ev_demand.png)
+![EV registrations and their share of new cars, with the data-coverage lower bound](charts/05_ev_demand.png)
 
 *Electric car registrations and their share of new-car registrations from
 2022-07 (when the official EV label first appears); bars are a lower bound
 because some months have no count. The dashed line marks the Jan 2024 cut
 of the maximum rebate from S$45k to S$40k.*
-
-**Figure 5.** Category A COE price (left axis) vs number of bids received
-(right axis), over the same period.
-
-![Category A COE price (left axis) vs number of bids received (right axis)](charts/05_price_demand_dual.png)
-
-*Price and bidding demand over the same period — note how weakly connected
-the two are.*
 
 ### 4. Prices and bidding demand barely track each other
 
