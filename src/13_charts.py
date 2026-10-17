@@ -284,22 +284,33 @@ def chart04() -> None:
     df.to_csv(TABLES / "chart04_price_demand_dual.csv", index=False)
 
     fig, ax1 = plt.subplots(figsize=(11, 5.5))
+    # objective summary of the price–bids relationship (computed, not eyeballed):
+    df = df.sort_values("month")
+    r_level = float(np.corrcoef(df["nominal"], df["catA_bids_received_clean"])[0, 1])
+    dp = df["nominal"].diff().dropna()
+    db = np.log(df["catA_bids_received_clean"]).diff().dropna()
+    r_mom = float(np.corrcoef(dp, db)[0, 1])
     ax1.plot(df["ts"], df["nominal"], color="#1f4e79", lw=1.6,
              label="Cat A clearing price (nominal S$, left)")
     ax1.set_ylabel("Cat A clearing price (nominal S$)")
     ax1.set_title(
         "Chart 4 — Category A COE price vs number of bids received, "
         "2016-01..2025-05\n"
-        "(bids are a corrected series — the official column was missing for "
-        "19 months)",
+        "(bids series corrected: the published counts for 2023-10..2025-05 "
+        "would not parse — report §2.5)\n"
+        f"correlation of month-to-month changes: r = {r_mom:+.2f}; "
+        f"level correlation over the decade: r = {r_level:+.2f}",
     )
     ax2 = ax1.twinx()
     ax2.plot(df["ts"], df["catA_bids_received_clean"], color="#b23b3b", lw=1.4,
              label="Cat A bids received (corrected, right)")
     ax2.set_ylabel("Cat A bids received")
-    # the full S$45k rebate was in force 2022-01..2023-12 (shaded); the
-    # dashed line marks the Jan 2024 cut to S$40k.
-    ax1.axvspan(_p("2022-01"), df["ts"].max(), color="orange", alpha=0.07,
+    # shaded regions show the max EV rebate in force at each point in time:
+    # S$45k (2022-01..2023-12, lighter) then S$40k (2024-01 onward, darker);
+    # the dashed line marks the Jan 2024 cut.
+    ax1.axvspan(_p("2022-01"), _p("2023-12"), color="#d99a2b", alpha=0.10,
+                zorder=0)
+    ax1.axvspan(_p("2024-01"), df["ts"].max(), color="#d99a2b", alpha=0.22,
                 zorder=0)
     ax1.text(_p("2022-10"), ax1.get_ylim()[1] * 0.88, "max rebate S$45k",
              ha="center", fontsize=8, color="#666666")

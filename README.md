@@ -173,11 +173,14 @@ and 5 show the price-vs-bids relationship and the EV uptake directly.
 
 ![Category A COE price (left axis) vs number of bids received (right axis)](charts/04_price_demand_dual.png)
 
-*Price and bidding demand over the full window — note how weakly connected
-the two are. The bids series is a corrected one (the official column was
-missing for 19 months); the shaded area is the 2022-01..2023-12 era when
-the full S$45k rebate was in force, and the dashed line marks the Jan 2024
-cut to S$40k.*
+*Price and bidding demand over the full window. The two series move
+almost independently — the correlation of their month-to-month changes is
+r = 0.05 (the level correlation r = −0.47 is driven by the 2018–2020
+price spike coinciding with low bid levels). The bids series is a
+corrected one: the published counts for 2023-10..2025-05 would not parse
+(report §2.5). The shaded regions show the max EV rebate in force at each
+point: S\$45k (lighter, 2022-01..2023-12) and S\$40k (darker, 2024-01
+onward); the dashed line marks the Jan 2024 cut.*
 
 **Figure 5.** Electric car registrations and their share of new-car sales,
 with the data-coverage lower bound.
