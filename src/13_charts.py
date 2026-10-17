@@ -278,45 +278,40 @@ def chart04() -> None:
 
     fig, ax1 = plt.subplots(figsize=(11, 5))
     ax1.bar(ev["ts"], ev["ev_reg"], width=22, color="#2e7d32", alpha=0.85,
-            label="EV (BEV) registrations — LOWER BOUND (right axis = left)")
+            label="EV registrations per month (lower bound)")
     ax1.set_ylabel("EV registrations (per month)")
     ax1.set_title(
-        "Chart 4 — EV registrations & EV share of registrations, 2022-07..2025-05\n"
-        "DESCRIPTIVE ONLY — observed window: combined dose flat 45000 (2022-01..2023-12) "
-        "then 40000 (2024-01+)\n"
-        "series too short/censored for a coefficient; ev_reg is a lower bound",
+        "Chart 4 — EV registrations and their share of new-car "
+        "registrations, 2022-07..2025-05\n"
+        "(descriptive only; counts are a lower bound — some months have no "
+        "count)",
     )
     ax2 = ax1.twinx()
     ax2.plot(ev["ts"], ev["ev_share"] * 100, color="#1f4e79", lw=1.8,
              marker="o", ms=3, label="EV share of registrations (%)")
     ax2.set_ylabel("EV share of registrations (%)")
-    # mark the 2024-01 dose step
-    ax1.axvline(_p("2024-01"), color="#b26a00", ls="--", lw=1.2, alpha=0.8)
-    ax1.annotate("2024-01: EEAI cap 20k->15k (dose 45000->40000)",
-                 xy=(_p("2024-02"), ax1.get_ylim()[1] * 0.97), fontsize=7.5,
-                 color="#b26a00")
+    # rebate level in force during the window, and where it changed:
+    # S$45k (from the Jan 2022 ARF-floor change) until Dec 2023, then
+    # S$40k after the Jan 2024 EEAI cap cut.
+    ax1.axvspan(_p("2024-01"), ev["ts"].max(), color="#b26a00", alpha=0.07,
+                zorder=0)
+    ax1.axvline(_p("2024-01"), color="#b26a00", ls="--", lw=1.2, alpha=0.85,
+                zorder=4)
+    ax1.annotate(
+        "Jan 2024: max rebate cut S$45k → S$40k",
+        xy=(_p("2024-03"), ax1.get_ylim()[1] * 0.97), fontsize=8,
+        color="#8a4b00", fontweight="bold",
+    )
+    ax1.text(_p("2023-02"), ax1.get_ylim()[1] * 0.88, "max rebate S$45k",
+             ha="center", fontsize=8, color="#666666")
+    ax1.text(_p("2024-10"), ax1.get_ylim()[1] * 0.88, "max rebate S$40k",
+             ha="center", fontsize=8, color="#8a4b00")
     ax1.legend(loc="upper left")
     ax2.legend(loc="center left")
-    # coverage lower-bound note — bottom caption band:
-    # as an in-axis top-right box it was hidden behind the upper-left legend
     ax1.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
     ax1.xaxis.set_major_locator(mdates.MonthLocator(bymonth=(1, 7)))
     fig.autofmt_xdate()
     fig.tight_layout()
-    cov = ev["coverage_rate"]
-    note = (
-        f"coverage_rate (share of raw rows with an observed count) decays "
-        f"{cov.min()*100:.0f}% → {cov.max()*100:.0f}% over the window "
-        f"(mean {cov.mean()*100:.0f}%) ⇒ ev_reg is a LOWER BOUND that weakens over time. "
-        "First BEV label appears 2022-07; the series is right-truncated at 2025-05 "
-        "(joint window end)."
-    )
-    fig.text(
-        0.01, 0.015, textwrap.fill(note, width=165),
-        ha="left", va="bottom", fontsize=7.5, color="#222222",
-        bbox=dict(boxstyle="round,pad=0.4", fc="#f5f5f5", ec="gray", alpha=0.95),
-    )
-    fig.subplots_adjust(bottom=0.17)
     fig.savefig(CHARTS / "04_ev_demand.png")
     plt.close(fig)
     print("[chart04] wrote charts/04_ev_demand.png + tables/chart04_ev_demand.csv")

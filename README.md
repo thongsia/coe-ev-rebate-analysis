@@ -173,9 +173,10 @@ with the data-coverage lower bound.
 
 ![EV registrations and their share of new cars, with the data-coverage lower bound](charts/04_ev_demand.png)
 
-*Electric car registrations and their share of new-car sales from 2022
-(when the official EV label first appeared). The dashed line is a lower bound
-due to missing counts.*
+*Electric car registrations and their share of new-car registrations from
+2022-07 (when the official EV label first appears); bars are a lower bound
+because some months have no count. The dashed line marks the Jan 2024 cut
+of the maximum rebate from S$45k to S$40k.*
 
 **Figure 5.** Category A COE price (left axis) vs number of bids received
 (right axis), over the same period.
