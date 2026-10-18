@@ -1,4 +1,4 @@
-# Do electric car rebates make people bid more for COEs?
+# Do electric car rebates drive more bidding demand for COEs?
 _Disclaimer: This analysis was prompted by a human, then initially designed and carried out by an AI agent (Hermes + Qwen3.8-27B + [AIOS skillset](https://github.com/thongsia/aios)), and finally edited collaboratively between the two._
 
 Singapore's EV rebates (VES, EEAI, and their predecessors) can save car
@@ -30,8 +30,8 @@ The honest result has two parts:
   This is real, but small-sample and **associational**: it shows prices and
   rebates moved together, not that rebates *caused* the price change.
 
-Bottom line: **we cannot find convincing evidence that EV rebates make
-bidders bid more.** The study deliberately says "we can't detect it" rather
+Bottom line: **we cannot find convincing evidence that EV rebates
+drive more bidding demand.** The study deliberately says "we can't detect it" rather
 than pretending to measure a precise effect that the data can't support.
 
 The full write-up, with all statistics, is in [`docs/REPORT.md`](docs/REPORT.md).
@@ -42,7 +42,7 @@ Three public, free datasets from [data.gov.sg](https://data.gov.sg):
 
 | Data | What it tells us |
 |---|---|
-| COE bidding results (2010 → 2026) | Every auction's final price, how many people bid, and how many quotas were sold, by car category |
+| COE bidding results (2010 → 2026) | Every auction's final price, how many bids were received, and how many quotas were sold, by car category. In practice the bids are placed mostly by car dealers on their customers' behalf, as part of the car sale — not by the customers themselves |
 | Monthly car registrations (2016 → 2025) | How many electric vs hybrid vs petrol cars were registered each month |
 | Consumer price index (monthly) | Inflation, so we can compare prices in "real" (inflation-adjusted) dollars |
 
@@ -168,14 +168,16 @@ drop), each measured over the 2022–2025 window.
 open category E, where EV cars can bid) by ~23–37%, while the two rebate-free
 categories (C goods, D motorcycles) move only ~7–8%.*
 
-### 4.3. Rebates did not make more people bid
+### 4.3. Rebates did not drive more bidding demand
 
-If the rebate story were true, we'd expect bidding demand in Category A to
-rise with rebate generosity. It didn't: the bidding numbers show no
-consistent, same-direction link to the rebate changes (in the EV era the
-statistical sign is even backwards, which is most consistent with noise and
-mixing in non-EV demand — Category A is still mostly non-EV cars). Figures 4
-and 5 show the price-vs-bids relationship and the EV uptake directly.
+If the rebate story were true, more customers would want an EV, and the
+bidding demand in Category A — the bids are placed mostly by car dealers on
+their customers' behalf — would rise with rebate generosity. It didn't: the
+bidding numbers show no consistent, same-direction link to the rebate
+changes (in the EV era the statistical sign is even backwards, which is most
+consistent with noise and mixing in non-EV demand — Category A is still
+mostly non-EV cars). Figures 4 and 5 show the price-vs-bids relationship
+and the EV uptake directly.
 
 **Figure 4.** Category A COE price (left axis) vs number of bids received
 (right axis), over the full 2016-01..2025-05 window.
@@ -212,7 +214,7 @@ the best-fit line and its uncertainty band.
 
 *The fit line is nearly flat — more bids did not reliably mean higher prices.*
 
-### 4.5. The "rebate → more bidders → higher price" chain is broken
+### 4.5. The "rebate → more bids → higher price" chain is broken
 
 We also decomposed the effect the way the hypothesis describes: rebate →
 bidding demand → price. The middle link (rebate affecting bidding) is null,

@@ -1,6 +1,6 @@
 # STATS SUMMARY — one page (verified real policy)
 
-**Question:** does the EV-rebate offer cause COE bidders to bid more?  
+**Question:** does the EV-rebate offer drive more COE bidding demand?  
 **Answer (honest, dual-scope):** full window (primary) = **not detectable** as a robust EV-specific
 effect (the 2022-01 ARF-floor effect is not robust, p=0.064, and is a tax/threshold confounder; the
 2022-01 negative-control test is MIXED — clean controls C/D split — and the effect is not credited to the rebate). 2022+ EV

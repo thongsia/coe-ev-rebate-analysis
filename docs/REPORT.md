@@ -1,4 +1,4 @@
-# Do EV rebates make COE bidders bid more? — Final report
+# Do EV rebates drive more COE bidding demand? — Final report
 
 > **Scope and policy basis.** The analysis covers 2016-01..2025-05 and uses the verified
 > real Singapore rebate timeline (CEVS -> VES 2018 -> enhanced VES + EEAI 2021 -> $0 ARF floor
@@ -174,10 +174,10 @@ causal magnitude). → **charts/01_price_regime.png**
 | **2022+ EV era** | dose | dose_1000 | -111.5 | [-190.0, -32.9] | 0.00541 | — | **opposite sign (negative)** |
 | **2022+ EV era** | dummy | cap-cut step | +557.3 | [+164.6, +949.9] | 0.00541 | — | pos. but low power |
 
-**Honest read:** the predicted direction for 'bidders bid more' is coefficient > 0. Full-window,
+**Honest read:** the predicted direction for 'more bids placed' is coefficient > 0. Full-window,
 the 2024-01 step is positive and HC1-significant (but the dose version is null). On the 2022+ EV
 era the dose coefficient is **negative** (opposite the hypothesised direction) — the bidding
-channel does NOT cleanly support 'the rebate causes bidders to bid more'. Total Cat A demand is
+channel does NOT cleanly support 'the rebate drives more bidding demand'. Total Cat A demand is
 dominated by non-EV cars; the EV signal is material only from ~2022. Grade: directionally
 consistent (full) / not detectable (2022+).
 
@@ -291,9 +291,9 @@ not falsified on the 2022+ EV era, not isolating a clean EV effect on the full w
    per $1,000 of *available* rebate capacity, not per $1,000 actually received.
 4. **41-obs 2022+ EV-era power.** The newly-estimable 2022+ scope has only 41 observations and 2
    dose levels — LOW POWER, wide CIs; the 'supported' grade there is associational, not a causal magnitude.
-5. **Aggregate-only; no bid-level data.** Bids are counts, not bid distributions; 'bidders bid
-   more' (bid amounts) is not directly observable.
-6. **Total vs EV demand.** Cat A bid counts mix EV and non-EV bidders; total Cat A demand is
+5. **Aggregate-only; no bid-level data.** Bids are counts, not bid distributions; 'more bids
+   placed' (bid amounts) is not directly observable.
+6. **Total vs EV demand.** Cat A bid counts mix bids for EV and non-EV cars; total Cat A demand is
    dominated by non-EV cars, diluting any EV-specific bidding effect.
 7. **Endogeneity / simultaneity** (§4): rebate policy responds to EV demand.
 8. **Event-window confounding.** All 4 event-study episodes have contaminated pre-trends; onsets

@@ -360,7 +360,7 @@ def build_report(v: dict) -> str:
     gh = v["grade_head_full"]
     ge = v["grade_head_ev"]
 
-    A("# Do EV rebates make COE bidders bid more? — Final report")
+    A("# Do EV rebates drive more COE bidding demand? — Final report")
     A("")
     A("> **Scope and policy basis.** The analysis covers 2016-01..2025-05 and uses the verified")
     A("> real Singapore rebate timeline (CEVS -> VES 2018 -> enhanced VES + EEAI 2021 -> $0 ARF floor")
@@ -607,10 +607,10 @@ def build_report(v: dict) -> str:
       f"[{v['bd22_step']['ci_lo']:+,.1f}, {v['bd22_step']['ci_hi']:+,.1f}] | {fp(v['bd22_step']['p'])} | — | "
       f"pos. but low power |")
     A("")
-    A("**Honest read:** the predicted direction for 'bidders bid more' is coefficient > 0. Full-window,")
+    A("**Honest read:** the predicted direction for 'more bids placed' is coefficient > 0. Full-window,")
     A("the 2024-01 step is positive and HC1-significant (but the dose version is null). On the 2022+ EV")
     A("era the dose coefficient is **negative** (opposite the hypothesised direction) — the bidding")
-    A("channel does NOT cleanly support 'the rebate causes bidders to bid more'. Total Cat A demand is")
+    A("channel does NOT cleanly support 'the rebate drives more bidding demand'. Total Cat A demand is")
     A("dominated by non-EV cars; the EV signal is material only from ~2022. Grade: directionally")
     A("consistent (full) / not detectable (2022+).")
     A("")
@@ -782,9 +782,9 @@ def build_report(v: dict) -> str:
     A("   per $1,000 of *available* rebate capacity, not per $1,000 actually received.")
     A("4. **41-obs 2022+ EV-era power.** The newly-estimable 2022+ scope has only 41 observations and 2")
     A("   dose levels — LOW POWER, wide CIs; the 'supported' grade there is associational, not a causal magnitude.")
-    A("5. **Aggregate-only; no bid-level data.** Bids are counts, not bid distributions; 'bidders bid")
-    A("   more' (bid amounts) is not directly observable.")
-    A("6. **Total vs EV demand.** Cat A bid counts mix EV and non-EV bidders; total Cat A demand is")
+    A("5. **Aggregate-only; no bid-level data.** Bids are counts, not bid distributions; 'more bids")
+    A("   placed' (bid amounts) is not directly observable.")
+    A("6. **Total vs EV demand.** Cat A bid counts mix bids for EV and non-EV cars; total Cat A demand is")
     A("   dominated by non-EV cars, diluting any EV-specific bidding effect.")
     A("7. **Endogeneity / simultaneity** (§4): rebate policy responds to EV demand.")
     A("8. **Event-window confounding.** All 4 event-study episodes have contaminated pre-trends; onsets")
@@ -847,7 +847,7 @@ def build_stats(v: dict) -> str:
     nc24 = v["nc_2024"]
     A("# STATS SUMMARY — one page (verified real policy)")
     A("")
-    A("**Question:** does the EV-rebate offer cause COE bidders to bid more?  ")
+    A("**Question:** does the EV-rebate offer drive more COE bidding demand?  ")
     A("**Answer (honest, dual-scope):** full window (primary) = **not detectable** as a robust EV-specific")
     A("effect (the 2022-01 ARF-floor effect is not robust, p=0.064, and is a tax/threshold confounder; the")
     A("2022-01 negative-control test is MIXED — clean controls C/D split — and the effect is not credited to the rebate). 2022+ EV")
