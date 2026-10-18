@@ -16,7 +16,7 @@ of the headline estimates (charts 7, 8).
 Nothing here is presented as a clean causal effect.
 
 Layout (8 charts):
-  01  Cat A price (nominal + real) with the REAL policy markers (2018-01,
+  01  Cat A price (nominal) with the REAL policy markers (2018-01,
       2021-01, 2024-01) + the 2022-01 97->110kW confounder marker.
   02  negative-control check: 2022-01 % price jump by category (full window).
   03  negative-control check: 2024-01 EEAI cap-cut step by category
@@ -92,7 +92,7 @@ def _p(s: str) -> pd.Timestamp:
 
 
 # ===========================================================================
-# Chart 1 — Cat A clearing price (nominal + real) with REAL policy markers
+# Chart 1 — Cat A clearing price (nominal) with verified policy markers
 #            and the Jan-2022 confounder (ARF floor + 97->110kW threshold).
 # ===========================================================================
 def chart01() -> None:
@@ -100,7 +100,6 @@ def chart01() -> None:
     cpi = pd.read_csv(ROOT / "data/processed/cpi_deflated.csv").set_index("month")
     df = panel[["month"]].copy()
     df["nominal"] = cpi.reindex(df["month"])["catA_clearing_price"].to_numpy()
-    df["real"] = cpi.reindex(df["month"])["catA_clearing_price_real"].to_numpy()
     df["catC"] = panel["catC_clearing_price"]
     df["catD"] = panel["catD_clearing_price"]
     df["catE"] = panel["catE_clearing_price"]
@@ -108,45 +107,40 @@ def chart01() -> None:
     df = df[df["nominal"].notna()]  # drop 3 pandemic months
     df.to_csv(TABLES / "chart01_price_regime.csv", index=False)
 
-    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(11, 7))
-    ax1.plot(df["ts"], df["nominal"], color="#1f4e79", lw=1.6,
-             label="Cat A clearing price — nominal S$")
-    ax1.set_ylabel("Nominal S$")
-    ax1.set_title(
+    fig, ax = plt.subplots(figsize=(11, 4.4))
+    ax.plot(df["ts"], df["nominal"], color="#1f4e79", lw=1.6,
+            label="Cat A clearing price — nominal S$")
+    ax.set_ylabel("Nominal S$")
+    ax.set_xlabel("Month")
+    ax.set_title(
         "Chart 1 — Category A COE clearing price, 2016-01..2025-05 (verified policy)\n"
         "Dotted lines: EV-rebate changes.   Dashed red line: Jan 2022 tax + "
         "threshold change (not a rebate)",
         pad=12,
     )
-    ax2.plot(df["ts"], df["real"], color="#b23b3b", lw=1.6,
-             label="Cat A clearing price — real S$ (2024 base; CPI All Items)")
-    ax2.set_ylabel("Real S$")
-    ax2.set_xlabel("Month")
 
     # Headroom above the data line so the marker labels have their own band
     # and never touch (or get hidden behind) the price line.
-    for ax, ycol in ((ax1, "nominal"), (ax2, "real")):
-        ymin, ymax = df[ycol].min(), df[ycol].max()
-        ax.set_ylim(ymin - 0.05 * (ymax - ymin), ymax * 1.18)
-        for m in POLICY_MARKS:
-            ax.axvline(_p(m), color="gray", ls=":", lw=1, alpha=0.8)
-        # confounder marker (2022-01), emphasised
-        ax.axvline(_p("2022-01"), color="#b23b3b", ls="--", lw=1.4, alpha=0.9)
+    ymin, ymax = df["nominal"].min(), df["nominal"].max()
+    ax.set_ylim(ymin - 0.05 * (ymax - ymin), ymax * 1.18)
+    for m in POLICY_MARKS:
+        ax.axvline(_p(m), color="gray", ls=":", lw=1, alpha=0.8)
+    # confounder marker (2022-01), emphasised
+    ax.axvline(_p("2022-01"), color="#b23b3b", ls="--", lw=1.4, alpha=0.9)
 
-    # Marker labels — top panel only (the lines continue on the bottom
-    # panel). x in data units, y in axes fraction, staggered so no two
-    # labels share a row.
-    blend = blended_transform_factory(ax1.transData, ax1.transAxes)
-    ax1.text(_p("2018-01"), 0.95, "Jan 2018 — VES starts (rebate ~S$25k)",
-             transform=blend, fontsize=7.5, color="#444444", ha="left")
-    ax1.text(_p("2024-01"), 0.95, "Jan 2024 — EEAI cap cut (rebate → S$40k)",
-             transform=blend, fontsize=7.5, color="#444444", ha="right")
-    ax1.text(_p("2021-01"), 0.87,
-             "Jan 2021 — Enhanced VES + EEAI (rebate → S$45k)",
-             transform=blend, fontsize=7.5, color="#444444", ha="left")
-    ax1.annotate(
+    # Marker labels — x in data units, y in axes fraction, staggered so no
+    # two labels share a row.
+    blend = blended_transform_factory(ax.transData, ax.transAxes)
+    ax.text(_p("2018-01"), 0.95, "Jan 2018 — VES starts (rebate ~S$25k)",
+            transform=blend, fontsize=7.5, color="#444444", ha="left")
+    ax.text(_p("2024-01"), 0.95, "Jan 2024 — EEAI cap cut (rebate → S$40k)",
+            transform=blend, fontsize=7.5, color="#444444", ha="right")
+    ax.text(_p("2021-01"), 0.87,
+            "Jan 2021 — Enhanced VES + EEAI (rebate → S$45k)",
+            transform=blend, fontsize=7.5, color="#444444", ha="left")
+    ax.annotate(
         "Jan 2022 — EV tax cut + engine-threshold change (not a rebate)",
-        xy=(_p("2022-01"), 0.30 * ax1.get_ylim()[1]),
+        xy=(_p("2022-01"), 0.30 * ax.get_ylim()[1]),
         xytext=(_p("2022-01"), 0.22),
         xycoords="data", textcoords=blend,
         fontsize=8, color="#b23b3b", ha="left",
@@ -154,12 +148,9 @@ def chart01() -> None:
         arrowprops=dict(arrowstyle="->", color="#b23b3b", lw=1,
                         shrinkA=3, shrinkB=1),
     )
-    ax1.legend(loc="lower left")
-    ax2.legend(loc="lower right")
-    ax1.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
-    ax1.xaxis.set_major_locator(mdates.YearLocator())
-    ax2.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
-    ax2.xaxis.set_major_locator(mdates.YearLocator())
+    ax.legend(loc="lower left")
+    ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y-%m"))
+    ax.xaxis.set_major_locator(mdates.YearLocator())
     fig.autofmt_xdate()
     fig.tight_layout()
     fig.savefig(CHARTS / "01_price_regime.png")

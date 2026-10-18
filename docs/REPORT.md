@@ -314,7 +314,7 @@ not falsified on the 2022+ EV era, not isolating a clean EV effect on the full w
 
 | Chart | File | Data table | What it shows |
 |---|---|---|---|
-| 1 | `charts/01_price_regime.png` | `tables/chart01_price_regime.csv` | Cat A clearing price (nominal + real) with the REAL policy markers (2018/2021/2024) + the 2022-01 confounder marker |
+| 1 | `charts/01_price_regime.png` | `tables/chart01_price_regime.csv` | Cat A clearing price (nominal) with the verified policy markers (2018/2021/2024) + the 2022-01 tax/threshold confounder marker |
 | 2 | `charts/02_negative_control_2022.png` | `tables/chart02_negative_control_2022.csv` | negative-control check: 2022-01 % price jump by category (full window) |
 | 3 | `charts/03_negative_control_2024.png` | `tables/chart03_negative_control_2024.csv` | negative-control check: 2024-01 EEAI cap-cut step by category (2022+ EV era) |
 | 4 | `charts/04_price_demand_dual.png` | `tables/chart04_price_demand_dual.csv` | Cat A COE price vs Cat A bids received, 2016-01..2025-05; 2022-01+ rebate era shaded, Jan 2024 cut marked |

@@ -95,8 +95,8 @@ with sources is in `tables/rebate_timeline.csv`.
 ### 4.1. The big 2022 price jump was not caused by the rebates
 
 Category A prices rose about **20%** in early 2022 — roughly S$12,000
-above the late-2021 level by Mar 2022, and still ~18% after adjusting for
-inflation (Figure 1). The timing lines up with two rules that changed in
+above the Dec 2021 level by Mar 2022 (Figure 1), and still ~18% after
+adjusting for inflation. The timing lines up with two rules that changed in
 Jan 2022: electric cars stopped paying a minimum registration tax, and the
 category's engine-power threshold was raised. The jump itself arrived in
 Feb–Mar, rather than in the month of the changes.
@@ -104,11 +104,10 @@ Feb–Mar, rather than in the month of the changes.
 **Figure 1.** Category A COE clearing price, 2016–2025, with the verified
 policy changes marked.
 
-![Category A COE prices over time, nominal and inflation-adjusted, with the verified policy changes marked](charts/01_price_regime.png)
+![Category A COE clearing price over time, with the verified policy changes marked](charts/01_price_regime.png)
 
-*Top: nominal prices. Bottom: inflation-adjusted prices. Dotted gray lines
-mark the verified policy changes; the dashed red line marks the Jan 2022
-tax/threshold change.*
+*Nominal prices. Dotted gray lines mark the verified policy changes; the
+dashed red line marks the Jan 2022 tax/threshold change.*
 
 What the categories say: **of the two categories where no EV rebate ever
 applies (C: goods vehicles & buses; D: motorcycles), only D moved like A —
