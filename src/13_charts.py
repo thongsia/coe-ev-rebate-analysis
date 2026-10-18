@@ -424,9 +424,9 @@ def chart06() -> None:
             {
                 "item": "note",
                 "value": (
-                    "BIVARIATE descriptive fit (price ~ bids_received) on the CORRECTED "
-                    "series, 110 COE months, HC1 SEs. NOT a causal exhibit; no regime "
-                    "dummies / trend / controls. Association only."
+                    "BIVARIATE descriptive fit (price ~ bids_received), 110 COE months, "
+                    "HC1 SEs. NOT a causal exhibit; no regime dummies / trend / "
+                    "controls. Association only."
                 ),
             },
         ]
@@ -440,16 +440,15 @@ def chart06() -> None:
     ax.scatter(df["x"], df["price"], s=18, alpha=0.55, color="#1f4e79",
                label="monthly obs (2016-01..2025-05, n=110)")
     ax.plot(grid, mean, color="#b23b3b", lw=2,
-            label=f"OLS fit: slope={res.params['x']:.2f} S$/bid "
-                  f"(CI95 [{res.conf_int().loc['x',0]:.2f}, {res.conf_int().loc['x',1]:.2f}])")
+            label=f"linear fit: {res.params['x']:.2f} S$ per bid "
+                  f"(95% CI [{res.conf_int().loc['x',0]:.2f}, {res.conf_int().loc['x',1]:.2f}])")
     ax.fill_between(grid, lo, hi, color="#b23b3b", alpha=0.15,
                     label="95% CI for the mean response")
-    ax.set_xlabel("Cat A bids received (CORRECTED series)")
+    ax.set_xlabel("Cat A bids received (number of bids per COE month)")
     ax.set_ylabel("Cat A clearing price (nominal S$)")
     ax.set_title(
-        "Chart 6 — Cat A price vs demand: scatter + fitted line + 95% CI\n"
-        "BIVARIATE association only (no controls); see the price equation\n"
-        "for the demand term's own (lags, controls) significance",
+        "Chart 6 — Cat A price vs bidding demand, full 2016-01..2025-05 window\n"
+        "Simple linear fit — association only, no controls",
     )
     ax.legend(loc="upper left", fontsize=8)
     fig.tight_layout()

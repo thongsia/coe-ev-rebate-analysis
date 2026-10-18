@@ -227,14 +227,23 @@ of the maximum rebate from S$45k to S$40k; adoption kept rising after it.*
 ### 4.5. Prices and bidding demand barely track each other
 
 A basic requirement for "more bidding → higher prices" is that price and
-bids actually move together. Across the decade they mostly don't (Figure 6).
+bids actually move together. Across the decade they don't — in fact the
+decade-level relationship runs the wrong way (months with more bids had
+*lower* prices, Figure 6), and month to month the two series barely
+track each other.
 
 **Figure 6.** Each dot is a month: Category A price vs bids received, with
 the best-fit line and its uncertainty band.
 
 ![Each dot is a month: Category A price vs bids received, with the best-fit line and uncertainty band](charts/06_scatter_fit_ci.png)
 
-*The fit line is nearly flat — more bids did not reliably mean higher prices.*
+*Simple linear fit (association only, no controls): the slope is not
+flat — it is negative. Months with more bids had lower prices (about
+−S$7.4k per additional 1,000 bids; 95% CI −S$9.5k to −S$5.2k;
+p < 0.001; level correlation r = −0.47) — the opposite of what the
+"more bids → higher prices" mechanism predicts. Month to month the two
+series barely track each other (correlation of changes r = +0.11):
+more bids did not reliably translate into higher prices.*
 
 ### 4.6. The "rebate → more bids → higher price" chain is broken
 

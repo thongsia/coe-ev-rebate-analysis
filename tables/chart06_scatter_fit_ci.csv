@@ -407,4 +407,4 @@ slope_per_bid,-7.357522137364557
 slope_ci95_lo,-9.498841146922453
 slope_ci95_hi,-5.216203127806661
 slope_p,1.6461851521901206e-11
-note,"BIVARIATE descriptive fit (price ~ bids_received) on the CORRECTED series, 110 COE months, HC1 SEs. NOT a causal exhibit; no regime dummies / trend / controls. Association only."
+note,"BIVARIATE descriptive fit (price ~ bids_received), 110 COE months, HC1 SEs. NOT a causal exhibit; no regime dummies / trend / controls. Association only."
