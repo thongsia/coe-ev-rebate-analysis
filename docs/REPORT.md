@@ -184,6 +184,7 @@ consistent (full) / not detectable (2022+).
 ### 3.3 Registration channel (rebate → EV registrations) — `tables/ev_registrations_descriptive.csv` (DESCRIPTIVE ONLY)
 
 Observed BEV window 2022-07..2025-05 (35 months): mean 854 registrations/month (min 241, max 2,014); mean EV share 25.8% (max 43.0%); cumulative 29,899; coverage decays 18%→33%. The observed BEV window is too short and right-truncated (and `ev_reg` is a lower bound) to estimate a coefficient on this channel — **descriptive only**. Grade: not detectable.
+Adoption kept rising after the Jan 2024 cap cut: mean 1,311 registrations/month in 2024-01..2025-05 vs 423 in 2022-07..2023-12 (EV share 35% vs 17%) — the first link of the chain (rebate → EV demand) does not track the rebate level.
 
 ### 3.4 Mediation (rebate → bidding demand → price) — `tables/mediation_effects.csv`
 

@@ -321,6 +321,14 @@ def pull() -> dict:
     v["ev_cum"] = float(s.loc["SUMMARY_cumulative_ev_reg", "ev_reg"])
     v["ev_cov_min"] = float(s.loc["SUMMARY_min_coverage", "ev_reg"])
     v["ev_cov_max"] = float(s.loc["SUMMARY_max_coverage", "ev_reg"])
+    _evm = ev[~ev["month"].astype(str).str.startswith("SUMMARY_")].copy()
+    _evm["month"] = _evm["month"].astype(str)
+    _pre = _evm[(_evm["month"] >= "2022-07") & (_evm["month"] <= "2023-12")]
+    _post = _evm[(_evm["month"] >= "2024-01") & (_evm["month"] <= "2025-05")]
+    v["ev_pre_cut_mean"] = float(_pre["ev_reg"].mean())
+    v["ev_post_cut_mean"] = float(_post["ev_reg"].mean())
+    v["ev_pre_cut_share"] = float(_pre["ev_share"].mean())
+    v["ev_post_cut_share"] = float(_post["ev_share"].mean())
 
     # ---- dose / audit ----
     ds = pd.read_csv(TABLES / "dose_summary.csv").set_index("item")
@@ -622,6 +630,10 @@ def build_report(v: dict) -> str:
       f"{v['ev_cov_min']*100:.0f}%→{v['ev_cov_max']*100:.0f}%. The observed BEV window is too short and right-truncated "
       "(and `ev_reg` is a lower bound) to estimate a coefficient on this channel — **descriptive only**. "
       "Grade: not detectable.")
+    A(f"Adoption kept rising after the Jan 2024 cap cut: mean {v['ev_post_cut_mean']:,.0f} "
+      f"registrations/month in 2024-01..2025-05 vs {v['ev_pre_cut_mean']:,.0f} in 2022-07..2023-12 (EV share "
+      f"{v['ev_post_cut_share']*100:.0f}% vs {v['ev_pre_cut_share']*100:.0f}%) — the first link of the chain "
+      f"(rebate → EV demand) does not track the rebate level.")
     A("")
     A("### 3.4 Mediation (rebate → bidding demand → price) — `tables/mediation_effects.csv`")
     A("")

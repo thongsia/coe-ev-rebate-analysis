@@ -176,8 +176,8 @@ their customers' behalf — would rise with rebate generosity. It didn't: the
 bidding numbers show no consistent, same-direction link to the rebate
 changes (in the EV era the statistical sign is even backwards, which is most
 consistent with noise and mixing in non-EV demand — Category A is still
-mostly non-EV cars). Figures 4 and 5 show the price-vs-bids relationship
-and the EV uptake directly.
+mostly non-EV cars). Figure 4 shows the price-vs-bids relationship
+directly; the EV uptake (Figure 5) is examined in section 4.4.
 
 **Figure 4.** Category A COE price (left axis) vs number of bids received
 (right axis), over the full 2016-01..2025-05 window.
@@ -192,6 +192,28 @@ max EV rebate in force at each point: S\$45k (lighter, 2022-01..2023-12)
 and S\$40k (darker, 2024-01 onward); the dashed line marks the Jan 2024
 cut.*
 
+### 4.4. EV adoption more than tripled — and did not follow the rebate
+
+Figure 5 is the only direct look at the first link of the hypothesized
+chain (rebate → more EV demand → more bids → higher price):
+
+- Electric car registrations grew from about 420/month on average before
+  the Jan 2024 cut to about 1,310/month after it — EVs went from
+  ~12–17% of new cars (2022) to 35–43% (2024–25).
+- The cut itself (S$45k → S$40k maximum rebate, dashed line) did not dent
+  the trend: registrations dipped in Jan 2024, then kept climbing. EV
+  uptake was growing for reasons other than the rebate — falling EV
+  prices, model supply, charging build-out — and the rebate was not
+  driving it.
+
+That is what breaks the chain: the demand side does not track the rebate
+level, so the via-bidding path (Figure 7) comes out null. Policy was also
+set in response to this very uptake — rebate and demand move together by
+construction, which is part of why the study cannot credit the rebates
+with the prices. (Bound: the series starts 2022-07, runs 35 months, and
+is a lower bound on the true counts, so this is descriptive evidence, not
+a measured effect.)
+
 **Figure 5.** Electric car registrations and their share of new-car sales,
 with the data-coverage lower bound.
 
@@ -200,9 +222,9 @@ with the data-coverage lower bound.
 *Electric car registrations and their share of new-car registrations from
 2022-07 (when the official EV label first appears); bars are a lower bound
 because some months have no count. The dashed line marks the Jan 2024 cut
-of the maximum rebate from S$45k to S$40k.*
+of the maximum rebate from S$45k to S$40k; adoption kept rising after it.*
 
-### 4.4. Prices and bidding demand barely track each other
+### 4.5. Prices and bidding demand barely track each other
 
 A basic requirement for "more bidding → higher prices" is that price and
 bids actually move together. Across the decade they mostly don't (Figure 6).
@@ -214,7 +236,7 @@ the best-fit line and its uncertainty band.
 
 *The fit line is nearly flat — more bids did not reliably mean higher prices.*
 
-### 4.5. The "rebate → more bids → higher price" chain is broken
+### 4.6. The "rebate → more bids → higher price" chain is broken
 
 We also decomposed the effect the way the hypothesis describes: rebate →
 bidding demand → price. The middle link (rebate affecting bidding) is null,
@@ -229,7 +251,7 @@ with the estimated size of each step for both time windows.
 *The indirect (via-bidding) path is statistically indistinguishable from
 zero in both time windows.*
 
-### 4.6. Looking at each policy change individually doesn't help either
+### 4.7. Looking at each policy change individually doesn't help either
 
 An "event study" examines prices around each of the four policy changes.
 Every single one shows the price was already drifting in that direction
@@ -246,13 +268,14 @@ changes, with uncertainty bars.
 cut). The left side of each panel (months *before* the change) already shows
 large non-zero moves — the pre-trend problem.*
 
-### 4.7. What we can and can't claim
+### 4.8. What we can and can't claim
 
 - **Can claim:** no detectable EV-specific effect of the rebates on COE
   prices or bidding across the decade; the 2022 price jump showed up in
   categories without EV rebates too (market-wide);
   prices and bidding demand are weakly related; the via-bidding chain is
-  broken.
+  broken; EV adoption more than tripled but did not track the rebate
+  level — it kept rising after the Jan 2024 cut.
 - **Can't claim:** a precise "rebates raise prices by X" number. The rebate
   policy was itself *set in response to* EV demand (policy and outcome move
   together by construction), the samples are small, and the one detected
