@@ -11,7 +11,7 @@ This repo contains a data-driven study of exactly that question, using a full
 decade of official COE auction results, car registration data, and the
 verified real rebate policy timeline.
 
-## The short answer
+## 1. The short answer
 
 The honest result has two parts:
 
@@ -36,7 +36,7 @@ than pretending to measure a precise effect that the data can't support.
 
 The full write-up, with all statistics, is in [`docs/REPORT.md`](docs/REPORT.md).
 
-## The data
+## 2. The data
 
 Three public, free datasets from [data.gov.sg](https://data.gov.sg):
 
@@ -46,8 +46,18 @@ Three public, free datasets from [data.gov.sg](https://data.gov.sg):
 | Monthly car registrations (2016 → 2025) | How many electric vs hybrid vs petrol cars were registered each month |
 | Consumer price index (monthly) | Inflation, so we can compare prices in "real" (inflation-adjusted) dollars |
 
-Two data caveats worth knowing:
+Data caveats worth knowing:
 
+- **The bid counts needed one correction.** The raw COE results file
+  stores bid counts as text, and from 2023-10 on it writes large numbers
+  with thousands separators (e.g. "1,039"), which the original panel build
+  could not parse — so the `bids_received` column in
+  `data/processed/panel_joint.csv` is 0 for **19 months (2023-10 to
+  2025-05)**, exactly the EV-rebate era. All analysis in this repo uses a
+  corrected series, `catA_bids_received_clean`, rebuilt in `src/00_data.py`
+  from the raw file (separators stripped, monthly sums recomputed); it is
+  non-zero for all 110 COE months and re-verified by `src/14_verify.py`
+  (check (g)) on every run.
 - **EV registration counts are lower bounds.** About half of the monthly
   registration rows don't carry a car-count number (the field went blank more
   often over time), so EV totals are reported with a monthly coverage rate.
@@ -63,7 +73,7 @@ Two data caveats worth knowing:
   free of EV rebates; B and E are "contaminated" (EVs can be in them),
   which is why the negative-control test (Figure 2) relies on C and D.
 
-## What the rebate policy actually did
+## 3. What the rebate policy actually did
 
 The analysis uses the **verified real policy timeline** (LTA/NEA
 announcements and published rate sets):
@@ -80,9 +90,9 @@ That's the key to the whole design: the rebate amount **changed four times**
 over the decade, giving the statistics something to bite on. The full timeline
 with sources is in `tables/rebate_timeline.csv`.
 
-## What we found
+## 4. What we found
 
-### 1. The big 2022 price jump was not caused by the rebates
+### 4.1. The big 2022 price jump was not caused by the rebates
 
 Category A prices rose about **20%** in early 2022 — roughly S$12,000
 above the late-2021 level by Mar 2022, and still ~18% after adjusting for
@@ -132,7 +142,7 @@ Jan 2022 to S$71,556 in Mar 2022. Notably, the Straits Times piece also
 speculated that the rebates and the new engine-power threshold rule may have
 pushed up Category A prices — the very question this study tests.*
 
-### 2. In the EV era, prices did respond to the 2024 rebate cut
+### 4.2. In the EV era, prices did respond to the 2024 rebate cut
 
 Because the rebate changed *again* in Jan 2024 (S$45k → S$40k), the
 2022–2025 window can be estimated on its own — the rebate amount varies
@@ -159,7 +169,7 @@ drop), each measured over the 2022–2025 window.
 open category E, where EV cars can bid) by ~23–37%, while the two rebate-free
 categories (C goods, D motorcycles) move only ~7–8%.*
 
-### 3. Rebates did not make more people bid
+### 4.3. Rebates did not make more people bid
 
 If the rebate story were true, we'd expect bidding demand in Category A to
 rise with rebate generosity. It didn't: the bidding numbers show no
@@ -176,11 +186,10 @@ and 5 show the price-vs-bids relationship and the EV uptake directly.
 *Price and bidding demand over the full window. The two series move
 almost independently — the correlation of their month-to-month changes is
 r = 0.05 (the level correlation r = −0.47 is driven by the 2018–2020
-price spike coinciding with low bid levels). The bids series is a
-corrected one: the published counts for 2023-10..2025-05 would not parse
-(report §2.5). The shaded regions show the max EV rebate in force at each
-point: S\$45k (lighter, 2022-01..2023-12) and S\$40k (darker, 2024-01
-onward); the dashed line marks the Jan 2024 cut.*
+price spike coinciding with low bid levels). The shaded regions show the
+max EV rebate in force at each point: S\$45k (lighter, 2022-01..2023-12)
+and S\$40k (darker, 2024-01 onward); the dashed line marks the Jan 2024
+cut.*
 
 **Figure 5.** Electric car registrations and their share of new-car sales,
 with the data-coverage lower bound.
@@ -192,7 +201,7 @@ with the data-coverage lower bound.
 because some months have no count. The dashed line marks the Jan 2024 cut
 of the maximum rebate from S$45k to S$40k.*
 
-### 4. Prices and bidding demand barely track each other
+### 4.4. Prices and bidding demand barely track each other
 
 A basic requirement for "more bidding → higher prices" is that price and
 bids actually move together. Across the decade they mostly don't (Figure 6).
@@ -204,7 +213,7 @@ the best-fit line and its uncertainty band.
 
 *The fit line is nearly flat — more bids did not reliably mean higher prices.*
 
-### 5. The "rebate → more bidders → higher price" chain is broken
+### 4.5. The "rebate → more bidders → higher price" chain is broken
 
 We also decomposed the effect the way the hypothesis describes: rebate →
 bidding demand → price. The middle link (rebate affecting bidding) is null,
@@ -219,7 +228,7 @@ with the estimated size of each step for both time windows.
 *The indirect (via-bidding) path is statistically indistinguishable from
 zero in both time windows.*
 
-### 6. Looking at each policy change individually doesn't help either
+### 4.6. Looking at each policy change individually doesn't help either
 
 An "event study" examines prices around each of the four policy changes.
 Every single one shows the price was already drifting in that direction
@@ -236,7 +245,7 @@ changes, with uncertainty bars.
 cut). The left side of each panel (months *before* the change) already shows
 large non-zero moves — the pre-trend problem.*
 
-### 7. What we can and can't claim
+### 4.7. What we can and can't claim
 
 - **Can claim:** no detectable EV-specific effect of the rebates on COE
   prices or bidding across the decade; the 2022 price jump showed up in
@@ -248,7 +257,7 @@ large non-zero moves — the pre-trend problem.*
   together by construction), the samples are small, and the one detected
   association sits in a 41-month window with two rebate levels.
 
-## Under the hood (for the curious)
+## 5. Under the hood (for the curious)
 
 **How the study works.** The design's core trick: rebates changed level four
 times over 2016–2025, so months can be compared across rebate levels.

@@ -296,14 +296,12 @@ def chart04() -> None:
     ax1.set_title(
         "Chart 4 — Category A COE price vs number of bids received, "
         "2016-01..2025-05\n"
-        "(bids series corrected: the published counts for 2023-10..2025-05 "
-        "would not parse — report §2.5)\n"
         f"correlation of month-to-month changes: r = {r_mom:+.2f}; "
         f"level correlation over the decade: r = {r_level:+.2f}",
     )
     ax2 = ax1.twinx()
     ax2.plot(df["ts"], df["catA_bids_received_clean"], color="#b23b3b", lw=1.4,
-             label="Cat A bids received (corrected, right)")
+             label="Cat A bids received (right)")
     ax2.set_ylabel("Cat A bids received")
     # shaded regions show the max EV rebate in force at each point in time:
     # S$45k (2022-01..2023-12, lighter) then S$40k (2024-01 onward, darker);
@@ -534,7 +532,7 @@ def chart07() -> None:
     node(1.3, 7.6, 2.2, 1.8,
          "EV rebate\n(maximum, S$)\n20k 2016-17 (est.)\n25k 2018-20\n45k 2021-23, 40k 2024+")
     node(5.0, 7.6, 2.3, 1.8,
-         "Cat A bidding demand\n(bids received, corrected\nseries; includes\nnon-EV cars)")
+         "Cat A bidding demand\n(bids received;\nincludes non-EV cars)")
     node(8.7, 7.6, 2.0, 1.8, "Cat A COE\nprice\n(nominal S$)")
     # a
     arrow(2.4, 8.0, 3.9, 8.0, "#b23b3b")
@@ -589,7 +587,7 @@ def chart07() -> None:
     node(1.3, 3.7, 2.2, 1.8,
          "EV rebate\n(maximum, S$)\n2 levels:\n45k 2022-23\n40k 2024+")
     node(5.0, 3.7, 2.3, 1.8,
-         "Cat A bidding demand\n(bids received, corrected\nseries; includes\nnon-EV cars)")
+         "Cat A bidding demand\n(bids received;\nincludes non-EV cars)")
     node(8.7, 3.7, 2.0, 1.8, "Cat A COE\nprice\n(nominal S$)")
     arrow(2.4, 4.1, 3.9, 4.1, "#b23b3b")
     ax.text(3.15, 4.62,
