@@ -1,5 +1,5 @@
 # Do electric car rebates drive more bidding demand for COEs?
-_Disclaimer: This analysis was prompted by a human, then initially designed and carried out by an AI agent (Hermes + Qwen3.8-27B + [AIOS skillset](https://github.com/thongsia/aios)), and finally edited collaboratively between the two._
+_Disclaimer: This analysis was prompted by a human, then initially designed and carried out by an AI agent (Hermes + Qwen3.8-27B + [AIOS skillset](https://github.com/thongsia/aios)), and finally shaped and edited collaboratively between the two._
 
 Singapore's EV rebates (VES, EEAI, and their predecessors) can save car
 owners up to tens of thousands of dollars. A natural question: **do those
