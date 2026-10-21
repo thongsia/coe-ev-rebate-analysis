@@ -296,7 +296,9 @@ changes, with uncertainty bars.
 
 *One panel per policy change (2018 VES, 2021 EEAI, 2022 tax floor, 2024 cap
 cut). The left side of each panel (months *before* the change) already shows
-large non-zero moves — the pre-trend problem.*
+large non-zero moves — the pre-trend problem. The right side shows
+aggregated bins (months 1–6, 7–12, 13 onward; the horizontal span marks the
+months covered, an arrow means the bin runs beyond the displayed window).*
 
 ### 4.8. What we can and can't claim
 

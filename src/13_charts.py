@@ -559,20 +559,30 @@ def chart08() -> None:
     pre = pd.read_csv(TABLES / "event_study_prechecks.csv")
     es.to_csv(TABLES / "chart08_event_study.csv", index=False)
 
-    # term -> integer x position (lead -k at -k, onset at 0, lag groups ordered)
-    def xpos(term: str) -> int:
-        if term.startswith("lead_-"):
-            # the trailing token already carries the minus sign ("lead_-6"
-            # -> -6), so no extra negation
-            return int(term.split("_")[-1])
-        if term == "onset_0":
-            return 0
-        m = {
-            "lag_1_6": 1, "lag_7_12": 4, "lag_13_plus": 8,
-            "lag_1_12": 4, "lag_13_plus": 8,
-            "lag_7_plus": 6,
-        }
-        return m.get(term, 1)
+    # --- true relative-month positions (uniform x scale) ---
+    # Leads are single months (-1..-6) and onset is 0; post-onset months are
+    # estimated in BINS, so each bin is plotted at its midpoint, with a span
+    # bar showing the months it covers. The display window stops at +24
+    # months; bins extending beyond it are clipped with an arrow.
+    frame = D.load_estimation_frame()
+    panel_end = frame["month"].astype(str).max()
+
+    def mindex(ym: str) -> int:
+        y, m = ym.split("-")
+        return int(y) * 12 + (int(m) - 1)
+
+    def bin_range(term: str, max_lag: int):
+        if term == "lag_1_6":
+            return (1, 6)
+        if term == "lag_7_12":
+            return (7, 12)
+        if term == "lag_13_plus":
+            return (13, max_lag)
+        if term == "lag_7_plus":
+            return (7, max_lag)
+        return None
+
+    XMAX = 24.0  # display window: 6 months before .. 24 months after
 
     episodes = [
         ("2018-01_cevs_lapse_VES_onset",
@@ -591,9 +601,22 @@ def chart08() -> None:
     fig, axes = plt.subplots(4, 1, figsize=(11, 13), sharex=True)
     for ax, (ep, title) in zip(axes, episodes):
         sub = es[es["episode"] == ep].copy()
-        sub["x"] = sub["term"].map(xpos)
-        sub = sub.sort_values("x")
-        xmax = sub["x"].max()
+        max_lag = mindex(panel_end) - mindex(ep.split("_")[0])
+
+        def tpos(t: str) -> float:
+            if t.startswith("lead_-"):
+                return float(int(t.split("_")[-1]))
+            if t == "onset_0":
+                return 0.0
+            rng = bin_range(t, max_lag)
+            if rng is None:
+                raise SystemExit(f"HARD-FAIL: unknown event-study term {t!r}")
+            return (rng[0] + rng[1]) / 2
+
+        sub["x"] = [tpos(t) for t in sub["term"]]
+        sub["xplot"] = sub["x"].clip(upper=XMAX)
+        sub = sub.sort_values("xplot")
+        xmax = sub["xplot"].max()
         for r in sub.itertuples():
             if r.role == "lead":
                 c = "#b23b3b"   # contaminated pre-trend
@@ -601,27 +624,52 @@ def chart08() -> None:
                 c = "#2e7d32"
             else:
                 c = "#1f4e79"
+            rng = bin_range(r.term, max_lag)
+            if rng:
+                s, e = rng
+                ax.plot([s, min(e, XMAX)], [r.coef / 1000] * 2,
+                        color=c, lw=4, alpha=0.30, solid_capstyle="round",
+                        zorder=1)
+                if e > XMAX:
+                    ax.annotate(
+                        "", xy=(XMAX + 0.6, r.coef / 1000),
+                        xytext=(XMAX - 1.6, r.coef / 1000),
+                        arrowprops=dict(arrowstyle="-|>", color=c, lw=1.2),
+                    )
             ax.errorbar(
-                r.x, r.coef / 1000,
+                r.xplot, r.coef / 1000,
                 yerr=[[r.coef / 1000 - r.ci_lo / 1000], [r.ci_hi / 1000 - r.coef / 1000]],
                 fmt="o", color=c, ecolor=c, elinewidth=1.2, capsize=4, ms=5,
             )
-            # label sits to the SIDE of the point: never crosses the marker
-            # dot or the CI bar; rightmost point labels left (inside panel)
-            if r.x >= xmax:
+            # per-point labels only for onset + lag bins (the leads are
+            # single months, already positioned on the x axis)
+            if r.role == "lead":
+                continue
+            lab = r.term
+            if rng:
+                lab += f"\nmonths {rng[0]}–{rng[1]}"
+            lab += f"\np={r.p:.1e}"
+            # label sits to the SIDE of the point: rightmost point labels
+            # left (inside panel)
+            if r.xplot >= xmax:
                 ax.annotate(
-                    f"{r.term}\np={r.p:.1e}", xy=(r.x, r.coef / 1000),
+                    lab, xy=(r.xplot, r.coef / 1000),
                     xytext=(-10, 0), textcoords="offset points",
                     ha="right", va="center", fontsize=6.4, color=c,
+                    bbox=dict(boxstyle="round,pad=0.25", fc="white",
+                              ec="none", alpha=0.75),
                 )
             else:
                 ax.annotate(
-                    f"{r.term}\np={r.p:.1e}", xy=(r.x, r.coef / 1000),
+                    lab, xy=(r.xplot, r.coef / 1000),
                     xytext=(10, 0), textcoords="offset points",
                     ha="left", va="center", fontsize=6.4, color=c,
+                    bbox=dict(boxstyle="round,pad=0.25", fc="white",
+                              ec="none", alpha=0.75),
                 )
         ax.axhline(0, color="black", lw=0.8)
         ax.axvline(0, color="gray", ls="--", lw=1)
+        ax.set_xlim(-7, XMAX + 1)
         ax.set_title(title, fontsize=9.5)
         ax.set_ylabel("coef (S$ thousands)")
 
@@ -646,10 +694,13 @@ def chart08() -> None:
             onset_txt = (f" onset {o['coef']/1000:+.1f}k S$ "
                          f"[{o['ci_lo']/1000:+.1f}k, {o['ci_hi']/1000:+.1f}k]")
         x_frac, ha = corner[ep]
+        interp = str(p["pre_trend_interpretation"])
+        if len(interp) > 170:  # truncate at a sentence boundary, never mid-word
+            interp = interp[:170].rsplit(". ", 1)[0].rstrip() + "."
         ax.annotate(
             textwrap.fill(
                 f"pre_trend_clean={p['pre_trend_clean']}{onset_txt}; "
-                + p["pre_trend_interpretation"][:120], width=62),
+                + interp, width=62),
             xy=(x_frac, 0.985), xycoords="axes fraction", ha=ha, va="top",
             fontsize=7.0,
             color="#b23b3b" if not p["pre_trend_clean"] else "#2e7d32",
@@ -657,7 +708,9 @@ def chart08() -> None:
                       ec="#b23b3b" if not p["pre_trend_clean"] else "#2e7d32",
                       alpha=0.95),
         )
-    axes[-1].set_xlabel("Relative month to onset (leads < 0 = before, 0 = onset, lags > 0 = after)")
+    axes[-1].set_xlabel(
+        "Months from policy change (negative = before, 0 = onset, positive = after)")
+    axes[-1].set_xticks([-6, -3, 0, 3, 6, 9, 12, 15, 18, 21, 24])
     # overall figure title on the top panel (consistent with the other charts)
     axes[0].set_title(
         "Chart 8 — Event study: Category A price response around each policy change\n"
@@ -665,6 +718,13 @@ def chart08() -> None:
         pad=8,
     )
     fig.tight_layout()
+    fig.text(
+        0.5, 0.004,
+        "red = before (one point per month, −1 to −6) · green = onset month · "
+        "blue = after, aggregated bins (horizontal span = months covered; "
+        "arrow = bin continues beyond the displayed window)",
+        ha="center", fontsize=6.8, color="#444444",
+    )
     fig.savefig(CHARTS / "08_event_study.png")
     plt.close(fig)
     print("[chart08] wrote charts/08_event_study.png + tables/chart08_event_study.csv")
