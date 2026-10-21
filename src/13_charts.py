@@ -499,8 +499,7 @@ def chart07() -> None:
     ax.axis("off")
     ax.set_title(
         "Chart 7 — Does the rebate push prices up via more bidding?\n"
-        "EV rebate → bidding demand → price: each step checked in the full "
-        "2016-01..2025-05 decade and the 2022-01..2025-05 EV era",
+        "Each step: what we should see if the hypothesis were true, and what we actually see",
         fontsize=10.5,
     )
 
@@ -521,17 +520,17 @@ def chart07() -> None:
     # step 1: rebate -> bidding
     arrow(3.0, 3.1, 5.4, 3.1, "#b23b3b")
     ax.text(4.2, 4.55,
-            "No: more rebate does not bring more bids\n"
-            f"across the decade ({a['coef']:+.1f} bids per S$1k, p = {a['p']:.2f})\n"
-            f"and in 2022–25 the association is negative (p = {e1_bid['p']:.3f})",
+            "If the hypothesis were true: more rebate → more bids.\n"
+            f"Observed: no effect across the decade (p = {a['p']:.2f}); in\n"
+            f"2022–25 the association points the other way (p = {e1_bid['p']:.3f}).",
             ha="center", va="center", fontsize=8, color="#b23b3b",
             bbox=dict(boxstyle="round", fc="white", ec="#b23b3b", alpha=0.95))
     # step 2: bidding -> price
     arrow(8.2, 3.1, 10.6, 3.1, "#1f4e79")
     ax.text(9.4, 4.55,
-            "No: bidding barely moves the price —\n"
-            f"bids one month earlier explain none of\n"
-            f"next month's price ({b['coef']:+.3f} S$ per bid, p = {b['p']:.2f})",
+            "If the hypothesis were true: more bids → higher price.\n"
+            "Observed: none — bids one month earlier barely relate to\n"
+            f"next month's price (p = {b['p']:.2f}).",
             ha="center", va="center", fontsize=8, color="#1f4e79",
             bbox=dict(boxstyle="round", fc="white", ec="#1f4e79", alpha=0.95))
     # verdict

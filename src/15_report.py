@@ -823,7 +823,7 @@ def build_report(v: dict) -> str:
     A("| 4 | `charts/04_price_demand_dual.png` | `tables/chart04_price_demand_dual.csv` | Cat A COE price vs Cat A bids received, 2016-01..2025-05; 2022-01+ rebate era shaded, Jan 2024 cut marked |")
     A("| 5 | `charts/05_ev_demand.png` | `tables/chart05_ev_demand.csv` | EV registrations + EV share 2022-07..2025-05 (lower bound; some months have no count); Jan 2024 rebate cut marked |")
     A("| 6 | `charts/06_scatter_fit_ci.png` | `tables/chart06_scatter_fit_ci.csv` | price-vs-demand scatter with bivariate fitted line + 95% CI band (association only) |")
-    A("| 7 | `charts/07_mediation_diagram.png` | `tables/chart07_mediation_effects.csv` | mediation chain (rebate → bidding demand → price) as a single diagram: per-step verdicts (decade + 2022–25) and the not-via-bidding conclusion |")
+    A("| 7 | `charts/07_mediation_diagram.png` | `tables/chart07_mediation_effects.csv` | mediation chain (rebate → bidding demand → price) as a single diagram: per step, the prediction if the hypothesis were true vs the observed result (decade + 2022–25), and the not-via-bidding conclusion |")
     A("| 8 | `charts/08_event_study.png` | `tables/chart08_event_study.csv` | event-study coefficients with CIs for the 4 verified-policy events; pre-trend contamination annotated |")
     A("")
     A("---")

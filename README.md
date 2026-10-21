@@ -264,9 +264,10 @@ price effect routed through bidding is zero within its uncertainty in
 both windows.
 
 **Figure 7.** The hypothesized chain — rebate → bidding demand → price —
-and where it breaks.
+with, for each step, what we should see if the hypothesis were true and
+what we actually see.
 
-![The hypothesized chain: rebate → bidding demand → price, with a verdict on each step and on the whole chain](charts/07_mediation_diagram.png)
+![The hypothesized chain: rebate → bidding demand → price; for each step, the prediction if the hypothesis were true and the observed result](charts/07_mediation_diagram.png)
 
 *Numbers: a S$1k higher rebate is associated with ≈12 fewer bids across
 the decade (−11.7, not significant, p = 0.29) and with ≈111 fewer bids
