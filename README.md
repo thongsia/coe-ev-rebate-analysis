@@ -207,7 +207,7 @@ chain (rebate → more EV demand → more bids → higher price):
   driving it.
 
 That is what breaks the chain: the demand side does not track the rebate
-level, so the via-bidding path (Figure 7) comes out null. Policy was also
+level, so the via-bidding path (Figure 7) shows no effect. Policy was also
 set in response to this very uptake — rebate and demand move together by
 construction, which is part of why the study cannot credit the rebates
 with the prices. (Bound: the series starts 2022-07, runs 35 months, and
@@ -247,18 +247,36 @@ more bids did not reliably translate into higher prices.*
 
 ### 4.6. The "rebate → more bids → higher price" chain is broken
 
-We also decomposed the effect the way the hypothesis describes: rebate →
-bidding demand → price. The middle link (rebate affecting bidding) is null,
-so the whole chain is null — **whatever small price movement exists is not
-routed through more bidding** (Figure 7).
+If the rebate pushed prices up because more people wanted to bid on EVs,
+two things should be visible: the rebate should move bidding demand, and
+bidding demand should move the price. Neither happens (Figure 7):
+
+- More rebate does not bring more bids. Across the decade the
+  association is zero (p = 0.29), and in 2022–25 it points the other
+  way — higher rebate levels coincided with *fewer* bids.
+- Bidding barely moves the price. Bids received one month earlier
+  explain essentially none of the next month's clearing price
+  (p = 0.98).
+
+So the only rebate–price connection the study does find — the small one
+in the EV era — is not being carried by more bidding: the share of the
+price effect routed through bidding is zero within its uncertainty in
+both windows.
 
 **Figure 7.** The hypothesized chain — rebate → bidding demand → price —
-with the estimated size of each step for both time windows.
+and where it breaks.
 
-![The hypothesized chain: rebate → bidding demand → price, with the estimated size of each step for both time windows](charts/07_mediation_diagram.png)
+![The hypothesized chain: rebate → bidding demand → price, with a verdict on each step and on the whole chain](charts/07_mediation_diagram.png)
 
-*The indirect (via-bidding) path is statistically indistinguishable from
-zero in both time windows.*
+*Numbers: a S$1k higher rebate is associated with ≈12 fewer bids across
+the decade (−11.7, not significant, p = 0.29) and with ≈111 fewer bids
+per S$1k in 2022–25 (p = 0.005, the opposite of the predicted direction);
+bids one month earlier move the next month's price by −S$0.03 per bid
+(p = 0.98). The rebate's total price effect is small over the decade
+(+S$569 per S$1k of rebate, 95% CI +340..+824) and positive but
+low-power in 2022–25 (+S$2,882 per S$1k, 95% CI +1,049..+5,336); the
+share of that effect routed via bidding is −0.02 (decade) and −0.12
+(2022–25), both indistinguishable from zero. Full table: report §3.4.*
 
 ### 4.7. Looking at each policy change individually doesn't help either
 

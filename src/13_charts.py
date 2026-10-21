@@ -493,133 +493,58 @@ def chart07() -> None:
     m_full = med[med["scope"] == "full_window"].set_index("effect")
     m_ev = med[med["scope"] == "ev_era_2022plus"].set_index("effect")
 
-    fig, ax = plt.subplots(figsize=(12, 9))
-    ax.set_xlim(0, 10)
-    ax.set_ylim(0, 10)
+    fig, ax = plt.subplots(figsize=(13.5, 5.8))
+    ax.set_xlim(0, 13.5)
+    ax.set_ylim(0, 5.8)
     ax.axis("off")
     ax.set_title(
-        "Chart 7 — Checking the claimed chain: EV rebate → more Category A "
-        "bidding → higher Category A price\n"
-        "Full window 2016-01..2025-05 and EV era 2022-01..2025-05 (inside the "
-        "window the max rebate falls S$45k → S$40k at 2024-01)",
-        fontsize=10,
+        "Chart 7 — Does the rebate push prices up via more bidding?\n"
+        "EV rebate → bidding demand → price: each step checked in the full "
+        "2016-01..2025-05 decade and the 2022-01..2025-05 EV era",
+        fontsize=10.5,
     )
 
     def node(x, y, w, h, lab, color="#e8f0fe"):
         ax.add_patch(plt.Rectangle((x - w / 2, y - h / 2), w, h,
                                    fc=color, ec="#1f4e79", lw=1.5))
-        ax.text(x, y, lab, ha="center", va="center", fontsize=8)
+        ax.text(x, y, lab, ha="center", va="center", fontsize=9)
 
     def arrow(x1, y1, x2, y2, color):
         ax.add_patch(FancyArrowPatch((x1, y1), (x2, y2),
-                                     arrowstyle="-|>", mutation_scale=18,
-                                     lw=2, color=color))
+                                     arrowstyle="-|>", mutation_scale=22,
+                                     lw=2.5, color=color))
 
-    # --- FULL-WINDOW block (top) ---
-    ax.text(5.0, 9.5, "FULL WINDOW — 2016-01..2025-05, about 109 months; max "
-            "rebate over the decade: S$20k, S$25k, S$45k, S$40k", ha="center",
-            fontsize=9, fontweight="bold", color="#1f4e79")
-    node(1.3, 7.6, 2.2, 1.8,
-         "EV rebate\n(maximum, S$)\n20k 2016-17 (est.)\n25k 2018-20\n45k 2021-23, 40k 2024+")
-    node(5.0, 7.6, 2.3, 1.8,
-         "Cat A bidding demand\n(bids received;\nincludes non-EV cars)")
-    node(8.7, 7.6, 2.0, 1.8, "Cat A COE\nprice\n(nominal S$)")
-    # a
-    arrow(2.4, 8.0, 3.9, 8.0, "#b23b3b")
-    ax.text(3.15, 8.45,
-            f"Step 1 (rebate → bidding):\n"
-            f"{a['coef']:+.1f} bids per extra S$1k of rebate\n"
-            f"(p={a_hac['p']:.3f}; second check p={a['p']:.3f})"
-            + (", not significant" if a_hac['p'] >= 0.05 else ""),
-            ha="center", fontsize=7.4, color="#b23b3b",
-            bbox=dict(boxstyle="round", fc="white", ec="#b23b3b", alpha=0.9))
-    # b
-    arrow(6.15, 8.0, 7.7, 8.0, "#1f4e79")
-    ax.text(6.95, 8.45,
-            f"Step 2 (bidding → price):\n"
-            f"{b['coef']:+.2f} S$ per extra bid, one month later\n"
-            f"[95%: {b['ci_lo']:+.2f}..{b['ci_hi']:+.2f}], p={b['p']:.3f}",
-            ha="center", fontsize=7.4, color="#1f4e79",
-            bbox=dict(boxstyle="round", fc="white", ec="#1f4e79", alpha=0.9))
-    # total (top arrow)
-    arrow(2.4, 8.5, 7.7, 8.5, "#2e7d32")
-    ax.text(5.0, 8.95,
-            f"Total effect (rebate → price), full window:\n"
-            f"{m_full.loc['total','estimate']:+.0f} S$ per extra S$1k of "
-            f"rebate [95%: {m_full.loc['total','ci_lo']:+.0f}..{m_full.loc['total','ci_hi']:+.0f}]",
-            ha="center", fontsize=8, color="#2e7d32",
-            bbox=dict(boxstyle="round", fc="white", ec="#2e7d32", alpha=0.95))
-    # direct (bottom arrow)
-    arrow(2.4, 7.2, 7.7, 7.2, "gray")
-    ax.text(5.0, 6.85,
-            f"Direct path (rebate → price, not via bidding):\n"
-            f"{m_full.loc['direct','estimate']:+.0f} S$ per extra S$1k "
-            f"(point estimate)",
-            ha="center", fontsize=7.4, color="gray",
-            bbox=dict(boxstyle="round", fc="white", ec="gray", alpha=0.9))
-    # verdict full
+    # --- the chain, one row ---
+    node(1.8, 3.1, 2.3, 1.5, "EV rebate\n(maximum level)")
+    node(6.75, 3.1, 2.5, 1.5, "Bidding demand\n(Cat A: bids received)")
+    node(11.7, 3.1, 2.2, 1.5, "Cat A COE\nprice")
+    # step 1: rebate -> bidding
+    arrow(3.0, 3.1, 5.4, 3.1, "#b23b3b")
+    ax.text(4.2, 4.55,
+            "No: more rebate does not bring more bids\n"
+            f"across the decade ({a['coef']:+.1f} bids per S$1k, p = {a['p']:.2f})\n"
+            f"and in 2022–25 the association is negative (p = {e1_bid['p']:.3f})",
+            ha="center", va="center", fontsize=8, color="#b23b3b",
+            bbox=dict(boxstyle="round", fc="white", ec="#b23b3b", alpha=0.95))
+    # step 2: bidding -> price
+    arrow(8.2, 3.1, 10.6, 3.1, "#1f4e79")
+    ax.text(9.4, 4.55,
+            "No: bidding barely moves the price —\n"
+            f"bids one month earlier explain none of\n"
+            f"next month's price ({b['coef']:+.3f} S$ per bid, p = {b['p']:.2f})",
+            ha="center", va="center", fontsize=8, color="#1f4e79",
+            bbox=dict(boxstyle="round", fc="white", ec="#1f4e79", alpha=0.95))
+    # verdict
     ax.text(
-        5.0, 6.35,
-        f"Share of the effect routed through bidding (full window): "
-        f"{m_full.loc['mediated_share','estimate']:+.3f}\n"
-        f"(95% CI {m_full.loc['mediated_share','ci_lo']:+.3f}..{m_full.loc['mediated_share','ci_hi']:+.3f}); "
-        f"via-bidding path: {m_full.loc['indirect','estimate']:+.1f} S$ per extra S$1k\n"
-        f"(95% CI {m_full.loc['indirect','ci_lo']:+.1f}..{m_full.loc['indirect','ci_hi']:+.1f}). "
-        "The range includes 0, so the chain is not supported — see the report.",
-        ha="center", va="center", fontsize=7.6, color="#b23b3b",
+        6.75, 0.95,
+        "Verdict: where prices did move with the rebate (2022–25), it was not through more bidding —\n"
+        "the share of the price effect routed via bidding is zero within its uncertainty in both windows:\n"
+        f"decade {m_full.loc['mediated_share','estimate']:+.2f} "
+        f"[{m_full.loc['mediated_share','ci_lo']:+.2f}..{m_full.loc['mediated_share','ci_hi']:+.2f}]; "
+        f"2022–25 {m_ev.loc['mediated_share','estimate']:+.2f} "
+        f"[{m_ev.loc['mediated_share','ci_lo']:+.2f}..{m_ev.loc['mediated_share','ci_hi']:+.2f}].",
+        ha="center", va="center", fontsize=8.5, color="#b23b3b",
         bbox=dict(boxstyle="round", fc="#fff5f5", ec="#b23b3b", lw=1.5, alpha=0.97),
-    )
-
-    # --- EV-ERA block (bottom) ---
-    ax.text(5.0, 5.75, "EV ERA — 2022-01..2025-05, 41 months; max rebate "
-            "S$45k → S$40k at 2024-01 (two rebate levels in the window)",
-            ha="center", fontsize=9, fontweight="bold", color="#b26a00")
-    node(1.3, 3.7, 2.2, 1.8,
-         "EV rebate\n(maximum, S$)\n2 levels:\n45k 2022-23\n40k 2024+")
-    node(5.0, 3.7, 2.3, 1.8,
-         "Cat A bidding demand\n(bids received;\nincludes non-EV cars)")
-    node(8.7, 3.7, 2.0, 1.8, "Cat A COE\nprice\n(nominal S$)")
-    arrow(2.4, 4.1, 3.9, 4.1, "#b23b3b")
-    ax.text(3.15, 4.62,
-            f"Step 1 (rebate → bidding):\n"
-            f"{e1_bid['coef']:+.1f} bids per extra S$1k of rebate\n"
-            f"(p={e1_bid['p']:.3f})"
-            + (", not significant" if e1_bid['p'] >= 0.05 else ""),
-            ha="center", va="center", fontsize=7.4, color="#b23b3b",
-            bbox=dict(boxstyle="round", fc="white", ec="#b23b3b", alpha=0.9))
-    arrow(6.15, 4.1, 7.7, 4.1, "#1f4e79")
-    ax.text(6.95, 4.62,
-            f"Total effect (rebate → price), EV era:\n"
-            f"{e1_price['coef']:+.1f} S$ per extra S$1k\n"
-            f"[95%: {e1_price['ci_lo']:+.1f}..{e1_price['ci_hi']:+.1f}], "
-            f"p={e1_price['p']:.3f}",
-            ha="center", va="center", fontsize=7.4, color="#1f4e79",
-            bbox=dict(boxstyle="round", fc="white", ec="#1f4e79", alpha=0.9))
-    arrow(2.4, 4.6, 7.7, 4.6, "#2e7d32")
-    ax.text(5.0, 5.3,
-            f"Total effect (rebate → price), EV era:\n"
-            f"{m_ev.loc['total','estimate']:+.0f} S$ per extra S$1k of "
-            f"rebate [95%: {m_ev.loc['total','ci_lo']:+.0f}..{m_ev.loc['total','ci_hi']:+.0f}]",
-            ha="center", va="center", fontsize=8, color="#2e7d32",
-            bbox=dict(boxstyle="round", fc="white", ec="#2e7d32", alpha=0.95))
-    arrow(2.4, 3.3, 7.7, 3.3, "gray")
-    ax.text(5.0, 2.95,
-            f"Direct path (rebate → price, not via bidding):\n"
-            f"{m_ev.loc['direct','estimate']:+.0f} S$ per extra S$1k "
-            f"(point estimate)",
-            ha="center", fontsize=7.4, color="gray",
-            bbox=dict(boxstyle="round", fc="white", ec="gray", alpha=0.9))
-    ax.text(
-        5.0, 2.35,
-        f"Share of the effect routed through bidding (EV era): "
-        f"{m_ev.loc['mediated_share','estimate']:+.3f}\n"
-        f"(95% CI {m_ev.loc['mediated_share','ci_lo']:+.3f}..{m_ev.loc['mediated_share','ci_hi']:+.3f}); "
-        f"via-bidding path: {m_ev.loc['indirect','estimate']:+.1f} S$ per extra S$1k\n"
-        f"(95% CI {m_ev.loc['indirect','ci_lo']:+.1f}..{m_ev.loc['indirect','ci_hi']:+.1f}). "
-        "Only 41 months and two rebate levels, so\n"
-        "the uncertainty is wide — an association, not a causal effect.",
-        ha="center", va="center", fontsize=7.6, color="#b26a00",
-        bbox=dict(boxstyle="round", fc="#fffaf0", ec="#b26a00", lw=1.5, alpha=0.97),
     )
     fig.tight_layout()
     fig.savefig(CHARTS / "07_mediation_diagram.png")
