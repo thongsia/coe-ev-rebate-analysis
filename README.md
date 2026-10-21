@@ -249,19 +249,23 @@ more bids did not reliably translate into higher prices.*
 
 If the rebate pushed prices up because more people wanted to bid on EVs,
 two things should be visible: the rebate should move bidding demand, and
-bidding demand should move the price. Neither happens (Figure 7):
+bidding demand should move the price. The previous sections already
+looked at both:
 
-- More rebate does not bring more bids. Across the decade the
+- The rebate does not move bidding demand. Across the decade the
   association is zero (p = 0.29), and in 2022–25 it points the other
-  way — higher rebate levels coincided with *fewer* bids.
-- Bidding barely moves the price. Bids received one month earlier
+  way — higher rebate levels coincided with *fewer* bids (section 4.3,
+  Figure 4); EV registrations tell the same story (section 4.4,
+  Figure 5).
+- Bidding does not move the price. Bids received one month earlier
   explain essentially none of the next month's clearing price
-  (p = 0.98).
+  (p = 0.98) (section 4.5, Figure 6).
 
-So the only rebate–price connection the study does find — the small one
-in the EV era — is not being carried by more bidding: the share of the
-price effect routed through bidding is zero within its uncertainty in
-both windows.
+So neither link of the chain holds up, and the chain check agrees
+(Figure 7): the share of the rebate's price effect routed through
+bidding is zero within its uncertainty in both windows. Whatever small
+rebate–price connection the study does find — the one in the EV era —
+is therefore not being carried by more bidding.
 
 **Figure 7.** The hypothesized chain — rebate → bidding demand → price —
 with, for each step, what we should see if the hypothesis were true and
