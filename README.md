@@ -289,6 +289,25 @@ Every single one shows the price was already drifting in that direction
 price trend (plus the pandemic-era dip in 2020), not of the policy itself.
 The estimated effects are therefore reported as bounds, not point estimates.
 
+One might object that this drift is itself the market *anticipating* each
+change — in which case it would be part of the policy effect. The
+direction fits: prices were climbing in the six months before the 2021
+and 2022 incentive increases, falling before the 2024 cap cut, and only
+the 2018 change (a low-emission-era policy, not an EV rebate) drifted the
+other way. But the shape of the drift argues against anticipation: an
+anticipatory move shows up as a one-off jump near the announcement, while
+the 2021 and 2022 drifts are smooth, steady ramps across all six months —
+the same underlying price cycle that lifted every COE category, including
+those with no EV rebate at all (section 4.1). The 2024 pre-trend is the
+one exception: a gentle drift for four months, then a sharp drop in the
+last two (the month before the cut sits about S$14k below where the
+earlier drift would have put it), the shape most consistent with
+anticipation of an already-announced cut. The four events also sit on
+opposite slopes of one long price cycle, so a single underlying trend can
+produce the same pattern; with this data the study cannot separate "the
+market was anticipating the change" from "the market was already
+drifting."
+
 **Figure 8.** Estimated price changes around each of the four policy
 changes, with uncertainty bars.
 
