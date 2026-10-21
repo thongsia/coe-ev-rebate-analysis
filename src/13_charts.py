@@ -47,7 +47,6 @@ import importlib.util
 from pathlib import Path
 
 import numpy as np
-import textwrap
 import pandas as pd
 import matplotlib
 
@@ -556,7 +555,6 @@ def chart07() -> None:
 # ===========================================================================
 def chart08() -> None:
     es = pd.read_csv(TABLES / "event_study_coefficients.csv")
-    pre = pd.read_csv(TABLES / "event_study_prechecks.csv")
     es.to_csv(TABLES / "chart08_event_study.csv", index=False)
 
     # --- true relative-month positions (uniform x scale) ---
@@ -673,41 +671,6 @@ def chart08() -> None:
         ax.set_title(title, fontsize=9.5)
         ax.set_ylabel("coef (S$ thousands)")
 
-    # pre-trend verdicts (from prechecks, verbatim) — annotate each panel.
-    # Top corners: bottom-right is where the most negative right-side points
-    # (and their labels) sit, so keep the box in the free top corner per panel.
-    corner = {
-        "2018-01_cevs_lapse_VES_onset": (0.99, "right"),
-        "2021-01_enhanced_VES_EEAI_stack": (0.01, "left"),
-        "2022-01_ARF_floor_zero_PLUS_threshold_bounded": (0.01, "left"),
-        "2024-01_eeai_cap15k_step": (0.99, "right"),
-    }
-    for ax, (ep, _title) in zip(axes, episodes):
-        p = pre[pre["episode"] == ep]
-        if not len(p):
-            continue
-        p = p.iloc[0]
-        onset = es[(es["episode"] == ep) & (es["term"] == "onset_0")]
-        onset_txt = ""
-        if len(onset):
-            o = onset.iloc[0]
-            onset_txt = (f" onset {o['coef']/1000:+.1f}k S$ "
-                         f"[{o['ci_lo']/1000:+.1f}k, {o['ci_hi']/1000:+.1f}k]")
-        x_frac, ha = corner[ep]
-        interp = str(p["pre_trend_interpretation"])
-        if len(interp) > 170:  # truncate at a sentence boundary, never mid-word
-            interp = interp[:170].rsplit(". ", 1)[0].rstrip() + "."
-        ax.annotate(
-            textwrap.fill(
-                f"pre_trend_clean={p['pre_trend_clean']}{onset_txt}; "
-                + interp, width=62),
-            xy=(x_frac, 0.985), xycoords="axes fraction", ha=ha, va="top",
-            fontsize=7.0,
-            color="#b23b3b" if not p["pre_trend_clean"] else "#2e7d32",
-            bbox=dict(boxstyle="round", fc="white",
-                      ec="#b23b3b" if not p["pre_trend_clean"] else "#2e7d32",
-                      alpha=0.95),
-        )
     axes[-1].set_xlabel(
         "Months from policy change (negative = before, 0 = onset, positive = after)")
     axes[-1].set_xticks([-6, -3, 0, 3, 6, 9, 12, 15, 18, 21, 24])
