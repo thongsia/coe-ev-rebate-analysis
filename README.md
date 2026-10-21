@@ -253,13 +253,14 @@ bidding demand should move the price. The previous sections already
 looked at both:
 
 - The rebate does not move bidding demand. Across the decade the
-  association is zero (p = 0.29), and in 2022–25 it points the other
-  way — higher rebate levels coincided with *fewer* bids (section 4.3,
-  Figure 4); EV registrations tell the same story (section 4.4,
-  Figure 5).
+  association is zero (−11.7 bids per S$1k, not significant,
+  p = 0.29), and in 2022–25 it points the other way (−111.5 bids per
+  S$1k, p = 0.005) — higher rebate levels coincided with *fewer* bids
+  (section 4.3, Figure 4); EV registrations tell the same story
+  (section 4.4, Figure 5).
 - Bidding does not move the price. Bids received one month earlier
   explain essentially none of the next month's clearing price
-  (p = 0.98) (section 4.5, Figure 6).
+  (−S$0.03 per bid, p = 0.98) (section 4.5, Figure 6).
 
 So neither link of the chain holds up, and the chain check agrees
 (Figure 7): the share of the rebate's price effect routed through
@@ -273,15 +274,12 @@ what we actually see.
 
 ![The hypothesized chain: rebate → bidding demand → price; for each step, the prediction if the hypothesis were true and the observed result](charts/07_mediation_diagram.png)
 
-*Numbers: a S$1k higher rebate is associated with ≈12 fewer bids across
-the decade (−11.7, not significant, p = 0.29) and with ≈111 fewer bids
-per S$1k in 2022–25 (p = 0.005, the opposite of the predicted direction);
-bids one month earlier move the next month's price by −S$0.03 per bid
-(p = 0.98). The rebate's total price effect is small over the decade
-(+S$569 per S$1k of rebate, 95% CI +340..+824) and positive but
-low-power in 2022–25 (+S$2,882 per S$1k, 95% CI +1,049..+5,336); the
-share of that effect routed via bidding is −0.02 (decade) and −0.12
-(2022–25), both indistinguishable from zero. Full table: report §3.4.*
+*The chain check from section 4.6: each arrow shows what we would
+expect if the hypothesis were true and what the data show (p-values as
+labeled); the box below shows the share of the rebate's price effect
+routed via bidding, in each time window. Coefficients and confidence
+intervals for every step: report §3.2 (bidding channel) and §3.4
+(mediation).*
 
 ### 4.7. Looking at each policy change individually doesn't help either
 
