@@ -83,7 +83,7 @@ plt.rcParams.update(
 MONTH = lambda s: pd.Period(s, freq="M").to_timestamp()  # noqa: E731
 # Policy marker months (verified real Singapore policy); the 2022-01
 # confounder is added separately in chart01.
-POLICY_MARKS = ["2018-01", "2021-01", "2024-01"]
+POLICY_MARKS = ["2018-01", "2021-01", "2024-01", "2022-05"]
 
 
 def _p(s: str) -> pd.Timestamp:
@@ -113,8 +113,8 @@ def chart01() -> None:
     ax.set_xlabel("Month")
     ax.set_title(
         "Chart 1 — Category A COE clearing price, 2016-01..2025-05 (verified policy)\n"
-        "Dotted lines: EV-rebate changes.   Dashed red line: Jan 2022 tax + "
-        "threshold change (not a rebate)",
+        "Dotted lines: EV-rebate changes.   Dashed red lines: Jan 2022 tax and "
+        "May 2022 engine-threshold change (neither is a rebate)",
         pad=12,
     )
 
@@ -124,13 +124,15 @@ def chart01() -> None:
     ax.set_ylim(ymin - 0.05 * (ymax - ymin), ymax * 1.18)
     for m in POLICY_MARKS:
         ax.axvline(_p(m), color="gray", ls=":", lw=1, alpha=0.8)
-    # confounder marker (2022-01), emphasised
-    ax.axvline(_p("2022-01"), color="#b23b3b", ls="--", lw=1.4, alpha=0.9)
+    # confounder markers (2022-01 ARF floor = tax; 2022-05 threshold),
+    # emphasised
+    for m in ("2022-01", "2022-05"):
+        ax.axvline(_p(m), color="#b23b3b", ls="--", lw=1.4, alpha=0.9)
 
     # Marker labels — x in data units, y in axes fraction, staggered so no
     # two labels share a row.
     blend = blended_transform_factory(ax.transData, ax.transAxes)
-    ax.text(_p("2018-01"), 0.95, "Jan 2018 — VES starts (rebate ~S$25k)",
+    ax.text(_p("2018-01"), 0.95, "Jan 2018 — VES starts (rebate ~S$20k)",
             transform=blend, fontsize=7.5, color="#444444", ha="left")
     ax.text(_p("2024-01"), 0.95, "Jan 2024 — EEAI cap cut (rebate → S$40k)",
             transform=blend, fontsize=7.5, color="#444444", ha="right")
@@ -138,9 +140,19 @@ def chart01() -> None:
             "Jan 2021 — Enhanced VES + EEAI (rebate → S$45k)",
             transform=blend, fontsize=7.5, color="#444444", ha="left")
     ax.annotate(
-        "Jan 2022 — EV tax cut + engine-threshold change (not a rebate)",
+        "Jan 2022 — $0 ARF floor for EVs (tax, not a rebate)",
         xy=(_p("2022-01"), 0.30 * ax.get_ylim()[1]),
         xytext=(_p("2022-01"), 0.22),
+        xycoords="data", textcoords=blend,
+        fontsize=8, color="#b23b3b", ha="left",
+        bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="none", alpha=0.9),
+        arrowprops=dict(arrowstyle="->", color="#b23b3b", lw=1,
+                        shrinkA=3, shrinkB=1),
+    )
+    ax.annotate(
+        "May 2022 — 97→110kW Cat A threshold (confounder, not a rebate)",
+        xy=(_p("2022-05"), 0.42 * ax.get_ylim()[1]),
+        xytext=(_p("2022-05"), 0.36),
         xycoords="data", textcoords=blend,
         fontsize=8, color="#b23b3b", ha="left",
         bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="none", alpha=0.9),
@@ -207,19 +219,48 @@ def _nc_panel(ax, nc: pd.DataFrame, term: str) -> None:
             )
 
 
+def _nc_verdict(nc: pd.DataFrame, term: str, scope: str) -> str:
+    """Decide the negative-control reading from the clean-control bars.
+
+    A = focal category; C/D = clean controls (no EV rebate). Both clean
+    controls same sign as A with >= half its size -> the jump is a
+    market-wide common shock (test FAILS the EV-specific hypothesis).
+    Both same sign with < half its size -> clean controls do not reject an
+    EV-specific channel. Anything else -> MIXED / inconclusive.
+    """
+    m = nc[(nc["term"] == term) & (nc["scope"] == scope)]
+    g = m.set_index("category")["coef_pct_of_mean"]
+    if not {"A", "C", "D"}.issubset(g.index):
+        return "n/a"
+    a, c, d = float(g["A"]), float(g["C"]), float(g["D"])
+    same = (a > 0 and c > 0 and d > 0) or (a < 0 and c < 0 and d < 0)
+    if not same:
+        return ("MIXED: the two clean controls split at this date — "
+                "neither a clean market-wide signal nor a clean EV-specific "
+                "one (inconclusive)")
+    if abs(c) >= 0.5 * abs(a) and abs(d) >= 0.5 * abs(a):
+        return ("market-wide common shock: both clean controls move at least "
+                "half as much as the EV category (NOT EV-rebate-specific)")
+    return ("clean controls move less than half as much as the EV category — "
+            "does not falsify an EV-rebate-specific channel")
+
+
 def chart02() -> None:
     panel = pd.read_csv(ROOT / "data/processed/panel_joint.csv")
     df = panel[["month", "catC_clearing_price", "catD_clearing_price",
                 "catE_clearing_price"]].copy()
     df.to_csv(TABLES / "chart02_negative_control_2022.csv", index=False)
 
-    fig, ax = plt.subplots(figsize=(11, 5))
-    _nc_panel(ax, pd.read_csv(TABLES / "negative_controls.csv"),
-              "reg_arffloor_zero_202201")
+    nc = pd.read_csv(TABLES / "negative_controls.csv")
+    verdict = _nc_verdict(nc, "reg_arffloor_zero_202201", "full_window")
+    fig, ax = plt.subplots(figsize=(11, 5.4))
+    _nc_panel(ax, nc, "reg_arffloor_zero_202201")
     ax.set_title(
         "Chart 2 — Negative-control check: 2022-01 % price jump by category\n"
         "(full 2016-01..2025-05 window; each bar = estimated step, % of that "
-        "category's 2016-25 mean price)",
+        "category's 2016-25 mean price; the 2022-01 change was a $0 ARF-floor "
+        "TAX, not a rebate)\n"
+        f"Verdict: {verdict}",
         pad=12,
     )
     fig.tight_layout()
@@ -239,14 +280,16 @@ def chart03() -> None:
                 "catE_clearing_price"]].copy()
     df.to_csv(TABLES / "chart03_negative_control_2024.csv", index=False)
 
-    fig, ax = plt.subplots(figsize=(11, 5))
-    _nc_panel(ax, pd.read_csv(TABLES / "negative_controls.csv"),
-              "reg_eeai_cap15k_202401")
+    nc = pd.read_csv(TABLES / "negative_controls.csv")
+    verdict = _nc_verdict(nc, "reg_eeai_cap15k_202401", "ev_era_2022plus")
+    fig, ax = plt.subplots(figsize=(11, 5.4))
+    _nc_panel(ax, nc, "reg_eeai_cap15k_202401")
     ax.set_title(
         "Chart 3 — Negative-control check: 2024-01 % price jump by category\n"
         "(2022-01..2025-05 EV-era window; the 2024-01 rebate cut "
         "S$45k → S$40k shows up as a price drop)\n"
-        "(each bar = estimated step, % of that category's 2022-25 mean price)",
+        "(each bar = estimated step, % of that category's 2022-25 mean price)\n"
+        f"Verdict: {verdict}",
         pad=12,
     )
     fig.tight_layout()
@@ -278,16 +321,19 @@ def chart04() -> None:
     df = df.sort_values("month")
     r_level = float(np.corrcoef(df["nominal"], df["catA_bids_received_clean"])[0, 1])
     dp = df["nominal"].diff().dropna()
-    db = np.log(df["catA_bids_received_clean"]).diff().dropna()
-    r_mom = float(np.corrcoef(dp, db)[0, 1])
+    db = df["catA_bids_received_clean"].diff().dropna()
+    dlog = np.log(df["catA_bids_received_clean"]).diff().dropna()
+    r_mom = float(np.corrcoef(dp, dlog)[0, 1])   # price change vs % bid change
+    r_mom_raw = float(np.corrcoef(dp, db)[0, 1])  # both raw month-to-month
     ax1.plot(df["ts"], df["nominal"], color="#1f4e79", lw=1.6,
              label="Cat A clearing price (nominal S$, left)")
     ax1.set_ylabel("Cat A clearing price (nominal S$)")
     ax1.set_title(
         "Chart 4 — Category A COE price vs number of bids received, "
         "2016-01..2025-05\n"
-        f"correlation of month-to-month changes: r = {r_mom:+.2f}; "
-        f"level correlation over the decade: r = {r_level:+.2f}",
+        f"level correlation over the decade: r = {r_level:+.2f}; "
+        f"month-to-month changes: r = {r_mom:+.2f} (price vs % change in bids) "
+        f"or r = {r_mom_raw:+.2f} (both in raw levels) — near zero either way",
     )
     ax2 = ax1.twinx()
     ax2.plot(df["ts"], df["catA_bids_received_clean"], color="#b23b3b", lw=1.4,
@@ -584,19 +630,22 @@ def chart08() -> None:
 
     episodes = [
         ("2018-01_cevs_lapse_VES_onset",
-         "Event 1 — CEVS lapse / VES onset (2018-01): rebate ~S$20k (estimate) "
-         "-> S$25k (verified)"),
+         "Event 1 — CEVS lapse / VES onset (2018-01): rebate S$30k (verified) "
+         "-> S$20k (verified)"),
         ("2021-01_enhanced_VES_EEAI_stack",
-         "Event 2 — Enhanced VES + EEAI (2021-01): rebate S$25k -> S$45k "
+         "Event 2 — Enhanced VES + EEAI (2021-01): rebate S$20k -> S$45k "
          "(verified); EV-relevant from here on"),
-        ("2022-01_ARF_floor_zero_PLUS_threshold_bounded",
-         "Event 3 — $0 ARF floor (TAX; rebate unchanged) + 97->110kW threshold "
-         "(confounder) (2022-01) [COMBINED / BOUNDED]"),
+        ("2022-01_ARF_floor_zero",
+         "Event 3 — $0 ARF floor (TAX; rebate unchanged) (2022-01) "
+         "[BOUNDED]"),
+        ("2022-05_threshold_110kw_catA",
+         "Event 4 — 97->110kW Cat A threshold (confounder; rebate unchanged) "
+         "(effective May 2022)"),
         ("2024-01_eeai_cap15k_step",
-         "Event 4 — EEAI cap cut S$20k -> S$15k (2024-01): rebate S$45k -> S$40k "
+         "Event 5 — EEAI cap cut S$20k -> S$15k (2024-01): rebate S$45k -> S$40k "
          "(verified; the EV-era step)"),
     ]
-    fig, axes = plt.subplots(4, 1, figsize=(11, 13), sharex=True)
+    fig, axes = plt.subplots(5, 1, figsize=(11, 16), sharex=True)
     for ax, (ep, title) in zip(axes, episodes):
         sub = es[es["episode"] == ep].copy()
         max_lag = mindex(panel_end) - mindex(ep.split("_")[0])

@@ -12,30 +12,36 @@ pandemic NA months 2020-04/05/06):
         + catA_quota + trend + cpi_all_items
 
 Rebate intensity is reported in TWO separate specifications (never combined —
-the verified dose is a near-exact linear transform of the real-policy dummies,
-so dose + all dummies + trend + intercept would be near-collinear; each
-exhibit picks ONE spec and documents it):
-    * DUMMY spec (M1, PRIMARY)  : the 3 real dose-step dummies
-        (reg_real_ves_201801, reg_real_evstack_202101, reg_eeai_cap15k_202401)
-        + reg_arffloor_zero_202201 — which is the $0-ARF-floor TAX provision
-        AND numerically identical to the 97->110kW threshold dummy, so it
-        controls the 2022-01 confounder directly (the old M1b threshold spec
-        is subsumed: threshold == reg_arffloor_zero_202201).
-    * DOSE  spec  (M3)          : the continuous nominal dose (per 1000 S$).
+the verified dose is an exact linear transform of the 3 dose-step dummies,
+so dose + those dummies + trend + intercept would be collinear; each exhibit
+picks ONE spec and documents it):
+    * DUMMY spec (M1, PRIMARY)  : the 5 real-policy dummies
+        (reg_real_ves_201801, reg_real_evstack_202101,
+         reg_arffloor_zero_202201, reg_threshold_110kw_202205,
+         reg_eeai_cap15k_202401). The 2022-05 threshold dummy is the
+        confounder control for the 97->110 kW Category A change (effective
+        from the May 2022 bidding exercise — NOT co-timed with the ARF
+        floor).
+    * DOSE  spec  (M3)          : the continuous nominal dose (per 1000 S$)
+                                  + the 2022-05 threshold dummy (the threshold
+                                  switches inside a flat-dose stretch, so it is
+                                  not collinear with the dose).
 A contemporaneous-demand model (M2) and a demand-only baseline (M4) are also
 reported.
 
 2022+ EV-ERA SCOPE (2022-01..2025-05, 41 obs — NOW A VALID ESTIMATION SCOPE):
 Under the verified policy the dose varies inside this window (45000 ->
 40000 at 2024-01, the EEAI cap cut), so the rebate coefficient IS identifiable
-here (the old rank-deficiency rule is removed). Estimated:
+here (the old rank-deficiency rule is removed). Two real dummies vary inside
+this window (the 2024-01 cap cut and the 2022-05 threshold). Estimated:
     * E1 (dose)  : price ~ demand_l1 + demand_l2 + dose_1000
-                   + catA_quota + trend(local) + cpi_all_items
+                   + reg_threshold_110kw_202205 + catA_quota
+                   + trend(local) + cpi_all_items
     * E2 (dummy) : price ~ demand_l1 + demand_l2 + reg_eeai_cap15k_202401
-                   + catA_quota + trend(local) + cpi_all_items
-                   (the only real dummy that varies inside the window; the
-                   ARF-floor / VES / evstack dummies are constant = 1 there
-                   and would be collinear with the intercept)
+                   + reg_threshold_110kw_202205 + catA_quota
+                   + trend(local) + cpi_all_items
+                   (the ARF-floor / VES / evstack dummies are constant = 1
+                   there and would be collinear with the intercept)
     * E3         : demand-only baseline (demand -> price in the EV era).
 
 The DEMAND regressor is ``catA_bids_received_clean`` (corrected for the Batch A
@@ -51,13 +57,16 @@ Outputs:
 Confounder notes:
     * 2026 PARF cuts + the 2026 supply trough live in the COE-only extension
       (2025-06..2026-10) and do NOT enter the joint-window models.
-    * The Jan-2022 Cat A 97->110kW threshold change is co-timed with the $0 ARF
-      floor; it is controlled by reg_arffloor_zero_202201 in the M1 dummy spec
-      (identical dummy), so the 2022-01 coefficient is the ARF-floor/threshold
-      effect, not the rebate (the dose does NOT step at 2022-01 under the
-      verified schedule).
-    * The pre-2018 CEVS dose (20000) is an ESTIMATE (direction certain,
-      magnitude approximate) — it only affects the M3 dose coefficient.
+    * The May-2022 Cat A 97->110kW threshold change (effective from the May
+      2022 bidding exercise; LTA announcement 14 Apr 2022) is controlled by
+      reg_threshold_110kw_202205 in BOTH the dummy and the dose specs. It is
+      NOT co-timed with the Jan-2022 $0 ARF floor (reg_arffloor_zero_202201),
+      which is a separate TAX provision; the dose does NOT step at 2022-01
+      under the verified schedule.
+    * The pre-2018 CEVS dose (30000) is VERIFIED from the LTA revised-CEVS
+      table (Band A1 $30,000, 2015-07..2017-12); an earlier conservative
+      20000 estimate gives the same headline (sensitivity note in
+      tables/data_audit.csv).
     * Simultaneity / reverse causality: policy is adjusted in response to EV
       demand, and registrations depend on the COE price paid. All rebate
       coefficients are read as bounds, not precise causal magnitudes.
@@ -79,15 +88,18 @@ OUT_DIR = D.ROOT / "tables"
 OUT = OUT_DIR / "price_equation.csv"
 OUT_2022 = OUT_DIR / "price_equation_2022plus_robustness.csv"
 
-# Real-policy dummies (verified). reg_arffloor_zero_202201 == 97->110kW
-# threshold confounder (both switch on 2022-01) -> it is the confounder control.
+# Real-policy dummies (verified). reg_threshold_110kw_202205 is the 97->110kW
+# Category A confounder control (effective May 2022; separate from the
+# Jan-2022 ARF-floor tax provision).
 REAL_DUMMIES = [
     "reg_real_ves_201801",
     "reg_real_evstack_202101",
     "reg_arffloor_zero_202201",
+    "reg_threshold_110kw_202205",
     "reg_eeai_cap15k_202401",
 ]
-# The only real dummy that varies INSIDE the 2022+ window.
+# Dummies that vary INSIDE the 2022+ window (all others are constant = 1).
+EV_ERA_DUMMIES = ["reg_threshold_110kw_202205", "reg_eeai_cap15k_202401"]
 EV_ERA_DUMMY = "reg_eeai_cap15k_202401"
 
 
@@ -105,9 +117,9 @@ def fit_full_specs(df, price_col, label):
     controls = ["catA_quota", "trend", "cpi_all_items"]
     specs = []
 
-    # M1 PRIMARY: lagged demand + 4 real-policy dummies
-    # (reg_arffloor_zero_202201 controls the co-timed 97->110kW threshold
-    #  confounder — it is numerically identical to the threshold dummy)
+    # M1 PRIMARY: lagged demand + 5 real-policy dummies
+    # (reg_arffloor_zero_202201 = $0 ARF floor tax; reg_threshold_110kw_202205
+    #  = 97->110kW Cat A threshold confounder, effective May 2022)
     X = pd.DataFrame({
         "demand_l1": df["demand_l1"], "demand_l2": df["demand_l2"],
         **{d: df[d] for d in REAL_DUMMIES},
@@ -116,38 +128,45 @@ def fit_full_specs(df, price_col, label):
     res = D.ols(df[price_col], X, cov_type="HC1")
     specs.append(("M1_primary_lagged_dum", res,
                   ["demand_l1", "demand_l2", *REAL_DUMMIES, *controls],
-                  "PRIMARY: lag-1+lag-2 demand + 4 real-policy dummies "
-                  "(2022-01 = $0 ARF floor + 97->110kW threshold confounder)"))
+                  "PRIMARY: lag-1+lag-2 demand + 5 real-policy dummies "
+                  "(2022-01 = $0 ARF floor tax; 2022-05 = 97->110kW threshold "
+                  "confounder; 2024-01 = EEAI cap cut)"))
     res_hac = D.ols(df[price_col], X, cov_type="HAC", maxlags=3)
     specs.append(("M1_primary_lagged_dum_HAC", res_hac,
                   ["demand_l1", "demand_l2", *REAL_DUMMIES, *controls],
                   "same as M1, Newey-West lag-3 SEs"))
 
-    # M2: contemporaneous demand (reported, not primary) + dose
+    # M2: contemporaneous demand (reported, not primary) + dose + threshold
     X = pd.DataFrame({
         "demand_t0": df["demand_t0"],
         "dose_1000": df["dose_nominal_sgd"] / 1000.0,
+        "reg_threshold_110kw_202205": df["reg_threshold_110kw_202205"],
         **{c: df[c] for c in controls},
     })
     res = D.ols(df[price_col], X, cov_type="HC1")
     specs.append(("M2_contemporaneous_dose", res,
-                  ["demand_t0", "dose_1000", *controls],
-                  "contemporaneous demand (reported); dose spec"))
+                  ["demand_t0", "dose_1000", "reg_threshold_110kw_202205", *controls],
+                  "contemporaneous demand (reported); dose spec + May-2022 "
+                  "threshold control"))
 
-    # M3: lagged demand + continuous DOSE (separate from dummies)
+    # M3: lagged demand + continuous DOSE + threshold (separate from dummies)
     X = pd.DataFrame({
         "demand_l1": df["demand_l1"], "demand_l2": df["demand_l2"],
         "dose_1000": df["dose_nominal_sgd"] / 1000.0,
+        "reg_threshold_110kw_202205": df["reg_threshold_110kw_202205"],
         **{c: df[c] for c in controls},
     })
     res = D.ols(df[price_col], X, cov_type="HC1")
     specs.append(("M3_lagged_dose", res,
-                  ["demand_l1", "demand_l2", "dose_1000", *controls],
-                  "lagged demand + continuous dose (per 1000 S$); dose spec. "
-                  "2016-01..2017-12 dose level is the CEVS estimate (20000)"))
+                  ["demand_l1", "demand_l2", "dose_1000",
+                   "reg_threshold_110kw_202205", *controls],
+                  "lagged demand + continuous dose (per 1000 S$) + May-2022 "
+                  "threshold control; dose spec. All dose levels verified "
+                  "(2016-01..2017-12 = 30000 revised CEVS A1)"))
     res_hac = D.ols(df[price_col], X, cov_type="HAC", maxlags=3)
     specs.append(("M3_lagged_dose_HAC", res_hac,
-                  ["demand_l1", "demand_l2", "dose_1000", *controls],
+                  ["demand_l1", "demand_l2", "dose_1000",
+                   "reg_threshold_110kw_202205", *controls],
                   "same as M3, Newey-West lag-3 SEs"))
 
     # M4: lagged demand ONLY (no rebate) -- demand->price baseline
@@ -170,35 +189,43 @@ def fit_ev_era_specs(sub, price_col, label):
     controls = ["catA_quota", "trend22", "cpi_all_items"]
     specs = []
 
-    # E1: dose-only spec (two levels: 45, 40)
+    # E1: dose-only spec (two levels: 45, 40) + May-2022 threshold control
     X = pd.DataFrame({
         "demand_l1": sub["demand_l1"], "demand_l2": sub["demand_l2"],
         "dose_1000": sub["dose_nominal_sgd"] / 1000.0,
+        "reg_threshold_110kw_202205": sub["reg_threshold_110kw_202205"],
         **{c: sub[c] for c in controls},
     })
     res = D.ols(sub[price_col], X, cov_type="HC1")
     specs.append(("E1_ev_era_lagged_dose", res,
-                  ["demand_l1", "demand_l2", "dose_1000", *controls],
+                  ["demand_l1", "demand_l2", "dose_1000",
+                   "reg_threshold_110kw_202205", *controls],
                   "2022+ EV era: lagged demand + dose (45000->40000 at 2024-01) "
-                  "+ local trend + quota + CPI (dose-only spec)"))
+                  "+ May-2022 threshold control + local trend + quota + CPI "
+                  "(dose-only spec)"))
     res_hac = D.ols(sub[price_col], X, cov_type="HAC", maxlags=3)
     specs.append(("E1_ev_era_lagged_dose_HAC", res_hac,
-                  ["demand_l1", "demand_l2", "dose_1000", *controls],
+                  ["demand_l1", "demand_l2", "dose_1000",
+                   "reg_threshold_110kw_202205", *controls],
                   "same as E1, Newey-West lag-3 SEs"))
 
-    # E2: dummy spec (only reg_eeai_cap15k_202401 varies inside the window;
-    # the other real dummies are constant 1 -> collinear with intercept)
+    # E2: dummy spec (reg_eeai_cap15k_202401 + reg_threshold_110kw_202205 vary
+    # inside the window; the other real dummies are constant 1 -> collinear
+    # with intercept)
     X = pd.DataFrame({
         "demand_l1": sub["demand_l1"], "demand_l2": sub["demand_l2"],
-        EV_ERA_DUMMY: sub[EV_ERA_DUMMY],
+        "reg_eeai_cap15k_202401": sub["reg_eeai_cap15k_202401"],
+        "reg_threshold_110kw_202205": sub["reg_threshold_110kw_202205"],
         **{c: sub[c] for c in controls},
     })
     res = D.ols(sub[price_col], X, cov_type="HC1")
     specs.append(("E2_ev_era_lagged_dum", res,
-                  ["demand_l1", "demand_l2", EV_ERA_DUMMY, *controls],
+                  ["demand_l1", "demand_l2", "reg_eeai_cap15k_202401",
+                   "reg_threshold_110kw_202205", *controls],
                   "2022+ EV era: lagged demand + reg_eeai_cap15k_202401 "
-                  "(45000->40000 step) + local trend + quota + CPI (dummy-only "
-                  "spec; ARF-floor/VES/evstack dummies constant in-window)"))
+                  "(45000->40000 step) + May-2022 threshold control + local "
+                  "trend + quota + CPI (dummy-only spec; ARF-floor/VES/evstack "
+                  "dummies constant in-window)"))
 
     # E3: demand-only baseline in the EV era
     X = pd.DataFrame({"demand_l1": sub["demand_l1"], "demand_l2": sub["demand_l2"],
@@ -257,10 +284,12 @@ def main():
         n_obs=n_full,
         notes="demand regressor = corrected catA_bids_received (lag 1+2 primary, "
               "contemporaneous reported); rebate via separate dummy & dose specs "
-              "(documented choice — near-collinear if combined); real-policy "
-              "dummies; reg_arffloor_zero_202201 controls the co-timed 97->110kW "
-              "threshold; 2022+ EV-era scope now estimated (dose 45000->40000 at "
-              "2024-01); nominal & real reported; core finding must not reverse.",
+              "(documented choice — collinear if combined); 5 real-policy "
+              "dummies incl. the May-2022 97->110kW threshold confounder "
+              "(reg_threshold_110kw_202205), also added to the dose specs; "
+              "2022+ EV-era scope now estimated (dose 45000->40000 at "
+              "2024-01; threshold + cap dummies vary in-window); nominal & real "
+              "reported; core finding must not reverse.",
     )
 
     print(f"[price_equation] wrote {OUT}  rows={len(full)}")

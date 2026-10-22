@@ -1,6 +1,6 @@
 item,value,note
-effective_in_window_changes,3,"3 verified-policy dose steps (2018-01, 2021-01, 2024-01); plus the 2022-01 ARF-floor-zero tax provision (no dose step) and the 2022-01 97->110kW threshold confounder"
-distinct_dose_values,20000; 25000; 40000; 45000,"nominal S$ combined max EV rebate; 2016-01..2017-12 = 20000 is a CEVS ESTIMATE (direction certain, magnitude approximate); 2018-01 onward all verified"
+effective_in_window_changes,3,3 verified-policy dose steps (2018-01: 30000->20000 CEVS->VES; 2021-01: 20000->45000 enhanced VES + EEAI; 2024-01: 45000->40000 EEAI cap cut); plus two non-dose in-window events: the 2022-01 ARF-floor-zero tax provision and the 2022-05 97->110kW threshold confounder (separate dummy)
+distinct_dose_values,20000; 30000; 40000; 45000,nominal S$ combined max EV rebate; ALL levels verified from LTA/NEA tables (2016-01..2017-12 = 30000 revised CEVS A1; 2018-01..2020-12 = 20000 VES A1; 2021-01..2023-12 = 45000; 2024-01..2025-05 = 40000)
 n_distinct_dose_values,4,
 n_distinct_dose_values_2022plus,2,"ASSERTED: 2022-01..2025-05 has 2 distinct doses (45000, 40000) -> the 2022+ window is a VALID ESTIMATION scope (41 obs). Estimable because the dose varies within the window (2024-01 cap cut)."
 estimation_windows,FULL 2016-01..2025-05 (primary); 2022+ 2022-01..2025-05 (also valid for headline exhibits),full window = CEVS->VES transition + overall level effects; 2022+ = EV era (45000 -> 40000 step at 2024-01). Both scopes reported for the rebate->price and rebate->demand exhibits.

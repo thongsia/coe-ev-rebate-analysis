@@ -25,7 +25,7 @@ METHOD (2-stage, consistent with the primary mediator lag):
 SCOPES (dual):
     * FULL WINDOW (primary; 2016-01..2025-05, listwise N=110, edge months
       dropped for the mediator lag): the dose varies across 4 levels
-      (20000/25000/45000/40000) so it IS identifiable. The mediated share
+      (30000/20000/45000/40000) so it IS identifiable. The mediated share
       is computed on this full-window sample (scope-guard check (c)).
       Pre-2022 years ARE included; we state that and bound their
       EV-relevance (pre-2022 "demand" is total-car demand, not EV).
@@ -81,7 +81,7 @@ SEED = 20261012
 CONTROLS = ["catA_quota", "trend", "cpi_all_items"]
 # The rebate term used as the treatment. We use the continuous DOSE (cleanest
 # intensity). The dose is NOT constant over the full window (varies
-# 20000/25000/45000/40000) NOR over the 2022+ window (45000 -> 40000 at
+# 30000/20000/45000/40000) NOR over the 2022+ window (45000 -> 40000 at
 # 2024-01), so it IS identifiable in both scopes.
 TREAT = "dose_1000"
 

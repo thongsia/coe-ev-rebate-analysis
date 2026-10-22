@@ -10,22 +10,26 @@ FULL WINDOW (primary; 2016-01..2025-05, listwise N=110):
         + trend + catA_quota
 
 Rebate intensity in two separate specifications (documented choice — the
-verified dose is a near-exact linear transform of the real-policy dummies, so
+verified dose is an exact linear transform of the 3 dose-step dummies, so
 they are never combined in one model):
-    * DUMMY spec : the 4 real-policy dummies (VES 2018, EV stack 2021,
-                   ARF-floor-zero 2022 [= the $0 ARF floor tax provision AND
-                   the 97->110kW threshold confounder, both co-timed],
-                   EEAI cap15k 2024).
-    * DOSE  spec : the continuous nominal dose (per 1000 S$).
+    * DUMMY spec : the 5 real-policy dummies (VES 2018, EV stack 2021,
+                   ARF-floor-zero 2022 [the $0 ARF floor tax provision],
+                   97->110kW threshold 2022-05 [confounder, effective from
+                   the May 2022 bidding exercise], EEAI cap15k 2024).
+    * DOSE  spec : the continuous nominal dose (per 1000 S$) + the 2022-05
+                   threshold dummy (not collinear with the dose — it switches
+                   inside a flat-dose stretch).
 Robust (HC1) and HAC (Newey-West lag-3) SEs are reported.
 
 2022+ EV-ERA SCOPE (2022-01..2025-05, 41 obs — NOW A VALID ESTIMATION SCOPE):
 the verified dose varies inside the window (45000 -> 40000 at 2024-01, the
 EEAI cap cut), so the rebate coefficient is identifiable here (old
 rank-deficiency rule removed):
-    * E1 (dose)  : demand ~ dose_1000 + trend(local) + catA_quota
-    * E2 (dummy) : demand ~ reg_eeai_cap15k_202401 + trend(local) + catA_quota
-                   (only real dummy varying inside the window)
+    * E1 (dose)  : demand ~ dose_1000 + reg_threshold_110kw_202205
+                   + trend(local) + catA_quota
+    * E2 (dummy) : demand ~ reg_eeai_cap15k_202401
+                   + reg_threshold_110kw_202205 + trend(local) + catA_quota
+                   (the two real dummies that vary inside the window)
     * E3         : demand-only baseline (rebate omitted)
 
 The dependent variable is the CORRECTED Cat A demand (catA_bids_received_clean;
@@ -69,11 +73,13 @@ OUT_2022 = OUT_DIR / "demand_2022plus_interpretation.csv"
 OUT_XLAG = OUT_DIR / "crosslag_check.csv"
 
 # Real-policy dummies (verified). reg_arffloor_zero_202201 is the $0 ARF floor
-# (tax provision) AND the 97->110kW threshold confounder (both 2022-01).
+# (tax provision, Jan 2022); reg_threshold_110kw_202205 is the 97->110kW
+# Category A threshold confounder (effective May 2022; separate event).
 REAL_DUMMIES = [
     "reg_real_ves_201801",
     "reg_real_evstack_202101",
     "reg_arffloor_zero_202201",
+    "reg_threshold_110kw_202205",
     "reg_eeai_cap15k_202401",
 ]
 # The only real dummy that varies INSIDE the 2022+ window.
@@ -97,28 +103,32 @@ def build():
 
 
 def fit_full_specs(df):
-    """Full-window rebate -> demand. Dummy spec (4 real-policy dummies) and
+    """Full-window rebate -> demand. Dummy spec (5 real-policy dummies) and
     dose spec (continuous), reported separately (documented choice)."""
     specs = []
     X = pd.DataFrame({**{d: df[d] for d in REAL_DUMMIES},
                       "trend": df["trend"], "catA_quota": df["catA_quota"]})
     res = D.ols(df["catA_bids_received_clean"], X, cov_type="HC1")
     specs.append(("dummy", res, REAL_DUMMIES + ["trend", "catA_quota"],
-                  "4 real-policy dummies + trend + quota (dummy spec); "
-                  "2022-01 = $0 ARF floor (tax) + 97->110kW threshold "
-                  "(co-timed confounder)"))
+                  "5 real-policy dummies + trend + quota (dummy spec); "
+                  "2022-01 = $0 ARF floor (tax); 2022-05 = 97->110kW "
+                  "threshold (confounder, effective May 2022)"))
     res_h = D.ols(df["catA_bids_received_clean"], X, cov_type="HAC", maxlags=3)
     specs.append(("dummy_HAC", res_h, REAL_DUMMIES + ["trend", "catA_quota"],
                   "same as dummy, Newey-West lag-3 SEs"))
 
     Xd = pd.DataFrame({"dose_1000": df["dose_nominal_sgd"] / 1000.0,
+                       "reg_threshold_110kw_202205": df["reg_threshold_110kw_202205"],
                        "trend": df["trend"], "catA_quota": df["catA_quota"]})
     res = D.ols(df["catA_bids_received_clean"], Xd, cov_type="HC1")
-    specs.append(("dose", res, ["dose_1000", "trend", "catA_quota"],
-                  "continuous dose (per 1000 S$) + trend + quota (dose spec); "
-                  "2016-01..2017-12 dose level is the CEVS estimate (20000)"))
+    specs.append(("dose", res, ["dose_1000", "reg_threshold_110kw_202205",
+                                "trend", "catA_quota"],
+                  "continuous dose (per 1000 S$) + May-2022 threshold control "
+                  "+ trend + quota (dose spec); all dose levels verified "
+                  "(2016-01..2017-12 = 30000 revised CEVS A1)"))
     res_h = D.ols(df["catA_bids_received_clean"], Xd, cov_type="HAC", maxlags=3)
-    specs.append(("dose_HAC", res_h, ["dose_1000", "trend", "catA_quota"],
+    specs.append(("dose_HAC", res_h, ["dose_1000", "reg_threshold_110kw_202205",
+                                      "trend", "catA_quota"],
                   "same as dose, Newey-West lag-3 SEs"))
     return specs
 
@@ -130,17 +140,22 @@ def fit_ev_era_specs(sub):
     sub["trend22"] = np.arange(len(sub))
     specs = []
     X = pd.DataFrame({"dose_1000": sub["dose_nominal_sgd"] / 1000.0,
+                      "reg_threshold_110kw_202205": sub["reg_threshold_110kw_202205"],
                       "trend22": sub["trend22"], "catA_quota": sub["catA_quota"]})
     res = D.ols(sub["catA_bids_received_clean"], X, cov_type="HC1")
-    specs.append(("E1_ev_era_dose", res, ["dose_1000", "trend22", "catA_quota"],
-                  "2022+ EV era: dose (45000->40000 at 2024-01) + local trend "
-                  "+ quota (dose-only spec)"))
+    specs.append(("E1_ev_era_dose", res, ["dose_1000", "reg_threshold_110kw_202205",
+                                          "trend22", "catA_quota"],
+                  "2022+ EV era: dose (45000->40000 at 2024-01) + May-2022 "
+                  "threshold control + local trend + quota (dose-only spec)"))
     Xd = pd.DataFrame({EV_ERA_DUMMY: sub[EV_ERA_DUMMY],
+                       "reg_threshold_110kw_202205": sub["reg_threshold_110kw_202205"],
                        "trend22": sub["trend22"], "catA_quota": sub["catA_quota"]})
     res = D.ols(sub["catA_bids_received_clean"], Xd, cov_type="HC1")
-    specs.append(("E2_ev_era_dum", res, [EV_ERA_DUMMY, "trend22", "catA_quota"],
+    specs.append(("E2_ev_era_dum", res, [EV_ERA_DUMMY, "reg_threshold_110kw_202205",
+                                         "trend22", "catA_quota"],
                   "2022+ EV era: reg_eeai_cap15k_202401 (45000->40000 step) + "
-                  "local trend + quota (dummy-only spec)"))
+                  "May-2022 threshold control + local trend + quota (dummy-only "
+                  "spec)"))
     return specs
 
 
@@ -174,10 +189,13 @@ def main():
         name = f"dose_{lag:+d}_month"
         if lag == 0:
             dose_lag = df["dose_nominal_sgd"] / 1000.0
-        elif lag > 0:
-            dose_lag = (df["dose_nominal_sgd"].shift(lag)) / 1000.0  # rebate lagging
         else:
-            dose_lag = (df["dose_nominal_sgd"].shift(-lag)) / 1000.0  # rebate leading
+            # shift(-lag): lag=-1 -> dose[t-1] (rebate leads demand by 1);
+            # lag=+1 -> dose[t+1] (rebate lags demand by 1). NOTE: the earlier
+            # version used shift(lag) for the positive branch, which is the
+            # SAME series as shift(-(-1)) for lag=-1 — so the -1 and +1 rows
+            # came out byte-identical (a silent sign bug, now fixed).
+            dose_lag = (df["dose_nominal_sgd"].shift(-lag)) / 1000.0
         X = pd.DataFrame({name: dose_lag, "trend": df["trend"],
                           "catA_quota": df["catA_quota"]})
         res = D.ols(df["catA_bids_received_clean"], X, cov_type="HC1")

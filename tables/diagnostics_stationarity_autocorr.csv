@@ -2,14 +2,14 @@ variable,form,adf_stat,adf_p,stationary_005,note
 catA_clearing_price (nominal),level,0.10631524969412981,0.9664896298423258,False,"ADF, AIC lag"
 catA_clearing_price (nominal),1st diff,-9.83704726920975,4.864085620108187e-17,True,"ADF, AIC lag"
 catA_clearing_price (real),level,-0.1959837934068416,0.9389986484362638,False,"ADF, AIC lag"
-catA_clearing_price (real),1st diff,-10.041833325728636,1.4892474802307523e-17,True,"ADF, AIC lag"
-catA_bids_received_clean (demand),level,-2.2185109174679116,0.1995957869772083,False,"ADF, AIC lag"
-catA_bids_received_clean (demand),1st diff,-8.185618468090668,7.914586208642448e-13,True,"ADF, AIC lag"
-cpi_all_items (CPI),level,-0.9628658961737077,0.7665661075088452,False,"ADF, AIC lag"
-cpi_all_items (CPI),1st diff,-1.6658485706070512,0.4487886093657473,False,"ADF, AIC lag"
-primary price eq. residuals,residual,,,,Durbin-Watson = 0.7886
-primary price eq. residuals,residual,38.54690159577671,5.345356139355105e-10,significant,Ljung-Box Q(1)
-primary price eq. residuals,residual,48.59159919889962,2.808460373732914e-11,significant,Ljung-Box Q(2)
-primary price eq. residuals,residual,54.54064023177022,8.604093765780565e-12,significant,Ljung-Box Q(3)
-primary price eq. residuals,residual,55.027871914063056,3.205579914651762e-11,significant,Ljung-Box Q(4)
-primary price eq. residuals,residual,41.92937121572408,4.153003486417962e-09,significant,Breusch-Godfrey (nlags=3): F=20.0961
+catA_clearing_price (real),1st diff,-10.041833325728637,1.4892474802307197e-17,True,"ADF, AIC lag"
+catA_bids_received_clean (demand),level,-2.2185109174679107,0.1995957869772086,False,"ADF, AIC lag"
+catA_bids_received_clean (demand),1st diff,-8.18561846809067,7.914586208642358e-13,True,"ADF, AIC lag"
+cpi_all_items (CPI),level,-0.9628658961737093,0.7665661075088446,False,"ADF, AIC lag"
+cpi_all_items (CPI),1st diff,-1.665848570607055,0.4487886093657452,False,"ADF, AIC lag"
+primary price eq. residuals,residual,,,,Durbin-Watson = 0.7904
+primary price eq. residuals,residual,38.41888735602237,5.707731165258219e-10,significant,Ljung-Box Q(1)
+primary price eq. residuals,residual,48.20903935386962,3.400479142642009e-11,significant,Ljung-Box Q(2)
+primary price eq. residuals,residual,53.81753867232591,1.2272355725512909e-11,significant,Ljung-Box Q(3)
+primary price eq. residuals,residual,54.26550051081053,4.630293026375371e-11,significant,Ljung-Box Q(4)
+primary price eq. residuals,residual,41.72552609230053,4.587918979048192e-09,significant,Breusch-Godfrey (nlags=3): F=19.7270

@@ -115,6 +115,7 @@ def pull() -> dict:
         ("ves", "reg_real_ves_201801"),
         ("evstack", "reg_real_evstack_202101"),
         ("arffloor", "reg_arffloor_zero_202201"),
+        ("thresh", "reg_threshold_110kw_202205"),
         ("cap15k", "reg_eeai_cap15k_202401"),
         ("d1", "demand_l1"),
         ("d2", "demand_l2"),
@@ -122,6 +123,7 @@ def pull() -> dict:
         v[tag] = pe_block(term)
     # real versions of the headline dummies + dose
     v["arffloor_real"] = pe_block("reg_arffloor_zero_202201", "real")
+    v["thresh_real"] = pe_block("reg_threshold_110kw_202205", "real")
     v["cap15k_real"] = pe_block("reg_eeai_cap15k_202401", "real")
     # dose spec (M3), nominal + real + HAC
     M3 = "M3_lagged_dose"
@@ -212,7 +214,7 @@ def pull() -> dict:
     v["med_full"] = {r["effect"]: r for _, r in med[med["scope"] == "full_window"].iterrows()}
     v["med_ev"] = {r["effect"]: r for _, r in med[med["scope"] == "ev_era_2022plus"].iterrows()}
 
-    # ---- event study (4 verified-policy events) ----
+    # ---- event study (5 verified-policy events) ----
     es = pd.read_csv(TABLES / "event_study_coefficients.csv")
     pre = pd.read_csv(TABLES / "event_study_prechecks.csv")
 
@@ -225,13 +227,15 @@ def pull() -> dict:
     v["es"] = {
         "2018": {"onset": esrow("2018-01_cevs_lapse_VES_onset", "onset_0")},
         "2021": {"onset": esrow("2021-01_enhanced_VES_EEAI_stack", "onset_0")},
-        "2022": {"onset": esrow("2022-01_ARF_floor_zero_PLUS_threshold_bounded", "onset_0")},
+        "2022": {"onset": esrow("2022-01_ARF_floor_zero", "onset_0")},
+        "2022_05": {"onset": esrow("2022-05_threshold_110kw_catA", "onset_0")},
         "2024": {"onset": esrow("2024-01_eeai_cap15k_step", "onset_0")},
     }
     v["es_pre"] = {
         "2018": pre[pre["episode"] == "2018-01_cevs_lapse_VES_onset"].iloc[0],
         "2021": pre[pre["episode"] == "2021-01_enhanced_VES_EEAI_stack"].iloc[0],
-        "2022": pre[pre["episode"] == "2022-01_ARF_floor_zero_PLUS_threshold_bounded"].iloc[0],
+        "2022": pre[pre["episode"] == "2022-01_ARF_floor_zero"].iloc[0],
+        "2022_05": pre[pre["episode"] == "2022-05_threshold_110kw_catA"].iloc[0],
         "2024": pre[pre["episode"] == "2024-01_eeai_cap15k_step"].iloc[0],
     }
 
@@ -397,7 +401,7 @@ def build_report(v: dict) -> str:
       f"category E {nc22['E']['coef_pct_of_mean']:+.1f}% moves with the car channels) — so the jump is "
       f"neither a clean market-wide signal nor a clean EV-specific one. **And** the 2022-01 "
       f"effect is (i) not statistically robust (p={fp(v['arffloor']['p'])}) and (ii) a TAX provision ($0 "
-      f"ARF floor) co-timed with the 97→110kW threshold change, not a rebate dose step — so "
+      f"ARF floor) — a separate May-2022 threshold change is controlled, not a rebate dose step — so "
       f"it cannot be credited to the EV rebate.")
     A("")
     A(f"> **2022+ EV era (2022-01..2025-05; NOW an estimation scope — 41 obs, dose 45000→40000 at 2024-01):**")
@@ -486,23 +490,24 @@ def build_report(v: dict) -> str:
         A(f"| {r['effective_month']} | {r['programme']} | {r['size'] if pd.notna(r['size']) else '—'} "
           f"| {r['in_joint_window']} | {r['in_extension']} | {r['verification']} |")
     A("")
-    A("**Verified facts (all cited in the table):** CEVS in force 1 Jul 2015..31 Dec 2017 (revised "
-      "Band A1 ~$30k; we use a CONSERVATIVE CEVS dose of $20,000 for 2016-01..2017-12 — an "
-      "**ESTIMATE**: direction certain, magnitude approximate — as the pre-VES baseline). CEVS "
-      "LAPSES 1 Jan 2018; VES (Band A1 $25,000 off ARF, $5,000 ARF floor until 31 Dec 2021) begins "
-      "1 Jan 2018. Enhanced VES 1 Jan 2021 (A1 $25,000 maintained) + EEAI (45% off ARF, capped "
+    A("**Verified facts (all cited in the table):** Revised CEVS in force 1 Jul 2015..31 Dec 2017 "
+      "(Band A1 **$30,000**, verified — this is the 2016-01..2017-12 dose). CEVS "
+      "LAPSES 1 Jan 2018; VES (Band A1 **$20,000** off ARF, $5,000 ARF floor until 31 Dec 2021) begins "
+      "1 Jan 2018. Enhanced VES 1 Jan 2021 (A1 **$25,000**) + EEAI (45% off ARF, capped "
       "$20,000, 2021-01..2023-12). $0 ARF floor for electric cars 1 Jan 2022..31 Dec 2023 (extended "
-      "to 2027) — a **TAX PROVISION, not a rebate** (2022-01). EEAI cap cut to $15,000 2024-01, "
-      "$7,500 2026-01, ceases 2027-01. The 97→110 kW Cat A threshold change 1 Jan 2022 is a kept "
-      "confounder marker. 2026: VES A1 $22,500; 2027: VES A1 $20,000 (extension "
+      "to 2027) — a **TAX PROVISION, not a rebate** (2022-01; dose unchanged). "
+      "**Separate** confounder: the 97→110 kW Cat A threshold for electric cars took effect from the "
+      "May 2022 bidding exercise (LTA announcement 14 Apr 2022) — NOT 1 Jan 2022; it is a kept "
+      "confounder marker (`reg_threshold_110kw_202205`). EEAI cap cut to $15,000 2024-01, "
+      "$7,500 2026-01, ceases 2027-01. 2026: VES A1 $22,500; 2027: VES A1 $20,000 (extension "
       "window only). Every row in the table carries its cited policy source.")
     A("")
     A("### 2.3 The combined EV-rebate dose (column `dose_nominal_sgd`)")
     A("")
     A("| Period | Dose (S$, nominal) | Composition | Status |")
     A("|---|---|---|---|")
-    A("| 2016-01..2017-12 | 20,000 | CEVS (pre-VES baseline) | **ESTIMATE** (flagged) |")
-    A("| 2018-01..2020-12 | 25,000 | VES Band A1 | verified |")
+    A("| 2016-01..2017-12 | 30,000 | Revised CEVS Band A1 | verified |")
+    A("| 2018-01..2020-12 | 20,000 | VES Band A1 | verified |")
     A("| 2021-01..2023-12 | 45,000 | VES A1 25,000 + EEAI cap 20,000 (stacked; $5,000 ARF floor → part of the cap unusable) | verified |")
     A("| 2024-01..2025-05 | 40,000 | VES A1 25,000 + EEAI cap 15,000 (zero ARF floor → full caps usable) | verified |")
     A("")
@@ -517,7 +522,7 @@ def build_report(v: dict) -> str:
     A("(b) The **2022+ EV era 2022-01..2025-05** is ALSO a VALID ESTIMATION scope (41 obs,")
     A("2 distinct dose levels 45000→40000 at 2024-01), because the dose varies within the window.")
     A("The headline price + bidding + mediation exhibits are estimated")
-    A("on BOTH scopes and both are reported. (c) Collinearity: the continuous dose and the 4")
+    A("on BOTH scopes and both are reported. (c) Collinearity: the continuous dose and the 5")
     A("real-policy dummies are near-exact linear transforms of one another — no spec mixes both;")
     A("each exhibit uses a dose-only OR dummy-only spec (documented per exhibit). Audited by")
     A("`src/05_scope_guard.py` (`tables/scope_audit.csv`) and re-verified by `src/14_verify.py`.")
@@ -549,19 +554,20 @@ def build_report(v: dict) -> str:
     A("")
     A("### 3.1 Price equation (rebate → price) — `tables/price_equation.csv`, `tables/price_equation_2022plus_robustness.csv`")
     A("")
-    A("**Full window (primary), DUMMY spec M1** (4 real-policy dummies, lag-1+lag-2 demand, quota,")
+    A("**Full window (primary), DUMMY spec M1** (5 real-policy dummies, lag-1+lag-2 demand, quota,")
     A("trend, CPI; nominal, nobs=108):")
     A("")
     A("| Term (real-policy) | Nominal coef (S$) | CI95 | p (HC1) | p (HAC) | Real coef (S$) | p (real) |")
     A("|---|---|---|---|---|---|---|")
     for label, key in [
-        ("**reg_real_ves_201801** (VES onset; 20000→25000)", "ves"),
-        ("**reg_real_evstack_202101** (enhanced VES+EEAI; 25000→45000)", "evstack"),
+        ("**reg_real_ves_201801** (VES onset; 30000→20000)", "ves"),
+        ("**reg_real_evstack_202101** (enhanced VES+EEAI; 20000→45000)", "evstack"),
         ("reg_arffloor_zero_202201 ($0 ARF floor — TAX)", "arffloor"),
+        ("reg_threshold_110kw_202205 (97→110kW threshold, May 2022 — confounder)", "thresh"),
         ("**reg_eeai_cap15k_202401** (EEAI cap cut; 45000→40000)", "cap15k"),
     ]:
         b = v[key]
-        real = v[key + "_real"] if key in ("arffloor", "cap15k") else None
+        real = v[key + "_real"] if key in ("arffloor", "thresh", "cap15k") else None
         rcoef = f"{real['coef']:+,.1f}" if real else "—"
         rp = fp(real["p"]) if real else "—"
         A(f"| {label} | {b['coef']:+,.1f} | [{b['ci_lo']:+,.1f}, {b['ci_hi']:+,.1f}] | "
@@ -571,13 +577,14 @@ def build_report(v: dict) -> str:
         A(f"| {label} | {b['coef']:+,.2f} | [{b['ci_lo']:+,.2f}, {b['ci_hi']:+,.2f}] | "
           f"{fp(b['p'])} | {fp(b['p_hac'])} | — | — |")
     A("")
-    A(f"**Full window, DOSE spec M3** (continuous, per 1000 S$): **nominal +{f0(v['dose']['coef'])} "
+    A(f"**Full window, DOSE spec M3** (continuous, per 1000 S$ + May-2022 threshold control): "
+      f"**nominal +{f0(v['dose']['coef'])} "
       f"S$/1000 S$ (CI95 [{f0(v['dose']['ci_lo'])}, {f0(v['dose']['ci_hi'])}], p={fp(v['dose']['p'])}); HAC "
       f"p={fp(v['dose']['p_hac'])}; real +{f0(v['dose_real']['coef'])} S$/1000 S$ (p={fp(v['dose_real']['p'])}).** "
       f"No nominal↔real reversal.")
     A("")
     A(f"**2022+ EV era (2022-01..2025-05, 41 obs, dose 45000→40000 at 2024-01 — estimable, 2 dose levels in window), DOSE spec E1** "
-      "(dose + local trend + quota, nominal):")
+      "(dose + May-2022 threshold control + local trend + quota, nominal):")
     A("")
     A(f"| Term | Coef (S$/1000 S$) | CI95 | p (HC1) | p (HAC) |")
     A(f"|---|---|---|---|---|")
@@ -588,8 +595,9 @@ def build_report(v: dict) -> str:
     A(f"| demand_l1 (S$/bid, E3) | {v['ev_d1']['coef']:+,.2f} | [{v['ev_d1']['ci_lo']:+,.2f}, {v['ev_d1']['ci_hi']:+,.2f}] | "
       f"{fp(v['ev_d1']['p'])} | — |")
     A("")
-    A("**Honest read:** full-window, the 2022-01 ARF-floor dummy is positive but not robust (a tax/")
-    A("threshold confounder, not a rebate step) and the 2024-01 cap-cut dummy is negative; the negative")
+    A("**Honest read:** full-window, the 2022-01 ARF-floor dummy is positive but not robust (a tax "
+      "provision, not a rebate step; the May-2022 threshold is controlled separately) and the 2024-01 "
+      "cap-cut dummy is negative; the negative")
     A("control (§3.6) does not falsify the 2022-01 effect but it cannot be credited to the rebate. **On the")
     A("2022+ EV era, the dose step IS statistically")
     A(f"significant (+{f0(v['ev_dose']['coef'])} S$/1000 S$, p={fp(v['ev_dose']['p'])}) and survives the 2022+ negative")
@@ -659,26 +667,28 @@ def build_report(v: dict) -> str:
       f"indirect {v['med_ev']['indirect']['estimate']:+.1f} (CI spans 0) — again NOT routed through bidding; 41 obs → low power. "
       f"Simultaneity flagged (rebate set in response to EV demand). Grade: not detectable (both scopes). → **charts/07_mediation_diagram.png**")
     A("")
-    A("### 3.5 Event study (4 verified-policy events) — `tables/event_study_coefficients.csv`, `tables/event_study_prechecks.csv`")
+    A("### 3.5 Event study (5 verified-policy events) — `tables/event_study_coefficients.csv`, `tables/event_study_prechecks.csv`")
     A("")
     A("| Event | Onset coef (S$) | CI95 | p | Pre-trend clean? | Note |")
     A("|---|---|---|---|---|---|")
     for tag, label in [
-        ("2018", "2018-01 CEVS lapse / VES onset (dose 20000 est→25000)"),
-        ("2021", "2021-01 enhanced VES + EEAI stack (dose 25000→45000)"),
-        ("2022", "2022-01 $0 ARF floor (TAX) + 97→110kW threshold (confounder) [BOUNDED]"),
+        ("2018", "2018-01 CEVS lapse / VES onset (dose 30000→20000)"),
+        ("2021", "2021-01 enhanced VES + EEAI stack (dose 20000→45000)"),
+        ("2022", "2022-01 $0 ARF floor (TAX, dose unchanged) [BOUNDED]"),
+        ("2022_05", "2022-05 97→110kW Cat A threshold (confounder, dose unchanged)"),
         ("2024", "2024-01 EEAI cap cut (dose 45000→40000; the EV-era step)"),
     ]:
         o = v["es"][tag]["onset"]
         p = v["es_pre"][tag]
+        clean = str(p["pre_trend_clean"]).strip().lower() == "true"
         A(f"| {label} | {o['coef']:+,.0f} | [{o['ci_lo']:+,.0f}, {o['ci_hi']:+,.0f}] | "
           f"{fp(o['p'])} | {p['pre_trend_clean']} (joint leads Wald p={fp(p['joint_leads_wald_p'])}) | "
-          f"{'BOUNDED — contaminated pre-trend' if not p['pre_trend_clean'] else 'clean'} |")
+          f"{'clean' if clean else 'BOUNDED — contaminated pre-trend'} |")
     A("")
-    A("**Honest read:** all four onsets have **contaminated pre-trends** (significant non-zero leads —")
+    A("**Honest read:** all five onsets have **contaminated pre-trends** (significant non-zero leads —")
     A("a secular COE trend is present), so every onset is a **bound** relative to a moving pre-trend, not")
-    A("a clean causal jump. The 2022-01 event is explicitly bounded (ARF floor + threshold combined,")
-    A("co-timed). The 2026-01 cap cut is descriptive-only (COE-only extension). → **charts/08_event_study.png**")
+    A("a clean causal jump. The 2022-01 event is explicitly bounded (a tax provision, not a rebate step);")
+    A("the 2022-05 threshold is a separate confounder episode. The 2026-01 cap cut is descriptive-only (COE-only extension). → **charts/08_event_study.png**")
     A("")
     A("### 3.6 Negative controls (the decisive test) — `tables/negative_controls.csv`")
     A("")
@@ -719,8 +729,8 @@ def build_report(v: dict) -> str:
       "buses, D motorcycles — the only two categories with no EV rebate) **split**: D shows "
       "a larger same-direction jump, C moves the other way (contaminated B and open E move "
       "with the car channels) — so the test is MIXED: the 2022-01 jump is neither a clean "
-      "market-wide signal nor a clean EV-specific one, and (with p=0.064, not robust; a TAX "
-      "provision co-timed with the threshold change) it is not credited to the rebate. "
+      f"market-wide signal nor a clean EV-specific one, and (with p={fp(v['arffloor']['p'])}, not robust; a TAX "
+      "provision; the May-2022 threshold change is controlled separately) it is not credited to the rebate. "
       "2022+ EV era — the 2024-01 step (the pure EV-rebate variation) is large across the "
       "EV-eligible car channels (A, B, open E) while the clean controls C/D move far less, "
       "so the 2024-01 EV-era step is **NOT falsified** — consistent with an EV-rebate "
@@ -765,14 +775,14 @@ def build_report(v: dict) -> str:
     A("---")
     A("## 4. Confounder discussion")
     A("")
-    A("- **Jan 2022 97→110kW Cat A threshold change (dominant confounder).** Co-timed with the $0 ARF")
-    A(f"  floor; shifts clearing prices across categories (2022-01 % moves, from §3.6: A "
+    A("- **May 2022 97→110kW Cat A threshold change (dominant confounder).** Effective from the May 2022")
+    A(f"  bidding exercise (LTA 14 Apr 2022), about 4 months AFTER the $0 ARF floor; shifts clearing prices across categories (2022-01 % moves, from §3.6: A "
       f"{nc22['A']['coef_pct_of_mean']:+.1f}%, D {nc22['D']['coef_pct_of_mean']:+.1f}%, "
       f"E {nc22['E']['coef_pct_of_mean']:+.1f}%, C {nc22['C']['coef_pct_of_mean']:+.1f}%). It is a kept confounder marker,")
-    A("  not a rebate dose; it complicates attributing the 2022-01 price move to the EV rebate alone.")
+    A("  controlled by `reg_threshold_110kw_202205` in every headline exhibit; it complicates attributing the 2022-01 price move to the EV rebate alone.")
     A("- **Secular COE price trend.** Prices are I(1) and trending; event-study leads are significant")
     A("  and non-zero (contaminated pre-trends), so onsets are bounds, not clean jumps.")
-    A("- **$0 ARF floor is a TAX provision, not a rebate.** While the $5,000 ARF floor applied (2021),")
+    A("- **$0 ARF floor is a TAX provision, not a rebate.** While the $5,000 ARF floor applied (2018-2021),")
     A("  part of the nominal EEAI cap was unusable; from 1 Jan 2022 the full cap is usable. Encoded as")
     A("  `reg_arffloor_zero_202201` and controlled separately from the rebate dose.")
     A("- **2026 PARF cut + 2026 supply trough.** The Jan-2026 EEAI cap cut sits in the COE-only")
@@ -784,9 +794,10 @@ def build_report(v: dict) -> str:
     A("---")
     A("## 5. Honest limitations")
     A("")
-    A("1. **CEVS dose is an ESTIMATE (2016-01..2017-12).** The pre-VES baseline of $20,000 is a")
-    A("   conservative estimate (direction certain, magnitude approximate); the revised CEVS Band A1 was")
-    A("   ~$30,000. All 2018+ dose levels are verified.")
+    A("1. **2016-01..2017-12 dose level = revised CEVS Band A1 = $30,000 (verified).** Earlier drafts")
+    A("   used a conservative $20,000 estimate; the headline is insensitive to this choice (dose coefficient")
+    A("   per S$1,000 barely moves between the two, both highly significant). All in-window dose levels are")
+    A("   verified against LTA/NEA tables.")
     A("2. **Combined-dose stacking assumption.** The dose adds VES A1 + EEAI cap when both are in force")
     A("   (45000 / 40000). This is the *maximum combined rebate available*, a CAP, not a realized average")
     A("   rebate actually claimed; real per-vehicle rebates are lower.")
@@ -799,8 +810,8 @@ def build_report(v: dict) -> str:
     A("6. **Total vs EV demand.** Cat A bid counts mix bids for EV and non-EV cars; total Cat A demand is")
     A("   dominated by non-EV cars, diluting any EV-specific bidding effect.")
     A("7. **Endogeneity / simultaneity** (§4): rebate policy responds to EV demand.")
-    A("8. **Event-window confounding.** All 4 event-study episodes have contaminated pre-trends; onsets")
-    A("   are bounds; 2022-01 is rebate/tax AND threshold combined (bounded).")
+    A("8. **Event-window confounding.** All 5 event-study episodes have contaminated pre-trends; onsets")
+    A("   are bounds; 2022-01 is bounded (tax provision), 2022-05 is a separate threshold-confounder episode.")
     A("9. **Null-coverage decay.** Registration counts are null on a rising share of rows (coverage")
     A("   18%→33%); `ev_reg` is a lower bound whose reliability decays.")
     A("10. **EV-label onset 2022-07 / right-truncation.** The registration channel is too short/censored")
@@ -824,7 +835,7 @@ def build_report(v: dict) -> str:
     A("| 5 | `charts/05_ev_demand.png` | `tables/chart05_ev_demand.csv` | EV registrations + EV share 2022-07..2025-05 (lower bound; some months have no count); Jan 2024 rebate cut marked |")
     A("| 6 | `charts/06_scatter_fit_ci.png` | `tables/chart06_scatter_fit_ci.csv` | price-vs-demand scatter with bivariate fitted line + 95% CI band (association only) |")
     A("| 7 | `charts/07_mediation_diagram.png` | `tables/chart07_mediation_effects.csv` | mediation chain (rebate → bidding demand → price) as a single diagram: per step, the prediction if the hypothesis were true vs the observed result (decade + 2022–25), and the not-via-bidding conclusion |")
-    A("| 8 | `charts/08_event_study.png` | `tables/chart08_event_study.csv` | event-study coefficients with CIs for the 4 verified-policy events; pre-trend contamination annotated |")
+    A("| 8 | `charts/08_event_study.png` | `tables/chart08_event_study.csv` | event-study coefficients with CIs for the 5 verified-policy events; pre-trend contamination annotated |")
     A("")
     A("---")
     A("## 7. Verification")

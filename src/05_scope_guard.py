@@ -30,7 +30,7 @@ Assertions enforced:
   (e) event-study samples span pre- AND post-treatment months;
   (f) data-flow / layering contract: no forward reads (a module may not read a
       file written by a LATER module);
-  (g) dose state: 4 distinct in-window doses {20000,25000,45000,40000} and 2
+  (g) dose state: 4 distinct in-window doses {20000,30000,45000,40000} and 2
       distinct doses in 2022-01..2025-05 {45000,40000} -> the 2022+ window
       is a valid estimation scope.
 
@@ -399,13 +399,14 @@ def run_audit() -> pd.DataFrame:
     full_doses = sorted(panel["dose_nominal_sgd"].unique().astype(int).tolist())
     tail = panel[panel["month"] >= "2022-01"]["dose_nominal_sgd"]
     tail_doses = sorted(tail.unique().astype(int).tolist())
-    ok_g = (full_doses == [20000, 25000, 40000, 45000]
+    ok_g = (full_doses == [20000, 30000, 40000, 45000]
             and tail_doses == [40000, 45000]
             and len(tail) == 41)
     add(
         "(g) dose state (verified policy): 4 distinct in-window doses "
-        "{20000,25000,40000,45000}; 2022+ window has 2 distinct doses "
-        "{40000,45000} over 41 obs -> 2022+ IS a valid estimation scope",
+        "{20000,30000,40000,45000} (all levels verified from LTA/NEA tables); "
+        "2022+ window has 2 distinct doses {40000,45000} over 41 obs -> "
+        "2022+ IS a valid estimation scope",
         "PASS" if ok_g else "FAIL",
         f"full-window distinct={full_doses}; 2022-01..2025-05 distinct="
         f"{tail_doses} (n={len(tail)}). The dose varies within the 2022+ "
@@ -414,10 +415,12 @@ def run_audit() -> pd.DataFrame:
 
     add(
         "SCOPE-FACT: effective verified-policy dose steps = 3 "
-        "(2018-01, 2021-01, 2024-01) + 2022-01 ARF-floor-zero (tax) "
-        "+ 2022-01 97->110kW threshold (confounder)",
+        "(2018-01: 30000->20000 CEVS->VES; 2021-01: 20000->45000 enhanced "
+        "VES + EEAI; 2024-01: 45000->40000 cap cut) + 2022-01 ARF-floor-zero "
+        "(tax) + 2022-05 97->110kW threshold (confounder, separate dummy)",
         "PASS",
-        "4 in-window policy events; low-power caveat: full window 110 monthly "
+        "5 in-window policy events (3 dose steps + 2022-01 ARF floor + "
+        "2022-05 threshold); low-power caveat: full window 110 monthly "
         "obs (113 months, 3 pandemic NA); 2022+ scope 41 obs. Grades bounded "
         "accordingly (step 12).",
     )

@@ -46,13 +46,15 @@ Negative-control taxonomy (verified against LTA's published category table):
 TWO SCOPE-CONDITIONED VERDICTS (the KEY diagnostic for the causal claim):
   * FULL-WINDOW scope — the 2022-01 price jump: under the verified policy the
     dose does NOT step at 2022-01 (the 2022-01 change was the $0 ARF floor,
-    a TAX provision; the co-timed 97->110kW threshold change is market-wide).
-    The 2022-01 level shift in the full-window dummy spec is carried by
-    reg_arffloor_zero_202201. If BOTH clean controls C/D show the same/larger
-    2022-01 % jump as A, the 2022-01 price jump is a MARKET-WIDE COMMON
-    SHOCK, not an EV-rebate channel; if they split (one same-direction with
-    at least half of A's size, the other not), the verdict is MIXED and the
-    test is inconclusive on market-wideness.
+    a TAX provision; the 97->110kW threshold change is a SEPARATE event
+    effective May 2022, controlled by reg_threshold_110kw_202205). The
+    2022-01 level shift in the full-window dummy spec is carried by
+    reg_arffloor_zero_202201 (net of the May-2022 threshold effect). If BOTH
+    clean controls C/D show the same/larger 2022-01 % jump as A, the 2022-01
+    price jump is a MARKET-WIDE COMMON SHOCK, not an EV-rebate channel; if
+    they split (one same-direction with at least half of A's size, the other
+    not), the verdict is MIXED and the test is inconclusive on
+    market-wideness.
   * 2022+ EV-ERA scope — the 2024-01 dose step (45000 -> 40000, the EEAI cap
     cut): inside this window the only rebate variation is that step
     (reg_eeai_cap15k_202401). If BOTH clean controls C/D respond to the
@@ -62,7 +64,7 @@ TWO SCOPE-CONDITIONED VERDICTS (the KEY diagnostic for the causal claim):
     channel (the contaminated car channels B/E may move; that is expected).
 
 All controls use the CORRECTED per-category bid counts (see 00_data.py).
-Dose/dummy collinearity: the per-category specs use the DUMMY spec (4
+Dose/dummy collinearity: the per-category specs use the DUMMY spec (5
 real-policy dummies) OR the DOSE spec (continuous) — never both in one model.
 """
 
@@ -90,11 +92,13 @@ OUT_DIAG = OUT_DIR / "diagnostics_stationarity_autocorr.csv"
 OUT_SENS = OUT_DIR / "sensitivity_analysis.csv"
 
 # Real-policy dummies (verified). reg_arffloor_zero_202201 is the 2022-01
-# term (=$0 ARF floor tax provision = the 97->110kW threshold confounder).
+# term ($0 ARF floor tax provision); reg_threshold_110kw_202205 is the
+# 97->110kW threshold confounder (effective May 2022; separate event).
 REAL_DUMMIES = [
     "reg_real_ves_201801",
     "reg_real_evstack_202101",
     "reg_arffloor_zero_202201",
+    "reg_threshold_110kw_202205",
     "reg_eeai_cap15k_202401",
 ]
 # The 2022-01 market-wide term (full-window scope verdict key).
@@ -121,7 +125,7 @@ def build():
 def _price_spec_for_cat(df, K, price_def="nominal", scope="full",
                         local_trend=False):
     """The price-equation structure re-aimed at category K. Demand regressor is
-    K's own (corrected) bids_received; quota is K's quota; the 4 real-policy
+    K's own (corrected) bids_received; quota is K's quota; the 5 real-policy
     dummies (dummy spec) or the continuous dose (dose spec) are the rebate
     intensity terms — reported SEPARATELY (documented choice)."""
     price = (f"cat{K}_clearing_price_real"
@@ -365,7 +369,7 @@ def main():
         adf_row(df[col], lab, 1)
 
     # ---- residual autocorrelation on the PRIMARY price equation (nominal) ----
-    # primary spec M1: demand_l1 + demand_l2 + 4 real-policy dummies + controls
+    # primary spec M1: demand_l1 + demand_l2 + 5 real-policy dummies + controls
     demand = df["catA_bids_received_clean"]
     out = df.copy()
     out["demand_l1"] = D.lag(demand, 1)

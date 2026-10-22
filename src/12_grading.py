@@ -315,7 +315,8 @@ def main():
                       "show the same/larger 2022-01 "
                       "jump -> market-wide common shock, not EV-rebate-specific; "
                       "note the verified dose does NOT step at 2022-01 — it was "
-                      "the $0 ARF floor (tax) + 97->110kW threshold)")
+                      "the $0 ARF floor (tax); the 97->110kW threshold is a "
+                      "separate May-2022 event, controlled)")
         elif mixed_2022:
             g = "directionally consistent" if sig else "not detectable"
             nc_chk = (f"MIXED (clean controls split at 2022-01: one shows a "
@@ -337,20 +338,21 @@ def main():
             f"(dose/1000={float(dose_p['coef']):+.1f} S$/1000S$)",
             f"[{float(ee_p['ci_lo']):+.1f}, {float(ee_p['ci_hi']):+.1f}]",
             p, int(ee_p["nobs"]), g,
-            "full window (primary; 2022-01 = $0 ARF floor + threshold)",
+            "full window (primary; 2022-01 = $0 ARF floor; 2022-05 threshold "
+            "controlled)",
             nc_chk,
             f"full-window est sig={sig}, predicted dir (coef>0)={pred}, "
             f"nominal<->real non-reversal={nonrev}. "
             + ("CRITICAL: the full-window negative-control check FAILS — clean "
                "controls C (goods) / D (motorcycles) with no EV rebate show "
                "the same 2022-01 price jump, so the increase is a market-wide "
-               "common shock (co-timed 97->110kW threshold + COE market + $0 "
-               "ARF floor), NOT an EV-rebate-specific channel. DOWNGRADED to "
-               "not detectable."
+               "common shock (COE market + $0 ARF floor; the May-2022 110kW "
+               "threshold is controlled), NOT an EV-rebate-specific channel. "
+               "DOWNGRADED to not detectable."
                if same_2022 else
                ("negative-control check is MIXED (clean controls C/D split at "
                 "2022-01): the 2022-01 move is not credited to the rebate "
-                "(tax/threshold co-timing; the dummy is not robust)."
+                "(tax provision; the 2022-01 dummy is not robust)."
                 if mixed_2022 else
                 "negative-control check does not falsify the effect."))
             + " Precise magnitude claims are FORBIDDEN (low power).",

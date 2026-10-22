@@ -1,19 +1,19 @@
 #!/usr/bin/env python3
 """
-Step 11 — event study (4 in-window verified-policy events).
+Step 11 — event study (5 in-window verified-policy events).
 
-EVENTS (all four are real, cited policy changes):
-  * 2018-01 : CEVS lapse + VES onset (dose 20000 (CEVS est.) -> 25000 (VES A1,
-    verified)). TOTAL / low-emission + early-clean demand era — NOT yet EV-
-    specific at scale.
-  * 2021-01 : Enhanced VES + EEAI introduction (dose 25000 -> 45000; verified
-    stack). EV-relevant from here on.
-  * 2022-01 : $0 ARF floor for EVs (TAX provision, dose UNCHANGED) + the
-    97->110kW Category A threshold change (confounder). The threshold confounder
-    control is kept for this event: under the verified schedule the dose does
-    NOT step at 2022-01, so a 2022-01 price move is read as the ARF-floor /
-    threshold / market dynamics, NOT a rebate step — the event study tests
-    exactly that.
+EVENTS (all five are real, cited policy changes):
+  * 2018-01 : CEVS lapse + VES onset (dose 30000 revised-CEVS A1 -> 20000
+    VES A1; both verified). TOTAL / low-emission + early-clean demand era —
+    NOT yet EV-specific at scale.
+  * 2021-01 : Enhanced VES (A1 raised 20000 -> 25000) + EEAI introduction
+    (dose 20000 -> 45000; verified stack). EV-relevant from here on.
+  * 2022-01 : $0 ARF floor for EVs (TAX provision, dose UNCHANGED).
+  * 2022-05 : 97->110 kW Category A threshold for electric cars (CONFOUNDER,
+    dose UNCHANGED; effective from the May 2022 bidding exercise, LTA
+    announcement 14 Apr 2022). This is the confounder the price/bidding
+    exhibits control with reg_threshold_110kw_202205; estimated here so its
+    own price effect is visible and netted out of the 2024-01 reading.
   * 2024-01 : EEAI cap cut 20k -> 15k (dose 45000 -> 40000; verified). The
     EV-era step that makes the 2022+ window estimable.
 
@@ -75,19 +75,26 @@ EVENTS = [
     ("2018-01", 6,
      [("lag_1_6", 1, 6), ("lag_7_12", 7, 12), ("lag_13_plus", 13, -1)],
      "2018-01_cevs_lapse_VES_onset",
-     "VES onset (CEVS lapse): dose 20000 (CEVS est.) -> 25000 (VES A1, "
-     "verified); total/low-emission era — not yet EV-specific at scale"),
+     "VES onset (CEVS lapse): dose 30000 (revised CEVS A1, verified) -> "
+     "20000 (VES A1, verified); total/low-emission era — not yet EV-specific "
+     "at scale"),
     ("2021-01", 6,
      [("lag_1_6", 1, 6), ("lag_7_12", 7, 12), ("lag_13_plus", 13, -1)],
      "2021-01_enhanced_VES_EEAI_stack",
-     "Enhanced VES + EEAI (45% ARF, cap $20k): dose 25000 -> 45000 (verified "
-     "stack); EV-relevant from here on"),
+     "Enhanced VES (A1 20000->25000) + EEAI (45% ARF, cap $20k): dose "
+     "20000 -> 45000 (verified stack); EV-relevant from here on"),
     ("2022-01", 6,
      [("lag_1_6", 1, 6), ("lag_7_12", 7, 12), ("lag_13_plus", 13, -1)],
-     "2022-01_ARF_floor_zero_PLUS_threshold_bounded",
-     "$0 ARF floor for EVs (TAX, dose UNCHANGED) + 97->110kW Cat A threshold "
-     "(confounder, co-timed): any 2022-01 price move is the ARF-floor / "
-     "threshold / market dynamics, NOT a rebate step (bounded)"),
+     "2022-01_ARF_floor_zero",
+     "$0 ARF floor for EVs (TAX, dose UNCHANGED); any 2022-01 price move is "
+     "the ARF-floor / market dynamics, NOT a rebate step (bounded)"),
+    ("2022-05", 6,
+     [("lag_1_6", 1, 6), ("lag_7_12", 7, 12), ("lag_13_plus", 13, -1)],
+     "2022-05_threshold_110kw_catA",
+     "97->110 kW Category A threshold for electric cars (CONFOUNDER, dose "
+     "UNCHANGED; effective from the May 2022 bidding exercise, LTA 14 Apr "
+     "2022); controlled by reg_threshold_110kw_202205 in the headline "
+     "exhibits"),
     ("2024-01", 6,
      [("lag_1_6", 1, 6), ("lag_7_plus", 7, -1)],
      "2024-01_eeai_cap15k_step",
@@ -290,16 +297,17 @@ def main():
     B.register_exhibit(
         name="event_study", kind="event_study",
         est_scope="2016-01..2025-05",
-        key_regressor="catA_clearing_price (event-time dummies on the 4 "
+        key_regressor="catA_clearing_price (event-time dummies on the 5 "
                       "verified-policy events)",
         interpretation_scope="2021-01..2025-05 (EV-relevant events); 2022-01 "
-                             "bounded by the $0 ARF floor + 97->110kW "
+                             "=$0 ARF floor (tax); 2022-05 = 97->110kW "
                              "threshold confounder",
         n_obs=int(df["catA_clearing_price"].notna().sum()),
         event_spans_pre_post=True,
-        notes="4 verified-policy in-window events (2018-01, 2021-01, 2022-01, "
-              "2024-01); 2022-01 = $0 ARF floor (tax) + threshold confounder, "
-              "bounded; windows span pre+post so leads defined; pre-trends "
+        notes="5 verified-policy in-window events (2018-01, 2021-01, 2022-01, "
+              "2022-05, 2024-01); 2022-01 = $0 ARF floor (tax), 2022-05 = "
+              "97->110kW threshold confounder (separate events, both "
+              "non-dose); windows span pre+post so leads defined; pre-trends "
               "tested jointly + individually; 2026 cap cut + 2027 EEAI "
               "cessation descriptive only.",
     )
