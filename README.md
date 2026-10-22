@@ -31,7 +31,7 @@ The honest result has two parts:
   did, and C moved the other way (Figure 2). That split means the test is
   inconclusive on its own — but the decisive fact is that what changed in
   Jan 2022 was a tax rule (electric cars' minimum registration tax dropped
-  to zero), not a rebate step; the separate 97→110 kW category threshold
+  to zero), not a change to the rebate; the separate 97→110 kW category threshold
   change followed in May 2022. The estimated Jan 2022 price effect is
   +S$3,700 (95% CI −S$180 to +S$7,600; p = 0.061) — not statistically
   robust, so it can't be credited to the rebates either way.
@@ -139,7 +139,7 @@ fact more (+13.1% vs +6.4%) — while C moved the other way (−11.4%)**
 shock, and it can't establish an EV-specific cause either (the "open"
 category E, where EV cars may also bid, moved with the car categories at
 +11.8% — as expected). The decisive facts are that the Jan 2022 change
-was a *tax rule*, not a rebate step, and that the estimated 2022-01
+was a *tax rule*, not a change to the rebate, and that the estimated 2022-01
 effect is not statistically robust (p = 0.061).
 
 **Figure 2.** The negative-control test for the 2022 jump: estimated 2022-01
@@ -151,7 +151,7 @@ effect is not statistically robust (p = 0.061).
 jumped more than A (+13.1% vs +6.4%), C (goods & buses) moved the other
 way (−11.4%) — so the jump is neither a clean market-wide signal nor a
 clean EV-specific one. Because the Jan 2022 change was a tax rule rather
-than a rebate step, the move is not credited to the EV rebate. B
+than a change to the rebate, the move is not credited to the EV rebate. B
 (high-power EVs) and E (open; EV cars can bid) moved with the car
 categories, as expected.*
 
@@ -179,7 +179,7 @@ within it, so the statistics have something to work with. In that window
   (95% CI S$2,060 to S$6,120; p = 0.00008; p = 0.0000009 with
   autocorrelation-robust standard errors; inflation-adjusted:
   +S$4,141 per S$1,000, 95% CI S$2,104 to S$6,178, p = 0.00007).
-  Stated as the step itself: the Jan 2024 cut is associated with a price
+  Stated in terms of the Jan 2024 cut itself: it is associated with a price
   change of −S$20,449 (95% CI −S$30,602 to −S$10,297; p = 0.00008).
 - The rebate-free categories (C goods & buses, D motorcycles) did **not**
   show the same 2024 move (−7.9% and −7.4% vs −23.0% for A; Figure 3),
@@ -196,11 +196,13 @@ drop), each measured over the 2022–2025 window.
 
 ![Negative-control check: 2024-01 % price jump by car category (2022+ EV era; the 2024-01 rebate cut shows up as a price drop)](charts/03_negative_control_2024.png)
 
-*Verdict: clean controls do not falsify the EV-specific reading. The 2024
-cap cut drops prices in the EV-eligible car channels (A −23.0%, B −36.8%,
-open E −36.1%), while the two rebate-free categories (C −7.9%, D −7.4%)
-move less than a third as much — consistent with the 2024 move being
-EV-rebate-related.*
+*Verdict: the pattern fits an EV-rebate effect. The 2024 cap cut dropped
+prices sharply in the car categories where EV rebates apply (A −23.0%,
+B −36.8%, and the open category E, where EV cars may also bid, −36.1%),
+but only mildly in the two categories with no EV rebate at all (C −7.9%,
+D −7.4%) — less than a third as much. This doesn't prove the rebate
+caused the drop, but a market-wide cause would have hit the no-rebate
+categories just as hard.*
 
 ### 4.3. Rebates did not drive more bidding demand
 
@@ -312,23 +314,23 @@ study does find — the one in the EV era — is therefore not being carried
 by more bidding.
 
 **Figure 7.** The hypothesized chain — rebate → bidding demand → price —
-with, for each step, what we should see if the hypothesis were true and
+with, for each link in the chain, what we should see if the hypothesis were true and
 what we actually see.
 
-![The hypothesized chain: rebate → bidding demand → price; for each step, the prediction if the hypothesis were true and the observed result](charts/07_mediation_diagram.png)
+![The hypothesized chain: rebate → bidding demand → price; for each link, the prediction if the hypothesis were true and the observed result](charts/07_mediation_diagram.png)
 
 *The chain check from section 4.6: each arrow shows what we would
 expect if the hypothesis were true and what the data show (p-values as
 labeled); the box below shows the share of the rebate's price effect
 routed via bidding, in each time window. Coefficients and confidence
-intervals for every step: report §3.2 (bidding channel) and §3.4
+intervals for every link: report §3.2 (bidding channel) and §3.4
 (mediation).*
 
 ### 4.7. Looking at each policy change individually doesn't help either
 
 An "event study" examines prices around each of the five verified policy
-changes (the three rebate steps plus the Jan 2022 tax and the May 2022
-threshold). Every single one shows the price was already drifting in that
+changes (the three changes to the rebate amount, plus the Jan 2022 tax
+and the May 2022 threshold). Every single one shows the price was already drifting in that
 direction *before* the policy started (Figure 8) — the signature of the
 long-run COE price trend (plus the pandemic-era dip in 2020), not of the
 policy itself. The estimated effects are therefore reported as bounds,
@@ -381,8 +383,8 @@ means the bin runs beyond the displayed window).*
   prices or bidding across the decade; the 2022 price jump showed up in
   a rebate-free category too (D motorcycles, more than in A), while the
   other rebate-free category (C) moved the other way — the test is mixed,
-  and the 2022 change was a tax rule, not a rebate step; prices and
-  bidding demand are weakly related; the via-bidding chain is broken; EV
+  and the 2022 change was a tax rule, not a change to the rebate; prices
+  and bidding demand are weakly related; the via-bidding chain is broken; EV
   adoption more than tripled but did not track the rebate level — it kept
   rising after the Jan 2024 cut.
 - **Can't claim:** a precise "rebates raise prices by X" number. The

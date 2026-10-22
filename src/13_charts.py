@@ -241,8 +241,8 @@ def _nc_verdict(nc: pd.DataFrame, term: str, scope: str) -> str:
     if abs(c) >= 0.5 * abs(a) and abs(d) >= 0.5 * abs(a):
         return ("market-wide common shock: both clean controls move at least "
                 "half as much as the EV category (NOT EV-rebate-specific)")
-    return ("clean controls move less than half as much as the EV category — "
-            "does not falsify an EV-rebate-specific channel")
+    return ("the two no-rebate categories move less than half as much as the "
+            "EV-eligible category — the pattern fits an EV-rebate effect")
 
 
 def chart02() -> None:
@@ -257,8 +257,8 @@ def chart02() -> None:
     _nc_panel(ax, nc, "reg_arffloor_zero_202201")
     ax.set_title(
         "Chart 2 — Negative-control check: 2022-01 % price jump by category\n"
-        "(full 2016-01..2025-05 window; each bar = estimated step, % of that "
-        "category's 2016-25 mean price; the 2022-01 change was a $0 ARF-floor "
+        "(full 2016-01..2025-05 window; each bar = estimated % change in that "
+        "category's average price; the 2022-01 change was a $0 ARF-floor "
         "TAX, not a rebate)\n"
         f"Verdict: {verdict}",
         pad=12,
@@ -288,7 +288,7 @@ def chart03() -> None:
         "Chart 3 — Negative-control check: 2024-01 % price jump by category\n"
         "(2022-01..2025-05 EV-era window; the 2024-01 rebate cut "
         "S$45k → S$40k shows up as a price drop)\n"
-        "(each bar = estimated step, % of that category's 2022-25 mean price)\n"
+        "(each bar = estimated % change in that category's average price, 2022-25)\n"
         f"Verdict: {verdict}",
         pad=12,
     )
@@ -544,7 +544,7 @@ def chart07() -> None:
     ax.axis("off")
     ax.set_title(
         "Chart 7 — Does the rebate push prices up via more bidding?\n"
-        "Each step: what we should see if the hypothesis were true, and what we actually see",
+        "Each link in the chain: what we should see if the hypothesis were true, and what we actually see",
         fontsize=10.5,
     )
 
@@ -643,7 +643,7 @@ def chart08() -> None:
          "(effective May 2022)"),
         ("2024-01_eeai_cap15k_step",
          "Event 5 — EEAI cap cut S$20k -> S$15k (2024-01): rebate S$45k -> S$40k "
-         "(verified; the EV-era step)"),
+         "(verified; the EV-era rebate change)"),
     ]
     fig, axes = plt.subplots(5, 1, figsize=(11, 16), sharex=True)
     for ax, (ep, title) in zip(axes, episodes):
