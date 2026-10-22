@@ -113,8 +113,8 @@ def chart01() -> None:
     ax.set_xlabel("Month")
     ax.set_title(
         "Chart 1 — Category A COE clearing price, 2016-01..2025-05 (verified policy)\n"
-        "Dotted lines: EV-rebate changes.   Dashed red lines: Jan 2022 tax and "
-        "May 2022 engine-threshold change (neither is a rebate)",
+        "Dotted gray lines: EV-rebate changes. Dashed red lines: Jan 2022 tax\n"
+        "and May 2022 engine-threshold change (neither is a rebate)",
         pad=12,
     )
 
@@ -235,14 +235,14 @@ def _nc_verdict(nc: pd.DataFrame, term: str, scope: str) -> str:
     a, c, d = float(g["A"]), float(g["C"]), float(g["D"])
     same = (a > 0 and c > 0 and d > 0) or (a < 0 and c < 0 and d < 0)
     if not same:
-        return ("MIXED: the two clean controls split at this date — "
+        return ("MIXED: the two clean controls split at this date —\n"
                 "neither a clean market-wide signal nor a clean EV-specific "
                 "one (inconclusive)")
     if abs(c) >= 0.5 * abs(a) and abs(d) >= 0.5 * abs(a):
-        return ("market-wide common shock: both clean controls move at least "
+        return ("market-wide common shock: both clean controls move at least\n"
                 "half as much as the EV category (NOT EV-rebate-specific)")
-    return ("the two no-rebate categories move less than half as much as the "
-            "EV-eligible category — the pattern fits an EV-rebate effect")
+    return ("the two no-rebate categories move less than half as much as\n"
+            "the EV-eligible category — the pattern fits an EV-rebate effect")
 
 
 def chart02() -> None:
@@ -257,9 +257,9 @@ def chart02() -> None:
     _nc_panel(ax, nc, "reg_arffloor_zero_202201")
     ax.set_title(
         "Chart 2 — Negative-control check: 2022-01 % price jump by category\n"
-        "(full 2016-01..2025-05 window; each bar = estimated % change in that "
-        "category's average price; the 2022-01 change was a $0 ARF-floor "
-        "TAX, not a rebate)\n"
+        "(full 2016-01..2025-05 window; each bar = estimated % change in that\n"
+        "category's average price; the 2022-01 change was a $0 ARF-floor TAX,\n"
+        "not a rebate)\n"
         f"Verdict: {verdict}",
         pad=12,
     )
@@ -286,7 +286,7 @@ def chart03() -> None:
     _nc_panel(ax, nc, "reg_eeai_cap15k_202401")
     ax.set_title(
         "Chart 3 — Negative-control check: 2024-01 % price jump by category\n"
-        "(2022-01..2025-05 EV-era window; the 2024-01 rebate cut "
+        "(2022-01..2025-05 EV-era window; the 2024-01 rebate cut\n"
         "S$45k → S$40k shows up as a price drop)\n"
         "(each bar = estimated % change in that category's average price, 2022-25)\n"
         f"Verdict: {verdict}",
@@ -329,11 +329,11 @@ def chart04() -> None:
              label="Cat A clearing price (nominal S$, left)")
     ax1.set_ylabel("Cat A clearing price (nominal S$)")
     ax1.set_title(
-        "Chart 4 — Category A COE price vs number of bids received, "
+        "Chart 4 — Category A COE price vs number of bids received,\n"
         "2016-01..2025-05\n"
-        f"level correlation over the decade: r = {r_level:+.2f}; "
-        f"month-to-month changes: r = {r_mom:+.2f} (price vs % change in bids) "
-        f"or r = {r_mom_raw:+.2f} (both in raw levels) — near zero either way",
+        f"level correlation over the decade: r = {r_level:+.2f}\n"
+        f"month-to-month changes: r = {r_mom:+.2f} (price vs % change in bids) or\n"
+        f"r = {r_mom_raw:+.2f} (both in raw levels) — near zero either way",
     )
     ax2 = ax1.twinx()
     ax2.plot(df["ts"], df["catA_bids_received_clean"], color="#b23b3b", lw=1.4,
