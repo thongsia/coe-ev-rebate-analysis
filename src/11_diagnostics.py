@@ -267,8 +267,9 @@ def main():
         + (
             "Both clean controls show the SAME 2022-01 price jump despite NO "
             "EV rebate applying to them (and the verified dose does NOT step "
-            "at 2022-01 — it was the $0 ARF floor, a tax provision, + the "
-            "market-wide 97->110kW threshold) -> the 2022-01 jump is a "
+            "at 2022-01 — it was the $0 ARF floor, a tax provision, and the "
+            "97->110kW threshold followed in May 2022 as a separate change) "
+            "-> the 2022-01 jump is a "
             "MARKET-WIDE COMMON SHOCK, NOT an EV-rebate-specific channel."
             if same_2022 else
             (
@@ -276,9 +277,10 @@ def main():
                 "jump at least half of A's size, the other does not) -> the "
                 "test is inconclusive on market-wideness, and it does NOT "
                 "establish an EV-specific channel either: the 2022-01 change "
-                "was the $0 ARF floor (a TAX provision) co-timed with the "
-                "97->110kW car threshold, the verified dose does NOT step at "
-                "2022-01, and A's own 2022-01 dummy is not statistically "
+                "was the $0 ARF floor (a TAX provision); the 97->110kW car "
+                "threshold followed in May 2022 as a separate change, the "
+                "verified dose does NOT step at 2022-01, and A's own 2022-01 "
+                "dummy is not statistically "
                 "robust"
                 + p22_txt
                 + " -> the 2022-01 jump is not credited to the EV rebate."

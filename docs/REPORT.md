@@ -224,7 +224,7 @@ the 2022-05 threshold is a separate confounder episode. The 2026-01 cap cut is d
 | D | **CLEAN negative control** (motorcycles; no EV rebate) | +1,005 | [+246, +1,764] | 0.00948 | **+13.13%** |
 | E | CONTAMINATED (open category — cars incl. EVs can bid) | +8,415 | [+808, +16,021] | 0.0301 | **+11.79%** |
 
-> **VERDICT (full window, 2022-01): FULL-WINDOW NEGATIVE-CONTROL MIXED: clean controls C (goods & buses) / D (motorcycles) 2022-01 % jumps = -11.4/13.1% vs A (EV-eligible) 6.4% (contaminated open category E: 11.8%, reported for reference). Clean controls SPLIT at 2022-01 (one shows a same-direction jump at least half of A's size, the other does not) -> the test is inconclusive on market-wideness, and it does NOT establish an EV-specific channel either: the 2022-01 change was the $0 ARF floor (a TAX provision) co-timed with the 97->110kW car threshold, the verified dose does NOT step at 2022-01, and A's own 2022-01 dummy is not statistically robust (p=0.061) -> the 2022-01 jump is not credited to the EV rebate.**
+> **VERDICT (full window, 2022-01): FULL-WINDOW NEGATIVE-CONTROL MIXED: clean controls C (goods & buses) / D (motorcycles) 2022-01 % jumps = -11.4/13.1% vs A (EV-eligible) 6.4% (contaminated open category E: 11.8%, reported for reference). Clean controls SPLIT at 2022-01 (one shows a same-direction jump at least half of A's size, the other does not) -> the test is inconclusive on market-wideness, and it does NOT establish an EV-specific channel either: the 2022-01 change was the $0 ARF floor (a TAX provision); the 97->110kW car threshold followed in May 2022 as a separate change, the verified dose does NOT step at 2022-01, and A's own 2022-01 dummy is not statistically robust (p=0.061) -> the 2022-01 jump is not credited to the EV rebate.**
 
 **2022+ EV era, 2024-01 EEAI cap-cut step** (the EV-rebate-specific variation):
 
@@ -284,10 +284,10 @@ not falsified on the 2022+ EV era, not isolating a clean EV effect on the full w
 ---
 ## 5. Honest limitations
 
-1. **2016-01..2017-12 dose level = revised CEVS Band A1 = $30,000 (verified).** Earlier drafts
-   used a conservative $20,000 estimate; the headline is insensitive to this choice (dose coefficient
-   per S$1,000 barely moves between the two, both highly significant). All in-window dose levels are
-   verified against LTA/NEA tables.
+1. **2016-01..2017-12 dose level = revised CEVS Band A1 = $30,000 (verified).**
+   The headline is insensitive to the dose level chosen for this period (the per-S$1,000
+   dose coefficient barely moves between a $30,000 and a $20,000 dose; both are highly significant).
+   All in-window dose levels are verified against LTA/NEA tables.
 2. **Combined-dose stacking assumption.** The dose adds VES A1 + EEAI cap when both are in force
    (45000 / 40000). This is the *maximum combined rebate available*, a CAP, not a realized average
    rebate actually claimed; real per-vehicle rebates are lower.
@@ -309,9 +309,6 @@ not falsified on the 2022+ EV era, not isolating a clean EV effect on the full w
 11. **COE-only months after 2025-05.** 2025-06..2026-10 has COE but no registrations; descriptive
    only (Jan-2026 cap cut).
 12. **Pandemic NA months.** 2020-04/05/06 listwise-dropped, not imputed; N=110.
-
-*Dropped from the old limitations:* the 'plan schedule differs from real policy' limitation is no
-*longer applicable — this run IS the verified policy.*
 
 ---
 ## 6. Charts (paths relative to the repo root)

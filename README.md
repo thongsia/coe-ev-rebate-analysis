@@ -64,16 +64,13 @@ Three public, free datasets from [data.gov.sg](https://data.gov.sg):
 
 Data caveats worth knowing:
 
-- **The bid counts needed one correction.** The raw COE results file
-  stores bid counts as text, and from 2023-10 on it writes large numbers
-  with thousands separators (e.g. "1,039"), which the original panel build
-  could not parse — so the `bids_received` column in
-  `data/processed/panel_joint.csv` is 0 for **19 months (2023-10 to
-  2025-05)**, exactly the EV-rebate era. All analysis in this repo uses a
-  corrected series, `catA_bids_received_clean`, rebuilt in `src/00_data.py`
-  from the raw file (separators stripped, monthly sums recomputed); it is
-  non-zero for all 110 COE months and re-verified by `src/14_verify.py`
-  on every run.
+- **Bid counts need careful parsing.** The raw COE results file stores
+  bid counts as text, and from 2023-10 on it writes large numbers with
+  thousands separators (e.g. "1,039"), which a naive parse would silently
+  read as 0. All analysis in this repo therefore uses `catA_bids_received_clean`,
+  rebuilt in `src/00_data.py` from the raw file (separators stripped,
+  monthly sums recomputed); it is non-zero for all 110 COE months and is
+  re-verified by `src/14_verify.py` on every run.
 - **EV registration counts are lower bounds.** Only about one in four of
   the monthly registration rows carries a car-count number (mean coverage
   23% across 2022-07..2025-05, ranging from 18% to 33%, and falling over
@@ -111,8 +108,7 @@ announcements and published rate sets; every row in
 That's the key to the whole design: the rebate amount **changed three
 times** (2018, 2021, 2024), giving the statistics something to bite on.
 The two non-rebate rule changes (Jan 2022 tax, May 2022 threshold) are
-tracked separately as controls, because they also move prices — treating
-them as if they were rebate steps was a mistake this study corrects.
+tracked separately as controls, because they also move prices.
 
 ## 4. What we found
 
