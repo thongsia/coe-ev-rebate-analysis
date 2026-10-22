@@ -328,8 +328,7 @@ def chart04() -> None:
              label="Cat A clearing price (nominal S$, left)")
     ax1.set_ylabel("Cat A clearing price (nominal S$)")
     ax1.set_title(
-        "Chart 4 — Category A COE price vs number of bids received,\n"
-        "2016-01..2025-05\n"
+        "Chart 4 — Category A COE price vs number of bids received, 2016-01..2025-05\n"
         f"level correlation over the decade: r = {r_level:+.2f}\n"
         f"month-to-month changes: r = {r_mom:+.2f} (price vs % change in bids) or\n"
         f"r = {r_mom_raw:+.2f} (both in raw levels) — near zero either way",
