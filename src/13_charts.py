@@ -258,8 +258,7 @@ def chart02() -> None:
     ax.set_title(
         "Chart 2 — Negative-control check: 2022-01 % price jump by category\n"
         "(full 2016-01..2025-05 window; each bar = estimated % change in that\n"
-        "category's average price; the 2022-01 change was a $0 ARF-floor TAX,\n"
-        "not a rebate)\n"
+        "category's average price; the 2022-01 change was a $0 ARF-floor TAX, not a rebate)\n"
         f"Verdict: {verdict}",
         pad=12,
     )
