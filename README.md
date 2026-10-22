@@ -443,9 +443,3 @@ tables/                    ← one CSV per reported table
 charts/                    ← the eight charts shown above (Figures 1–8)
 src/                       ← 16 ordered Python modules (fetch → panel → exhibits → verify → report) + shared bootstrap
 ```
-
----
-
-*Analysis window: 2016-01 → 2025-05 (with COE-only descriptive extension to
-2026-10). Built with the KAKIS research→plan→synthesize→execute pipeline.
-All figures in the reports trace to `tables/*.csv`.*
