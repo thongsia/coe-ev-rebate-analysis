@@ -1,4 +1,4 @@
-# Do electric car rebates drive more bidding demand for COEs?
+# Do EV rebates drive more bidding demand for COEs?
 
 Singapore's EV rebates (VES, EEAI, and their predecessors) can save car
 owners up to tens of thousands of dollars. A natural question: **do those
@@ -30,7 +30,7 @@ The honest result has two parts:
   motorcycles) split in their reaction: D jumped more than the EV category
   did, and C moved the other way (Figure 2). That split means the test is
   inconclusive on its own — but the decisive fact is that what changed in
-  Jan 2022 was a tax rule (electric cars' minimum registration tax dropped
+  Jan 2022 was a tax rule (EVs' minimum registration tax dropped
   to zero), not a change to the rebate; the separate 97→110 kW category threshold
   change followed in May 2022. The estimated Jan 2022 price effect is
   +S$3,700 (95% CI −S$180 to +S$7,600; p = 0.061) — not statistically
@@ -78,7 +78,7 @@ Data caveats worth knowing:
   coverage rate.
 - **Category A is not an "EV category."** It's the small-engine car
   category (engines up to 1600cc and power output up to 97kW / 130bhp;
-  fully electric cars up to 97kW before May 2022, and up to 110kW from
+  EVs up to 97kW before May 2022, and up to 110kW from
   the May 2022 threshold change on) — most EVs fit, which is why EVs
   land in it. That's why the study looks at the whole decade, not just
   "EV months".
@@ -101,8 +101,8 @@ announcements and published rate sets; every row in
 | 2016–2017 | CEVS (old clean-car scheme) in force | S$30k (revised CEVS top band) |
 | Jan 2018 | CEVS ended; new VES scheme began | S$20k |
 | Jan 2021 | Enhanced VES (top band S$25k) + new EEAI incentive on top (45% off the registration tax, capped at S$20k) | S$45k total |
-| Jan 2022 | Minimum registration tax on electric cars dropped to zero — a **tax rule, not a rebate**; the full rebate caps became usable | S$45k (dose unchanged) |
-| May 2022 | Category A engine-power threshold for electric cars raised from 97 kW to 110 kW, effective from the May 2022 bidding exercise (LTA, 14 Apr 2022) — a **quota rule, not a rebate** | S$45k (dose unchanged) |
+| Jan 2022 | Minimum registration tax on EVs dropped to zero — a **tax rule, not a rebate**; the full rebate caps became usable | S$45k (dose unchanged) |
+| May 2022 | Category A engine-power threshold for EVs raised from 97 kW to 110 kW, effective from the May 2022 bidding exercise (LTA, 14 Apr 2022) — a **quota rule, not a rebate** | S$45k (dose unchanged) |
 | Jan 2024 | EEAI cap cut from S$20k to S$15k | S$40k total |
 
 That's the key to the whole design: the rebate amount **changed three
@@ -118,7 +118,7 @@ Category A prices rose about **21%** in early 2022 — from S$57,906 in
 Dec 2021 to S$70,028 in Mar 2022, roughly S$12,100 above the Dec 2021
 level (Figure 1), and the rise held after adjusting for inflation
 (+20.9% in real terms). The timing lines up with the Jan 2022 tax rule
-(electric cars stopped paying a minimum registration tax) and, four
+(EVs stopped paying a minimum registration tax) and, four
 months later, the May 2022 engine-power threshold change. The jump itself
 arrived in Feb–Mar, rather than in the month of the changes.
 
@@ -237,7 +237,7 @@ line marks the Jan 2024 cut.*
 Figure 5 is the only direct look at the first link of the hypothesized
 chain (rebate → more EV demand → more bids → higher price):
 
-- Electric car registrations grew from about **420/month** on average
+- EV registrations grew from about **420/month** on average
   before the Jan 2024 cut to about **1,310/month** after it — EVs went
   from about 12–18% of new cars (2022) to 28–37% (2024) and 38–43%
   (2025).
@@ -256,12 +256,12 @@ months, and is a lower bound on the true counts — only about one in four
 months' rows carry counts — so this is descriptive evidence, not a
 measured effect.)
 
-**Figure 5.** Electric car registrations and their share of new-car sales,
+**Figure 5.** EV registrations and their share of new-car sales,
 with the data-coverage lower bound.
 
 ![EV registrations and their share of new cars, with the data-coverage lower bound](charts/05_ev_demand.png)
 
-*Electric car registrations and their share of new-car registrations from
+*EV registrations and their share of new-car registrations from
 2022-07 (when the official EV label first appears); bars are a lower
 bound because many months' rows have no count (mean coverage 23%). The
 dashed line marks the Jan 2024 cut of the maximum rebate from S$45k to
