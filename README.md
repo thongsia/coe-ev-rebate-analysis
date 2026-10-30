@@ -22,7 +22,7 @@ sensitivity checks, and the automated verification checklist — see
 summary). Every number in this README is quoted from the tables in
 `tables/`, and the automated verifier re-checks all of them on every run.
 
-## 1. The short answer
+## 1. TL;DR
 
 The honest result has two parts:
 
